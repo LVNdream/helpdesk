@@ -8,7 +8,6 @@ const port = process.env.port;
 const schedule = require("node-schedule");
 const cron = require("node-cron");
 
-
 const app = express();
 //test database
 
@@ -25,7 +24,6 @@ app.use(
 // /////////Static file
 app.use(express.static(path.join(__dirname, "src/public")));
 
-
 // /////////
 app.use(bodyParser.json());
 app.use(
@@ -35,24 +33,24 @@ app.use(
   })
 );
 
-
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://192.168.1.3:3000");
   next();
 });
 
 const router = require("./src/routes/index");
+const midService = require("./src/app/services/midService");
 router(app);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const job = schedule.scheduleJob("* * * * * 0", function () {
-  console.log("The answer to life, the universe, and everything!");
-});
-// cron.schedule("*/5 * * * * *", () => {
-//   console.log("running every minute 1, 2, 4 and 5");
+// const job = schedule.scheduleJob("* * * * * 7", function () {
+//   console.log("The answer to life, the universe, and everything!");
 // });
-// console.log();
-// /////// Len lich chayj ham
+cron.schedule("* * * * * 7", () => {
+  console.log("Start delete");
+  const resultDelete = midService.removeAllfile("./src/public/temps");
+});
+/////// Len lich chayj ham

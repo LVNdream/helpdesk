@@ -1,6 +1,6 @@
 const userPageService = require("../services/userPageService");
 const midService = require("../services/midService");
-const fsp  = require("fs").promises;
+const fsp = require("fs").promises;
 
 class userController {
   async getRequestList(req, res) {
@@ -46,13 +46,47 @@ class userController {
   }
   async userRegisterRequest(req, res) {
     try {
-      // const resutl = await midService.deleteFile(req.files)
+      const data = {
+        title_request: req.body.title_request,
+        content_request: req.body.content_request,
+        maintenance_id: req.body.maintenance_id,
+        petitioner_id: req.user.id,
+      };
+      const files = req.files;
+      const result = await userPageService.userRegisterRequest(data, files);
+      if (result.status == false) {
+        const deleteFile = await midService.deleteFiles(files, "temps");
+      }
 
-      // req.files.forEach((file) => {
-      //   fsp.rename("./src/public/temps/"+file.filename, "./src/public/files/"+file.filename);
-      // });
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(501).json("Server error");
+    }
+  }
 
-      return res.status(200).json(123);
+  async updateRegisterRequest(req, res) {
+    try {
+      const data = {
+        title_request: req.body.title_request,
+        content_request: req.body.content_request,
+        maintenance_id: req.body.maintenance_id,
+      };
+      const request_id = req.body.request_id;
+      const files = req.files;
+      const arrayDelete = req.body.arrayDelete;
+
+      const result = await userPageService.updateRequest(
+        request_id,
+        data,
+        files,
+        arrayDelete
+      );
+      if (result.status == false) {
+        const deleteFile = await midService.deleteFiles(files, "temps");
+      }
+
+      return res.status(200).json(result);
     } catch (error) {
       console.log(error);
       res.status(501).json("Server error");

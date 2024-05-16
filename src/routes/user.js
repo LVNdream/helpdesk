@@ -11,12 +11,13 @@ var storage = multer.diskStorage({
     res(null, "./src/public/temps");
   },
   filename: (req, file, res) => {
-    res(null, Date.now() +Math.floor(Math.random() * 10000)+ "-" + file.originalname);
+    res(
+      null,
+      Date.now() + Math.floor(Math.random() * 10000) + "-" + file.originalname
+    );
   },
 });
-var upload = multer({ storage: storage }); 
-
-
+var upload = multer({ storage: storage });
 
 router.get(
   "/getrequestlist",
@@ -44,6 +45,12 @@ router.post(
   middlewareAuth.verifyAuthentication,
   upload.any(),
   userController.userRegisterRequest
+);
+router.post(
+  "/update-request",
+  middlewareAuth.verifyAuthentication,
+  upload.any(),
+  userController.updateRegisterRequest
 );
 
 module.exports = router;

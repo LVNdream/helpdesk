@@ -31,6 +31,7 @@ class userPageService {
       if (status_id == 1 || status_id == 2 || status_id == 3) {
         const resutlConfirm_Register =
           await userPageModel.getRequestConfirm_Register(id);
+        // console.log(resutlConfirm_Register)
         const MT_Register = await midService.getMaintenanceType_checked(
           resutlConfirm_Register.maintenance_id
         );
@@ -42,12 +43,21 @@ class userPageService {
               )
             : [];
 
+        const files = await userPageModel.getAllFileByRequest(id);
+        if (!files) {
+          return {
+            message: "Error get file by request",
+            status: false,
+            error: 501,
+          };
+        }
         return resutlConfirm_Register
           ? {
               ...resutlConfirm_Register,
               MT_Register,
               status_id,
               listProblem_RQ,
+              files,
             }
           : {
               message: "Error model getRequestConfirm_Register",
@@ -144,7 +154,14 @@ class userPageService {
                 resutlComplete_AddProblem.id
               )
             : [];
-
+        const files = await userPageModel.getAllFileByRequest(id);
+        if (!files) {
+          return {
+            message: "Error get file by request",
+            status: false,
+            error: 501,
+          };
+        }
         return resutlComplete_AddProblem
           ? {
               id: resutlComplete_AddProblem.id,
@@ -175,6 +192,7 @@ class userPageService {
               MT_Register: final_MT,
               status_id,
               listProblem_RQ,
+              files,
             }
           : {
               message: "Error model getRequestConfirm_Register",
@@ -392,6 +410,149 @@ class userPageService {
       console.log(error);
       return {
         message: "Server error UpdateUser Sevice",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  async userRegisterRequest(data, files) {
+    try {
+      const resutlAddRequest = await userPageModel.registerRequest(data);
+      if (!resutlAddRequest.insertId) {
+        return {
+          message: "Server error registerrequest Model",
+          status: false,
+          error: 501,
+        };
+      }
+      const request_id = resutlAddRequest.insertId;
+      const filelLength = files.length;
+      // console.log(request_id)
+      for (let i = 0; i < filelLength; i++) {
+        const file = files[i];
+        const resutl = await userPageModel.addRequestFile(
+          request_id,
+          file.filename
+        );
+        if (!resutl) {
+          return {
+            message: "Server error addRequestFile Model",
+            status: false,
+            error: 501,
+          };
+        }
+      }
+
+      const moveFile = await midService.moveFiles(files);
+      if (!moveFile) {
+        return {
+          message: "Server error moveFile",
+          status: false,
+          error: 501,
+        };
+      }
+      return {
+        message: "Add request successfully",
+        status: true,
+        error: 200,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error userRegisterrequest Sevice",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  // updateRequest
+  async updateRequest(request_id, data, files, arrayDelete) {
+    try {
+      // console.log(files, arrayDelete);
+      const status_id = await userPageModel.getIdStatusByRequest(request_id);
+      if (!status_id) {
+        return {
+          message: "Server error get status ID Model",
+          status: false,
+          error: 501,
+        };
+      }
+      if (status_id != 1) {
+        return {
+          message: "Status not valid",
+          status: false,
+          error: 501,
+        };
+      }
+
+      const resultUpdate = await userPageModel.updateRequest(request_id, data);
+      if (!resultUpdate) {
+        return {
+          message: "Error updateRequest model",
+          status: false,
+          error: 501,
+        };
+      }
+      const listDelete = arrayDelete.length;
+      if (listDelete > 0) {
+        for (let i = 0; i < listDelete; i++) {
+          const file = arrayDelete[i];
+          console.log(file);
+          const resutlDB = await userPageModel.deleteFile(file);
+          if (!resutlDB) {
+            return {
+              message: "Server error Delete File Model",
+              status: false,
+              error: 501,
+            };
+          }
+          const resultDeleleSever = await midService.deleteFile(file, "files");
+          if (!resultDeleleSever) {
+            return {
+              message: "Server error Delete one File midService",
+              status: false,
+              error: 501,
+            };
+          }
+        }
+      }
+      const fileLength = files.length;
+      if (fileLength > 0) {
+        for (let i = 0; i < fileLength; i++) {
+          const file = files[i];
+          const resutl = await userPageModel.addRequestFile(
+            request_id,
+            file.filename
+          );
+          if (!resutl) {
+            return {
+              message: "Server error addRequestFile Model",
+              status: false,
+              error: 501,
+            };
+          }
+        }
+
+        const moveFile = await midService.moveFiles(files);
+        if (!moveFile) {
+          return {
+            message: "Server error moveFile",
+            status: false,
+            error: 501,
+          };
+        }
+      }
+      return {
+        message: "Update request successfully",
+        status: true,
+        error: 200,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Update Request Sevice",
         status: false,
         error: 501,
       };

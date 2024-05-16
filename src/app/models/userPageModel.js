@@ -5,9 +5,27 @@ module.exports = {
   getRequestList: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.id,rs.title_request,mt.type_name,rs.status_id,users.name AS pertitioner,users2.name AS recipient_id,rs.created_at,rs.completion_date
-        FROM maintenance_type mt, request_storage rs,request_status rstt, users,(SELECT * FROM users) AS users2
-        WHERE rs.petitioner_id=${id} and rs.maintenance_id=mt.id and rstt.id=rs.status_id AND users.id=rs.petitioner_id AND users2.id=rs.recipient_id`
+        `SELECT DISTINCT 
+    rs.id,
+    rs.title_request,
+    mt.type_name,
+    rs.status_id,
+    users.name AS petitioner,
+    users2.name AS recipient,
+    rs.created_at,
+    rs.completion_date 
+FROM 
+    request_storage rs
+JOIN 
+    maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    request_status rstt ON rs.status_id = rstt.id
+JOIN 
+    users ON rs.petitioner_id = users.id
+LEFT JOIN 
+    users AS users2 ON rs.recipient_id = users2.id
+WHERE 
+    rs.petitioner_id = ${id};`
       );
 
       return result;
@@ -61,8 +79,16 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,u.position,u.email,s.solution_name,rs.created_at
-        FROM  request_storage rs,maintenance_type mt, users u,solution s
-        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id and s.id=rs.solution_id;
+        FROM      request_storage rs
+JOIN 
+    maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    request_status rstt ON rs.status_id = rstt.id
+JOIN 
+    users u ON rs.petitioner_id = u.id
+LEFT JOIN 
+    solution s ON s.id=rs.solution_id
+        WHERE rs.id=${id};
 `
       );
 
@@ -80,8 +106,9 @@ module.exports = {
         u.phone_number AS p_phone_number,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
         mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.affiliated_department AS r_affiliated_department,
         u2.phone_number AS r_phone_number ,u2.position AS r_position ,u.email AS r_email
-        FROM  request_storage rs,maintenance_type mt, users u,solution s,request_status rstt, (SELECT * FROM users) AS u2
-        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id AND s.id=rs.solution_id AND rs.status_id=rstt.id AND u2.id=rs.recipient_id;`
+        FROM  request_storage rs LEFT JOIN 
+    solution s ON s.id=rs.solution_id,maintenance_type mt, users u,request_status rstt,  users AS u2
+        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id AND rs.status_id=rstt.id AND u2.id=rs.recipient_id;`
       );
 
       return result[0] ? result[0] : {};
@@ -137,7 +164,6 @@ module.exports = {
   // ///status_complete
   // update inforUser
   updateUserInfor: async (data, user_id) => {
-    console.log("Model");
     try {
       console.log(data);
       let result;
@@ -183,6 +209,76 @@ module.exports = {
       return result;
     } catch (error) {
       console.log("error model UpdateUserInfor:", error);
+      return false;
+    }
+  },
+  registerRequest: async (data) => {
+    try {
+      // console.log(data);
+      result = await pool.query(
+        `insert into request_storage(title_request,content_request,maintenance_id,petitioner_id) values (?,?,?,?);`,
+        [
+          data.title_request,
+          data.content_request,
+          data.maintenance_id,
+          data.petitioner_id,
+        ]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model registerRequest:", error);
+      return false;
+    }
+  },
+  addRequestFile: async (request_id, filename) => {
+    try {
+      result = await pool.query(
+        `insert into request_file(request_id,file_address) values (?,?);`,
+        [request_id, filename]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model addRequestFile:", error);
+      return false;
+    }
+  },
+  updateRequest: async (request_id, data) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+          title_request="${data.title_request}",
+          content_request= "${data.content_request}",
+          maintenance_id= "${data.maintenance_id}"
+          where id="${request_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model UpdateRequest:", error);
+      return false;
+    }
+  },
+  deleteFile: async (filename) => {
+    try {
+      result = await pool.query(
+        "DELETE FROM request_file WHERE file_address= ?",
+        [filename]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Deletefile in Request:", error);
+      return false;
+    }
+  },
+  getAllFileByRequest: async (request_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT id, file_address FROM request_file WHERE request_id=${request_id};`
+      );
+
+      return result ? result : [];
+    } catch (error) {
+      console.log("error model getAllFileByRequest:", error);
       return false;
     }
   },

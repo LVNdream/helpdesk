@@ -35,14 +35,32 @@ class midService {
       };
     }
   }
-  deleteFiles(files) {
+  deleteFiles(files, directory) {
     try {
       return new Promise((resolve, reject) => {
         files.forEach((file) => {
-          fs.unlink("./src/public/files/" + file.filename, (err) => {
+          fs.unlink(`./src/public/${directory}/` + file.filename, (err) => {
             if (err) reject(err);
           });
         });
+        resolve(true);
+      });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Error delete file",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+  deleteFile(file, directory) {
+    try {
+      return new Promise((resolve, reject) => {
+        fs.unlink(`./src/public/${directory}/` + file, (err) => {
+          if (err) reject(err);
+        });
+
         resolve(true);
       });
     } catch (error) {
@@ -58,7 +76,7 @@ class midService {
     try {
       return new Promise((resolve, reject) => {
         files.forEach((file) => {
-          fsp.rename(
+          fs.rename(
             "./src/public/temps/" + file.filename,
             "./src/public/files/" + file.filename,
             (err) => {
@@ -80,9 +98,8 @@ class midService {
   removeAllfile(directory) {
     fs.readdir(directory, (err, files) => {
       if (err) throw err;
-
       for (const file of files) {
-        fs.unlink("./src/public/temps/" + file.filename, (err) => {
+        fs.unlink("./src/public/temps/" + file, (err) => {
           if (err) throw err;
         });
       }

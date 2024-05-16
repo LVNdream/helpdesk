@@ -18,6 +18,7 @@ module.exports = {
           data.role_id,
         ]
       );
+      // console.log(result)
       if (result) {
         return { message: "Registered Successfully", status: true };
       }

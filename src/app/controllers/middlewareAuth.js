@@ -24,7 +24,7 @@ const middlewareAuth = {
         next();
       });
     } catch (error) {
-      console.log("rrororo",error);
+      console.log("rrororo", error);
       return res.status(200).json({
         message: "Error server verifyAuthentication ",
         status: false,
@@ -49,7 +49,7 @@ const middlewareAuth = {
   verifyLoginAdmin: async (req, res, next) => {
     const user = await authModel.findAccountById(req.body.id);
 
-    if (user.role_id == 1) {
+    if (user.role_id == 3) {
       return next();
     } else {
       res

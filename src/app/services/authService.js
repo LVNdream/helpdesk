@@ -25,6 +25,7 @@ class authService {
           };
           const resultRegister = await authModel.register(dataRegister);
 
+
           return resultRegister
             ? resultRegister
             : { message: "Registered fail", status: false, error: 501 };
