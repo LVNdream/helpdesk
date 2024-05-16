@@ -5,6 +5,9 @@ var bodyParser = require("body-parser");
 const path = require("path");
 require("dotenv").config();
 const port = process.env.port;
+const schedule = require("node-schedule");
+const cron = require("node-cron");
+
 
 const app = express();
 //test database
@@ -14,6 +17,16 @@ app.use(
     extended: true,
   })
 );
+app.use(
+  express.text({
+    extended: true,
+  })
+);
+// /////////Static file
+app.use(express.static(path.join(__dirname, "src/public")));
+
+
+// /////////
 app.use(bodyParser.json());
 app.use(
   cors({
@@ -22,7 +35,8 @@ app.use(
   })
 );
 
-app.use((rq, res, next) => {
+
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "http://192.168.1.3:3000");
   next();
 });
@@ -33,3 +47,12 @@ router(app);
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+const job = schedule.scheduleJob("* * * * * 0", function () {
+  console.log("The answer to life, the universe, and everything!");
+});
+// cron.schedule("*/5 * * * * *", () => {
+//   console.log("running every minute 1, 2, 4 and 5");
+// });
+// console.log();
+// /////// Len lich chayj ham

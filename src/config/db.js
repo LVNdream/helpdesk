@@ -6,7 +6,7 @@ module.exports = {
     database: process.env.DB_DATABASE_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    connectionLimit: 5,
+    connectionLimit: 10,
   }),
 };
 

@@ -32,7 +32,7 @@ module.exports = {
     try {
       const result = await pool.query(`select * from users where id="${id}" `);
       if (result[0]) {
-        return { message: "ID have existed", status: false };
+        return { message: "ID have existed", status: false, error: 201 };
       } else {
         return { message: "ID valid", status: true };
       }
@@ -45,11 +45,10 @@ module.exports = {
   findAccountById: async (id) => {
     try {
       const result = await pool.query(`select * from users where id=${id} `);
-
-      return { data: result[0], status: true };
+      return result[0] ? result[0] : {};
     } catch (error) {
       console.log("error model find ID:", error);
-      return { message: "Error model find account by ID", status: false };
+      return false;
     }
   },
 
@@ -64,13 +63,23 @@ module.exports = {
       );
       if (result[0]) {
         return { data: result[0], status: true };
-      }
-      else {
+      } else {
         return { data: result[0], status: true };
       }
     } catch (error) {
       console.log("error model find ID:", error);
-      return { message: "Error model find ID", status: false };
+      return { message: "Error model find ID", status: false, error: 501 };
+    }
+  },
+  updateFirstLogin: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `update users set first_login=1 where id=${user_id} `
+      );
+      return result;
+    } catch (error) {
+      console.log("error model updateFirstlogin:", error);
+      return false;
     }
   },
 };
