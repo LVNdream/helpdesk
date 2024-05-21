@@ -2,7 +2,43 @@ const { pool } = require("../../config/db");
 const bcrypt = require("bcryptjs");
 
 module.exports = {
-  getRequestList: async (id) => {
+  getRequestList: async (petitioner_id, page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      const result = await pool.query(
+        `SELECT DISTINCT
+    rs.id,
+    rs.title_request,
+    mt.type_name,
+    rs.status_id,
+    users.name AS petitioner,
+    users2.name AS recipient,
+    rs.created_at,
+    rs.completion_date,
+    mth.method_name
+  
+FROM 
+    request_storage rs
+JOIN 
+    maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    request_status rstt ON rs.status_id = rstt.id
+JOIN 
+    users ON rs.petitioner_id = users.id
+LEFT JOIN 
+    users AS users2 ON rs.recipient_id = users2.id,
+    method mth
+WHERE 
+    rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getRequestList:", error);
+      return false;
+    }
+  },
+  getRequestJustRegister: async (petitioner_id, request_id) => {
     try {
       const result = await pool.query(
         `SELECT DISTINCT 
@@ -25,10 +61,10 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id
 WHERE 
-    rs.petitioner_id = ${id};`
+    rs.petitioner_id = ${petitioner_id} and rs.id = ${request_id} ;`
       );
 
-      return result;
+      return result[0] ? result[0] : {};
     } catch (error) {
       console.log("error model getRequestList:", error);
       return false;
@@ -39,9 +75,20 @@ WHERE
       const result = await pool.query(
         `SELECT status_id FROM request_storage  WHERE request_storage.id=${id};`
       );
-      return result[0].status_id ? result[0].status_id : undefined;
+      return result[0] ? result[0].status_id : undefined;
     } catch (error) {
       console.log("error model getIdStatusByRequest:", error);
+      return false;
+    }
+  },
+  getRequestById: async (id) => {
+    try {
+      const result = await pool.query(
+        `SELECT * FROM request_storage  WHERE request_storage.id=${id};`
+      );
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model get request by ID:", error);
       return false;
     }
   },
@@ -60,28 +107,15 @@ WHERE
     }
   },
 
-  // getRequestRegister: async (id) => {
-  //   try {
-  //     const result = await pool.query(
-  //       `SELECT rs.id, rs.title_request,rs.content_request,method.method_name,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,u.position,u.email,rs.created_at
-  //       FROM  request_storage rs,maintenance_type mt, users u, method
-  //       WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id and method.id=rs.method_id;`
-  //     );
-
-  //     return result[0] ? result[0] : {};
-  //   } catch (error) {
-  //     console.log("error model getRequestRegister:", error);
-  //     return false;
-  //   }
-  // },
-  // status_confirm
   getRequestConfirm_Register: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,u.position,u.email,s.solution_name,rs.created_at
+        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
         FROM      request_storage rs
 JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    method mth ON rs.method_id = mth.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
 JOIN 
@@ -102,11 +136,14 @@ LEFT JOIN
   getRequestCompleted: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.id, rs.title_request,rs.content_request,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
-        u.phone_number AS p_phone_number,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
+        `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
+        u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
         mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.affiliated_department AS r_affiliated_department,
         u2.phone_number AS r_phone_number ,u2.position AS r_position ,u.email AS r_email
-        FROM  request_storage rs LEFT JOIN 
+        FROM  request_storage rs
+         JOIN
+    method mth ON rs.method_id = mth.id
+     LEFT JOIN
     solution s ON s.id=rs.solution_id,maintenance_type mt, users u,request_status rstt,  users AS u2
         WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id AND rs.status_id=rstt.id AND u2.id=rs.recipient_id;`
       );
@@ -118,7 +155,6 @@ LEFT JOIN
     }
   },
 
-  // status_processing
   // getRequestProcessing: async (id) => {
   //   try {
   //     const result = await pool.query(
@@ -140,7 +176,7 @@ LEFT JOIN
   getMaintenanceClassId: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT id,name,group_m FROM maintenance_class WHERE maintenance_id=${id};`
+        `SELECT mc.id as mc_id,lb.id as label_id,lb.label_name,group_m FROM maintenance_class mc ,list_label lb WHERE mc.maintenance_id=${id} and lb.id=mc.list_label_id;`
       );
 
       return result ? result : [];
@@ -203,7 +239,7 @@ LEFT JOIN
   getAllProblemByRequest_id: async (request_id) => {
     try {
       result = await pool.query(
-        `select id, problem from list_problem
+        `select id, problem, created_at from list_problem
           where request_id="${request_id}";`
       );
       return result;
@@ -279,6 +315,29 @@ LEFT JOIN
       return result ? result : [];
     } catch (error) {
       console.log("error model getAllFileByRequest:", error);
+      return false;
+    }
+  },
+  deleteRequest: async (user_id, request_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM request_storage WHERE petitioner_id= "${user_id}" and id="${request_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Delete request in Request storage:", error);
+      return false;
+    }
+  },
+
+  getUserInfor: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,position,phone_number,tel_number FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
+      );
+      return result[0];
+    } catch (error) {
+      console.log("error model get user infor:", error);
       return false;
     }
   },

@@ -3,12 +3,16 @@ const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
 
 class userPageService {
-  async getRequestList(data) {
+  async getRequestList(data, page) {
     try {
-      const resutl = await userPageModel.getRequestList(data.id);
+      const resutl = await userPageModel.getRequestList(data.id, page);
+      // console.log(resutl)
+      const requestCount = resutl.reduce((accumulator, element) => {
+        return accumulator + 1;
+      }, 0);
 
       return resutl
-        ? resutl
+        ? { data: resutl, requestCount }
         : { message: "Error model getRequestList", status: false, error: 501 };
     } catch (error) {
       console.log(error);
@@ -53,7 +57,26 @@ class userPageService {
         }
         return resutlConfirm_Register
           ? {
-              ...resutlConfirm_Register,
+              recipient_id: resutlConfirm_Register.recipient_id,
+              id: resutlConfirm_Register.id,
+              title_request: resutlConfirm_Register.title_request,
+              content_request: resutlConfirm_Register.content_request,
+              maintenance_id: resutlConfirm_Register.maintenance_id,
+
+              method_name: resutlConfirm_Register.method_name,
+
+              solution_name: resutlConfirm_Register.solution_name,
+              created_at: resutlConfirm_Register.created_at,
+              infor_petitioner: {
+                user_id: resutlConfirm_Register.user_id,
+                name: resutlConfirm_Register.name,
+                affiliated_department:
+                  resutlConfirm_Register.affiliated_department,
+                phone_number: resutlConfirm_Register.phone_number,
+                position: resutlConfirm_Register.position,
+                email: resutlConfirm_Register.email,
+              },
+
               MT_Register,
               status_id,
               listProblem_RQ,
@@ -99,33 +122,25 @@ class userPageService {
             const maintenanceClass = resutlMainClass.map((itemMC) => {
               let checked = false;
               resutlProcessingDetail.forEach((itemPD) => {
-                if (itemMC.id == itemPD.class_id) {
+                if (itemMC.label_id == itemPD.label_id) {
                   checked = true;
                 }
               });
-              return { ...itemMC, checked };
+              return {
+                mc_id: itemMC.mc_id,
+
+                label_name: itemMC.label_name,
+                group_m: itemMC.group_m,
+                checked,
+              };
             });
             if (item.id == 1) {
-              const maintenanceClass_HW = maintenanceClass.filter((itemMC) => {
-                return itemMC.group_m == 1;
-              });
-              const maintenanceClass_SW = maintenanceClass.filter((itemMC) => {
-                return itemMC.group_m == 2;
-              });
-              return {
-                ...item,
-                maintenanceClass: [
-                  { group_m: 1, name: "HardWare", maintenanceClass_HW },
-                  { group_m: 2, name: "SoftWare", maintenanceClass_SW },
-                ],
-              };
-            } else if (item.id == 2) {
-              const maintenanceClass_HareDrive = maintenanceClass.filter(
+              const maintenanceClass_class1 = maintenanceClass.filter(
                 (itemMC) => {
                   return itemMC.group_m == 1;
                 }
               );
-              const maintenanceClass_GeneralMain = maintenanceClass.filter(
+              const maintenanceClass_class2 = maintenanceClass.filter(
                 (itemMC) => {
                   return itemMC.group_m == 2;
                 }
@@ -133,11 +148,28 @@ class userPageService {
               return {
                 ...item,
                 maintenanceClass: [
-                  { group_m: 1, name: "HardDive", maintenanceClass_HareDrive },
+                  { name: "H/W", data: maintenanceClass_class1 },
+                  { name: "S/W", data: maintenanceClass_class2 },
+                ],
+              };
+            } else if (item.id == 2) {
+              const maintenanceClass_class1 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 1;
+                }
+              );
+              const maintenanceClass_class2 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 2;
+                }
+              );
+              return {
+                ...item,
+                maintenanceClass: [
+                  { name: "전산부분", data: maintenanceClass_class1 },
                   {
-                    group_m: 2,
-                    name: "GeneralMain",
-                    maintenanceClass_GeneralMain,
+                    name: "일반부분",
+                    data: maintenanceClass_class2,
                   },
                 ],
               };
@@ -171,26 +203,29 @@ class userPageService {
               processing_content_problem:
                 resutlComplete_AddProblem.processing_content_problem,
               solution_name: resutlComplete_AddProblem.solution_name,
+              method_name: resutlComplete_AddProblem.method_name,
+
               infor_petitioner: {
-                p_id: resutlComplete_AddProblem.petitioner_id,
-                p_name: resutlComplete_AddProblem.p_name,
-                p_affiliated_department:
+                user_id: resutlComplete_AddProblem.petitioner_id,
+                name: resutlComplete_AddProblem.p_name,
+                affiliated_department:
                   resutlComplete_AddProblem.p_affiliated_department,
-                p_phone_number: resutlComplete_AddProblem.p_phone_number,
-                p_position: resutlComplete_AddProblem.p_position,
-                p_email: resutlComplete_AddProblem.p_email,
+                phone_number: resutlComplete_AddProblem.p_phone_number,
+                position: resutlComplete_AddProblem.p_position,
+                email: resutlComplete_AddProblem.p_email,
               },
               infor_recipient: {
-                r_id: resutlComplete_AddProblem.r_id,
-                r_name: resutlComplete_AddProblem.r_name,
-                r_affiliated_department:
+                user_id: resutlComplete_AddProblem.r_id,
+                name: resutlComplete_AddProblem.r_name,
+                affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
-                r_phone_number: resutlComplete_AddProblem.r_phone_number,
-                r_position: resutlComplete_AddProblem.r_position,
-                r_email: resutlComplete_AddProblem.r_email,
+                phone_number: resutlComplete_AddProblem.r_phone_number,
+                position: resutlComplete_AddProblem.r_position,
+                email: resutlComplete_AddProblem.r_email,
               },
               MT_Register: final_MT,
               status_id,
+              status_name: resutlComplete_AddProblem.status_name,
               listProblem_RQ,
               files,
             }
@@ -200,156 +235,6 @@ class userPageService {
               error: 501,
             };
       }
-      // switch (status_id) {
-      //   // case 1:
-      //   //   console.log("13jjjj1231");
-      //   //   const resutlRegister = await userPageModel.getRequestRegister(id);
-
-      //   //   const MT_Register = await midService.getMaintenanceType_checked(
-      //   //     resutlRegister.maintenance_id
-      //   //   );
-
-      //   //   delete resutlRegister.maintenance_id;
-      //   //   return resutlRegister
-      //   //     ? {
-      //   //         ...resutlRegister,
-      //   //         MT_Register,
-      //   //         status_id: status_id,
-      //   //       }
-      //   //     : {
-      //   //         message: "Error model getRequestRegister",
-      //   //         status: false,
-      //   //         error: 500,
-      //   //       };
-      //   // case 0:
-      //   //   const resutlConfirm = await userPageModel.getRequestConfirm(id);
-      //   //   const MT_Confirm = await midService.getMaintenanceType_checked(
-      //   //     resutlConfirm.maintenance_id
-      //   //   );
-      //   //   const listProblem_RQ_register =
-      //   //     await userPageModel.getAllProblemByRequest_id(resutlConfirm.id);
-      //   //   delete resutlConfirm.maintenance_id;
-      //   //   return resutlConfirm
-      //   //     ? {
-      //   //         ...resutlConfirm,
-      //   //         MT_Confirm,
-      //   //         listProblem: listProblem_RQ_register,
-
-      //   //         status_id: resutlConfirm.status_id,
-      //   //       }
-      //   //     : {
-      //   //         message: "Error model getRequestConfirm",
-      //   //         status: false,
-      //   //         error: 500,
-      //   //       };
-
-      //   // case 3:
-      //   //   const resutlProcessing = await userPageModel.getRequestProcessing(id);
-      //   //   if (!resutlProcessing) {
-      //   //     return {
-      //   //       message: "Request detail status processing not found",
-      //   //       status: false,
-      //   //       error: 404,
-      //   //     };
-      //   //   }
-      //   //   const listProblem_RQ_processing =
-      //   //     await userPageModel.getAllProblemByRequest_id(resutlProcessing.id);
-      //   //   //
-
-      //   //   const MT_processing = await midService.getMaintenanceType_checked(
-      //   //     resutlProcessing.maintenance_id
-      //   //   );
-      //   //   console.log(resutlProcessing.maintenance_id);
-
-      //   //   if (resutlProcessing.maintenace_id && resutlProcessing.id) {
-      //   //     const resutlMainClass = await userPageModel.getMaintenanceClassId(
-      //   //       resutlProcessing.maintenace_id
-      //   //     );
-
-      //   //     const resutlProcessingDetail =
-      //   //       await userPageModel.getMaintenanceClassRequest(
-      //   //         resutlProcessing.id
-      //   //       );
-      //   //     if (!resutlMainClass) {
-      //   //       return {
-      //   //         message: "Mainclass not found",
-      //   //         status: false,
-      //   //         error: 404,
-      //   //       };
-      //   //     }
-      //   //     if (!resutlProcessingDetail) {
-      //   //       return {
-      //   //         message: "ProcessingDetail not found",
-      //   //         status: false,
-      //   //         error: 404,
-      //   //       };
-      //   //     }
-      //   //     const maintenanceClass = resutlMainClass.map((itemMC) => {
-      //   //       let checked = false;
-      //   //       resutlProcessingDetail.forEach((itemPD) => {
-      //   //         if (itemMC.id == itemPD.class_id) {
-      //   //           checked = true;
-      //   //         }
-      //   //       });
-      //   //       return { ...itemMC, checked };
-      //   //     });
-      //   //     const finalResutl = {
-      //   //       ...resutlProcessing,
-      //   //       listProblem: listProblem_RQ_processing,
-      //   //       maintenanceClass,
-      //   //     };
-      //   //     return finalResutl;
-      //   //   }
-      //   // case 4:
-      //   //   const resutlCompleted = await userPageModel.getRequestCompleted(id);
-      //   //   if (!resutlCompleted) {
-      //   //     return {
-      //   //       message: "Error server get request_complete detail",
-      //   //       status: false,
-      //   //       error: 500,
-      //   //     };
-      //   //   }
-      //   //   if (resutlCompleted.maintenace_id && resutlCompleted.id) {
-      //   //     const resutlMainClass = await userPageModel.getMaintenanceClassId(
-      //   //       resutlCompleted.maintenace_id
-      //   //     );
-
-      //   //     const resutlProcessingDetail =
-      //   //       await userPageModel.getMaintenanceClassRequest(
-      //   //         resutlCompleted.id
-      //   //       );
-      //   //     if (!resutlMainClass) {
-      //   //       return {
-      //   //         message: "Mainclass not found",
-      //   //         status: false,
-      //   //         error: 404,
-      //   //       };
-      //   //     }
-      //   //     if (!resutlProcessingDetail) {
-      //   //       return {
-      //   //         message: "ProcessingDetail not found",
-      //   //         status: false,
-      //   //         error: 404,
-      //   //       };
-      //   //     }
-      //   //     const maintenanceClass = resutlMainClass.map((itemMC) => {
-      //   //       let checked = false;
-      //   //       resutlProcessingDetail.forEach((itemPD) => {
-      //   //         if (itemMC.id == itemPD.class_id) {
-      //   //           checked = true;
-      //   //         }
-      //   //       });
-      //   //       return { ...itemMC, checked };
-      //   //     });
-      //   //     const finalResutl = {
-      //   //       ...resutlCompleted,
-      //   //       maintenanceClass,
-      //   //     };
-      //   //     return finalResutl;
-      //   //   }
-      //   default:
-      //     break;
-      // }
     } catch (error) {
       console.log(error);
       return { message: "Server error GetRequestDetail Sevice", status: false };
@@ -452,10 +337,15 @@ class userPageService {
           error: 501,
         };
       }
+      const dataAdd = await userPageModel.getRequestJustRegister(
+        data.petitioner_id,
+        request_id
+      );
       return {
         message: "Add request successfully",
         status: true,
         error: 200,
+        data: dataAdd,
       };
     } catch (error) {
       console.log(error);
@@ -499,7 +389,7 @@ class userPageService {
       if (listDelete > 0) {
         for (let i = 0; i < listDelete; i++) {
           const file = arrayDelete[i];
-          console.log(file);
+          // console.log(file);
           const resutlDB = await userPageModel.deleteFile(file);
           if (!resutlDB) {
             return {
@@ -555,6 +445,110 @@ class userPageService {
         message: "Server error Update Request Sevice",
         status: false,
         error: 501,
+      };
+    }
+  }
+
+  async deleteRequest(user_id, request_id) {
+    try {
+      const status_id = await userPageModel.getIdStatusByRequest(request_id);
+
+      if (!status_id) {
+        return {
+          message:
+            "Server error get status_id by request model or reqeusr_id not exist",
+          status: false,
+          error: 501,
+        };
+      }
+      const resutlRequest = await userPageModel.getRequestById(request_id);
+      // console.log(resutlRequest);
+      if (!resutlRequest) {
+        return {
+          message: "Server error get request by id model",
+          status: false,
+          error: 501,
+        };
+      }
+
+      if (status_id > 2) {
+        return {
+          message: "Status id  in valid",
+          status: false,
+          error: 400,
+        };
+      }
+      if (resutlRequest.petitioner_id != user_id) {
+        return {
+          message: "You not own request",
+          status: false,
+          error: 401,
+        };
+      }
+
+      // xoa file
+      let files = await userPageModel.getAllFileByRequest(request_id);
+      files = files.map((file) => {
+        return file.file_address;
+      });
+
+      const filesLength = files.length;
+
+      if (filesLength > 0) {
+        for (let i = 0; i < filesLength; i++) {
+          const file = files[i];
+          console.log(file);
+          const resutlDB = await userPageModel.deleteFile(file);
+          if (!resutlDB) {
+            return {
+              message: "Server error Delete File Model",
+              status: false,
+              error: 501,
+            };
+          }
+          const resultDeleleSever = await midService.deleteFile(file, "files");
+          if (!resultDeleleSever) {
+            return {
+              message: "Server error Delete one File midService",
+              status: false,
+              error: 501,
+            };
+          }
+        }
+      }
+
+      // xoa request
+      const resutl = await userPageModel.deleteRequest(user_id, request_id);
+
+      return resutl
+        ? { messsage: "Deleted Success!", status: true }
+        : {
+            messsage: "Delete Fail!, Error model delete",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete Sevice",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+  async getUserInfor(user_id) {
+    try {
+      const resutl = await userPageModel.getUserInfor(user_id);
+
+      return resutl
+        ? resutl
+        : { message: "Error model getUserInfor", status: false, error: 501 };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getUserInfor Sevice",
+        status: false,
+        error: 500,
       };
     }
   }

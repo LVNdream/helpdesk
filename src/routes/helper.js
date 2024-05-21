@@ -21,10 +21,66 @@ var upload = multer({ storage: storage });
 
 router.get(
   "/getrequestlist",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenHelperAuth,
   helperController.getRequestList
 );
+router.post(
+  "/acceptrequest",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.acceptRequest
+);
 
+// thay doi trang thai
+router.get(
+  "/savestatus-processing/:request_id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.saveStatusProcessing
+);
+// cap nhat problem
+router.post(
+  "/addproblems",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.addProblems
+);
+router.post(
+  "/updateproblem",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.updateProblem
+);
+router.post(
+  "/deleteproblem",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.deleteProblem
+);
 
+// getAllFile
+router.get(
+  "/getfiles/:request_id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getFiles
+);
+
+router.post(
+  "/verifycompleted",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.verifyCompleted
+);
+router.get(
+  "/getinforcompleted",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getInforComplted
+);
+router.get(
+  "/getalluser",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getAllUser
+);
+
+router.post(
+  "/registerrequest/completed",
+  middlewareAuth.verifyToKenHelperAuth,
+  upload.any(),
+  helperController.addRequestComplete
+);
 
 module.exports = router;

@@ -5,9 +5,16 @@ const fsp = require("fs").promises;
 class userController {
   async getRequestList(req, res) {
     try {
-      const result = await userPageService.getRequestList(req.user);
+      let page;
+      if (!req.query.page || !Number(req.query.page)) {
+        page = 1;
+      } else {
+        page = req.query.page;
+      }
 
-      res.status(200).json(result);
+      const result = await userPageService.getRequestList(req.user, page);
+// console.log(result)
+      return res.status(200).json(result);
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");
@@ -90,6 +97,28 @@ class userController {
     } catch (error) {
       console.log(error);
       res.status(501).json("Server error");
+    }
+  }
+  async deleteRequest(req, res) {
+    try {
+      const result = await userPageService.deleteRequest(
+        req.user.id,
+        req.body.request_id
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(501).json("Server error");
+    }
+  }
+  async getUserInfor(req, res) {
+    try {
+      const result = await userPageService.getUserInfor(req.user.id);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
     }
   }
 }

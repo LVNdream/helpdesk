@@ -1,0 +1,94 @@
+-------post: http://192.168.1.10:8080/auth/register/ => đăng kí người dùng
+body :{
+    "id": "2410",
+    "name": "nhutleviet",
+    "password": "24102001",
+    "email":"lvnhut2410@gmail.com",
+    "tel_number":"0123456789",
+    "phone_number":"0123456789",
+    "position":"inter",
+    "affiliated_department":"nhutnhut"
+}
+
+
+
+
+-------post: http://192.168.1.10:8080/auth/login/ => userLogin
+body:{
+    "id": 9,
+    "password": "user2"
+}
+
+
+
+
+-------post: http://192.168.1.10:8080/auth/getbackid/ => Lấy lại ID User =>
+body:{
+    "name":"nhutle",
+    "email":"lvnhut2410@gmail.com",
+    "position":"inter",
+    "phone_number":"0123456789"
+}
+
+
+-------post: http://192.168.1.10:8080/auth/checkid ->kiểm tra ID  ->
+body:{
+    "id":2410222
+}
+
+
+
+-------post: http://192.168.1.10:8080/auth/loginadmin ->đăng nhập với admin ->
+body:{
+    
+    "id":2,
+    "password":"admin"
+}
+
+
+-------post: http://192.168.1.10:8080/auth/verifypassword ->xác nhận password để update user infor-> 
+body:{"password":"user1"}
+headers:{
+authorization Bearer token
+}
+
+
+
+
+-------post: http://192.168.1.10:8080/user/update/userinfor ->dùng để cập nhật thông tin user ->
+body:{
+    "password": "",
+    "name": "123 le viet nhut 123",
+    "affiliated_department": "Engineer IT",
+    "position": "Back end",
+    "phone_number": "7410258963",
+    "tel_number": "0123654987",
+    "email": "lnhut@gmail.com"
+}
+headers:{
+authorization Bearer token
+}
+
+/////////////////////////////////////USER
+-------get: http://192.168.1.10:8080/user/getrequestlist ->lay danh sach cac request cua ng dung ->
+headers:{
+authorization Bearer token
+}
+
+-------get: http://192.168.1.10:8080/user/getrequestdetail/:id ->lay danh sach cac requestdetail cua ng dung ->
+headers:{
+authorization Bearer token
+}
+
+
+--------get:http://192.168.1.10:8080/user/register-request/ -> tra ve thong tin cho nguoi dang ki
+headers:{
+authorization Bearer token
+}
+
+--------post:http://192.168.1.10:8080/user/register-request -> nguoi dung dang ki request
+
+headers:{
+authorization Bearer token
+}
+body: hinh o zalo

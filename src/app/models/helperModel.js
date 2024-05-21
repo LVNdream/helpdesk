@@ -1,8 +1,9 @@
 const { pool } = require("../../config/db");
 
 module.exports = {
-  getRequestListByHelper: async (role_id) => {
+  getRequestListByHelper: async (role_id, recipient_id, page) => {
     try {
+      const numberPage = (page - 1) * 10;
       const result = await pool.query(
         `SELECT DISTINCT 
     rs.id,
@@ -12,7 +13,7 @@ module.exports = {
     users.name AS petitioner,
     users2.name AS recipient,
     rs.created_at,
-    rs.completion_date 
+    rs.completion_date ,mth.method_name
 FROM 
     request_storage rs
 JOIN 
@@ -22,14 +23,192 @@ JOIN
 JOIN 
     users ON rs.petitioner_id = users.id
 LEFT JOIN 
-    users AS users2 ON rs.recipient_id = users2.id
+    users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-    rs.maintenance_id = ${role_id};`
+    rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
       );
 
       return result;
     } catch (error) {
       console.log("error model getRequestListByHelper :", error);
+      return false;
+    }
+  },
+  updateStatus_id: async (request_id, status_id) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+          status_id="${status_id}"
+          where id="${request_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model Update request Status_id:", error);
+      return false;
+    }
+  },
+  updateRecipient_id: async (request_id, recipient_id) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+          recipient_id="${recipient_id}"
+          where id="${request_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model Update  request recipient_id:", error);
+      return false;
+    }
+  },
+
+  addListProblem: async (request_id, problem) => {
+    try {
+      // console.log(data);
+      result = await pool.query(
+        `insert into list_problem(request_id,problem) values (?,?);`,
+        [request_id, problem]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model registerRequest:", error);
+      return false;
+    }
+  },
+  //upadte problem
+  updateProblem: async (problem_id, problem) => {
+    try {
+      result = await pool.query(
+        `update list_problem set
+          problem="${problem}"
+          where id="${problem_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model Update  request problem:", error);
+      return false;
+    }
+  },
+  // xao mot van de
+  deleteProblem: async (problem_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM list_problem WHERE id="${problem_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Delete problem in list problem:", error);
+      return false;
+    }
+  },
+
+  addProcessingDetail: async (request_id, label_id) => {
+    try {
+      // console.log(data);
+      result = await pool.query(
+        `insert into processing_details(request_id,label_id) values (?,?);`,
+        [request_id, label_id]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model add ProcessingDetail:", error);
+      return false;
+    }
+  },
+  addDataTocompleted: async (request_id, data) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+        processing_content_problem = "${data.processing_content_problem}",
+        solution_id = ${data.solution_id},
+        completion_date = CURRENT_TIMESTAMP(),
+        status_id = ${data.status_id}
+        where id=${request_id};`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model add ProcessingDetail:", error);
+      return false;
+    }
+  },
+  getMaintenanceType: async () => {
+    try {
+      result = await pool.query(`select id,type_name from maintenance_type`);
+      return result;
+    } catch (error) {
+      console.log("error model get maintenance:", error);
+      return false;
+    }
+  },
+  getMethod: async () => {
+    try {
+      result = await pool.query(`select id,method_name from method`);
+      return result;
+    } catch (error) {
+      console.log("error model get method:", error);
+      return false;
+    }
+  },
+  getSolution: async () => {
+    try {
+      result = await pool.query(`select id,solution_name from solution`);
+      return result;
+    } catch (error) {
+      console.log("error model get solution:", error);
+      return false;
+    }
+  },
+  getStatus: async () => {
+    try {
+      result = await pool.query(`select id,status_name from request_status`);
+      return result;
+    } catch (error) {
+      console.log("error model get status:", error);
+      return false;
+    }
+  },
+  getAllUser: async () => {
+    try {
+      result = await pool.query(
+        `select id,name,position,affiliated_department,phone_number,email from users where role_id=0`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model get all user:", error);
+      return false;
+    }
+  },
+
+  addRequestCompelted: async (data) => {
+    try {
+      // console.log(data);
+      result = await pool.query(
+        `insert request_storage(
+        title_request,
+        content_request,
+        maintenance_id,
+        petitioner_id,
+        recipient_id,
+        solution_id,
+        status_id,
+        processing_content_problem,
+        completion_date) values (?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP());`,
+        [
+          data.title_request,
+          data.content_request,
+          data.maintenance_id,
+          data.petitioner_id,
+          data.recipient_id,
+          data.solution_id,
+          data.status_id,
+          data.processing_content_problem,
+        ]
+      );
+      return result;
+    } catch (error) {
+      console.log("error model registerRequestCompleted:", error);
       return false;
     }
   },

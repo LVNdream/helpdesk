@@ -52,5 +52,15 @@ router.post(
   upload.any(),
   userController.updateRegisterRequest
 );
+router.post(
+  "/delete-request",
+  middlewareAuth.verifyAuthentication,
+  userController.deleteRequest
+);
+router.get(
+  "/getuserinfor",
+  middlewareAuth.verifyAuthentication,
+  userController.getUserInfor
+);
 
 module.exports = router;
