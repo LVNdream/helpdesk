@@ -24,6 +24,11 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getRequestList
 );
+router.get(
+  "/getrequestlist/search",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getRequestListSearch
+);
 router.post(
   "/acceptrequest",
   middlewareAuth.verifyToKenHelperAuth,

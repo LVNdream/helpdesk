@@ -21,6 +21,29 @@ class helperController {
     }
   }
 
+  async getRequestListSearch(req, res) {
+    try {
+      let page;
+      if (!req.query.page || !Number(req.query.page)) {
+        page = 1;
+      } else {
+        page = req.query.page;
+      }
+      const result = await helperService.getRequestListBySearch(
+        req.user.id,
+        req.user.role_id,
+        req.body.option,
+        req.body.text,
+        req.body.status_id,
+        page
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async acceptRequest(req, res) {
     try {
       const result = await helperService.acceptRequest(

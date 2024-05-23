@@ -13,8 +13,30 @@ class userController {
       }
 
       const result = await userPageService.getRequestList(req.user, page);
-// console.log(result)
+      // console.log(result)
       return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async getRequestListSearch(req, res) {
+    try {
+      let page;
+      if (!req.query.page || !Number(req.query.page)) {
+        page = 1;
+      } else {
+        page = req.query.page;
+      }
+      const result = await userPageService.getRequestListBySearch(
+        req.user.id,
+        req.body.option,
+        req.body.text,
+        req.body.status_id,
+        page
+      );
+      res.status(200).json(result);
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");
@@ -121,5 +143,18 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  async getStatus(req, res) {
+    try {
+      const result = await userPageService.getStatus();
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  
 }
 module.exports = new userController();

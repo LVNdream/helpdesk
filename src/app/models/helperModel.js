@@ -34,6 +34,119 @@ WHERE
       return false;
     }
   },
+
+  requestListBySearchText: async (
+    recipient_id,
+    role_id,
+    option,
+    text,
+    status_id,
+    page
+  ) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      let resutlSearch = await pool.query(
+        `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,
+            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+            FROM 
+                request_storage rs
+            JOIN 
+                maintenance_type mt ON rs.maintenance_id = mt.id
+            JOIN 
+                request_status rstt ON rs.status_id = rstt.id
+            JOIN 
+                users ON rs.petitioner_id = users.id
+            LEFT JOIN 
+                 users AS users2 ON rs.recipient_id = users2.id, method mth
+                 
+            WHERE 
+              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id})  and mth.id=rs.method_id ORDER BY rs.id asc  LIMIT 10 OFFSET ${numberPage};`
+      );
+
+      if (status_id && Number(status_id) && !text) {
+        const result = await pool.query(
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,
+            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+            FROM 
+                request_storage rs
+            JOIN 
+                maintenance_type mt ON rs.maintenance_id = mt.id
+            JOIN 
+                request_status rstt ON rs.status_id = rstt.id
+            JOIN 
+                users ON rs.petitioner_id = users.id
+            LEFT JOIN 
+                 users AS users2 ON rs.recipient_id = users2.id, method mth
+                 
+            WHERE 
+              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage} ;`
+        );
+        resutlSearch = result;
+      } else if (text && !Number(status_id)) {
+        let nameCondition = "rs.title_request";
+        if (option == 2) {
+          nameCondition = "mt.type_name";
+        }
+        if (option == 3) {
+          nameCondition = "users.name";
+        }
+        if (option == 4) {
+          nameCondition = "users2.name";
+        }
+        const result = await pool.query(
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,
+            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+            FROM 
+                request_storage rs
+            JOIN 
+                maintenance_type mt ON rs.maintenance_id = mt.id
+            JOIN 
+                request_status rstt ON rs.status_id = rstt.id
+            JOIN 
+                users ON rs.petitioner_id = users.id
+            LEFT JOIN 
+                 users AS users2 ON rs.recipient_id = users2.id, method mth
+            WHERE 
+              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+        );
+        resutlSearch = result;
+      } else if (status_id && text) {
+        let nameCondition = "rs.title_request";
+        if (option == 2) {
+          nameCondition = "mt.type_name";
+        }
+        if (option == 3) {
+          nameCondition = "users.name";
+        }
+        if (option == 4) {
+          nameCondition = "users2.name";
+        }
+        // console.log(nameCondition);
+        const result = await pool.query(
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,
+            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+            FROM 
+                request_storage rs
+            JOIN 
+                maintenance_type mt ON rs.maintenance_id = mt.id
+            JOIN 
+                request_status rstt ON rs.status_id = rstt.id
+            JOIN 
+                users ON rs.petitioner_id = users.id
+            LEFT JOIN 
+                 users AS users2 ON rs.recipient_id = users2.id, method mth
+            WHERE 
+              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%"  ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+        );
+        resutlSearch = result;
+      }
+
+      return resutlSearch;
+    } catch (error) {
+      console.log("error model getRequestList By User :", error);
+      return false;
+    }
+  },
   updateStatus_id: async (request_id, status_id) => {
     try {
       result = await pool.query(
@@ -209,6 +322,23 @@ WHERE
       return result;
     } catch (error) {
       console.log("error model registerRequestCompleted:", error);
+      return false;
+    }
+  },
+
+  getHelperRequestCount: async (recipient_id,role_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT count(rs.id) as requestCount
+      FROM
+          request_storage rs
+      WHERE
+          rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id});`
+      );
+      console.log(result)
+      return result[0].requestCount;
+    } catch (error) {
+      console.log("error model get  count request :", error);
       return false;
     }
   },

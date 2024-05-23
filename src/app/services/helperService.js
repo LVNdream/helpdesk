@@ -10,13 +10,11 @@ class helperPageService {
         recipient_id,
         page
       );
-      
-      const requestCount = resutl.reduce((accumulator, element) => {
-        return accumulator + 1;
-      }, 0);
+
+      const requestCount = await helperModel.getHelperRequestCount(recipient_id,role_id);
 
       return resutl
-        ? { data: resutl, requestCount }
+        ? { data: resutl, requestCount:parseInt(requestCount) }
         : {
             message: "Error model getRequestListByHelper",
             status: false,
@@ -144,6 +142,45 @@ class helperPageService {
       console.log(error);
       return {
         message: "Server error accept Request Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getRequestListBySearch(
+    recipient_id,
+    role_id,
+    option,
+    text,
+    status_id,
+    page
+  ) {
+    try {
+      const resutl = await helperModel.requestListBySearchText(
+        recipient_id,
+        role_id,
+        option,
+        text,
+        status_id,
+        page
+      );
+
+      const requestCount = resutl.reduce((accumulator, element) => {
+        return accumulator + 1;
+      }, 0);
+
+      return resutl
+        ? { data: resutl, requestCount }
+        : {
+            message: "Error model getRequestList By search",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getRequestList By search Sevice",
         status: false,
         error: 500,
       };

@@ -25,6 +25,11 @@ router.get(
   userController.getRequestList
 );
 router.get(
+  "/getrequestlist/search",
+  middlewareAuth.verifyAuthentication,
+  userController.getRequestListSearch
+);
+router.get(
   "/getrequestdetail/:id",
   middlewareAuth.verifyAuthentication,
   userController.getRequestDetail
@@ -61,6 +66,11 @@ router.get(
   "/getuserinfor",
   middlewareAuth.verifyAuthentication,
   userController.getUserInfor
+);
+router.get(
+  "/getstatus",
+  middlewareAuth.verifyAuthentication,
+  userController.getStatus
 );
 
 module.exports = router;

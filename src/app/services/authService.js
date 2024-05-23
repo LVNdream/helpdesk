@@ -25,7 +25,6 @@ class authService {
           };
           const resultRegister = await authModel.register(dataRegister);
 
-
           return resultRegister
             ? resultRegister
             : { message: "Registered fail", status: false, error: 501 };
@@ -59,6 +58,9 @@ class authService {
       );
       if (!validPass) {
         return { message: "Password not valid", status: true, error: 404 };
+      }
+      if (user.status_id != 2) {
+        return { message: "User Status not valid", status: true, error: 403 };
       }
       const checked_firstLogin =
         user.first_login == 0 && user.status_id == 2 ? true : false;

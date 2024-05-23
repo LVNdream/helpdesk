@@ -1,42 +1,53 @@
-const authModel = require("../models/authModel");
+const helperModel = require("../models/helperModel");
 const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
+const adminModel = require("../models/adminModel");
+const authModel = require("../models/authModel");
+const bcrypt = require("bcryptjs");
 
-class userPageService {
-  async getRequestList(data, page) {
+class adminPageService {
+  async getRequestListByAdmin(page) {
     try {
-      const resutl = await userPageModel.getRequestList(data.id, page);
-      // console.log(resutl)
-      const requestCount = await userPageModel.getUserRequestCount(data.id)
+      const resutl = await adminModel.getRequestListByAdmin(page);
+
+      const requestCount = await adminModel.getAdminRequestCount();
 
       return resutl
-        ? { data: resutl, requestCount:parseInt(requestCount) }
-        : { message: "Error model getRequestList", status: false, error: 501 };
+        ? { data: resutl, requestCount: parseInt(requestCount) }
+        : {
+            message: "Error model getRequestList By Admin",
+            status: false,
+            error: 501,
+          };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error GetRequestList Sevice",
+        message: "Server error getRequestList By Admin Sevice",
         status: false,
         error: 500,
       };
     }
   }
-  async getRequestListBySearch(petitioner_id, option, text, status_id, page) {
+
+  async getRequestListBySearch(
+    user_id,
+    role_id,
+    option,
+    text,
+    status_id,
+    page
+  ) {
     try {
-      const resutl = await userPageModel.requestListBySearchText(
-        petitioner_id,
+      const resutl = await adminModel.requestListBySearchText(
+        user_id,
+        role_id,
         option,
         text,
         status_id,
         page
       );
-
-      const requestCount = resutl.reduce((accumulator, element) => {
-        return accumulator + 1;
-      }, 0);
-
       return resutl
-        ? { data: resutl, requestCount }
+        ? { data: resutl.listFilter, requestCount: resutl.requestCount }
         : {
             message: "Error model getRequestList By search",
             status: false,
@@ -51,6 +62,7 @@ class userPageService {
       };
     }
   }
+
   async getRequestDetail(id) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(id);
@@ -268,333 +280,302 @@ class userPageService {
     }
   }
 
-  async getRegisterRequest(user_id) {
+  async getAllUser(role_id, page) {
     try {
-      const main_type = await userPageModel.getMaintenanceType();
+      const resutl = await adminModel.getAllUser(role_id, page);
 
-      if (!main_type) {
-        return {
-          message: "Server error getMaintenanceType Model",
-          status: false,
-          error: 500,
-        };
-      }
-      const inforUser = await authModel.findAccountById(user_id);
-      if (!inforUser) {
-        return {
-          message: "Server error findAccountById Model",
-          status: false,
-          error: 500,
-        };
-      }
+      const userCount = await adminModel.getUserCount(role_id);
 
-      return {
-        id: inforUser.id,
-        name: inforUser.name,
-        affiliated_department: inforUser.affiliated_department,
-        phone_number: inforUser.phone_number,
-        position: inforUser.position,
-        email: inforUser.email,
-        main_type,
-      };
+      return resutl
+        ? { data: resutl, userCount: parseInt(userCount) }
+        : {
+            message: "Error model getAllUser By Admin",
+            status: false,
+            error: 501,
+          };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error getRegisterRequest service",
+        message: "Server error getAllUser By Admin Sevice",
         status: false,
         error: 500,
       };
     }
   }
 
-  async updateUserInfor(data, user_id) {
+  async listUserBySearch(role_id, option, text, page) {
     try {
-      const resutl = await userPageModel.updateUserInfor(data, user_id);
+      const resutl = await adminModel.listUserBySearchText(
+        role_id,
+        option,
+        text,
+        page
+      );
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model get list user By search",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list User By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  //
+  async getAllHelper(page) {
+    try {
+      const resutl = await adminModel.getAllHelper(page);
+
+      const userCount = await adminModel.getHelperCount();
 
       return resutl
-        ? { messsage: "Update Success!", status: true }
+        ? { data: resutl, userCount: parseInt(userCount) }
         : {
-            messsage: "Update Fail!, Error model update",
+            message: "Error model getAllHepler By Admin",
             status: false,
             error: 501,
           };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error UpdateUser Sevice",
+        message: "Server error getAllHelper By Admin Sevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
 
-  async userRegisterRequest(data, files) {
+  async listHelperBySearch(option, text, page) {
     try {
-      const resutlAddRequest = await userPageModel.registerRequest(data);
-      if (!resutlAddRequest.insertId) {
-        return {
-          message: "Server error registerrequest Model",
-          status: false,
-          error: 501,
-        };
-      }
-      const request_id = resutlAddRequest.insertId;
-      const filelLength = files.length;
-      // console.log(request_id)
-      for (let i = 0; i < filelLength; i++) {
-        const file = files[i];
-        const resutl = await userPageModel.addRequestFile(
-          request_id,
-          file.filename
-        );
-        if (!resutl) {
-          return {
-            message: "Server error addRequestFile Model",
-            status: false,
-            error: 501,
-          };
-        }
-      }
-
-      const moveFile = await midService.moveFiles(files);
-      if (!moveFile) {
-        return {
-          message: "Server error moveFile",
-          status: false,
-          error: 501,
-        };
-      }
-      const dataAdd = await userPageModel.getRequestJustRegister(
-        data.petitioner_id,
-        request_id
+      const resutl = await adminModel.listHelperBySearchText(
+        option,
+        text,
+        page
       );
-      return {
-        message: "Add request successfully",
-        status: true,
-        error: 200,
-        data: dataAdd,
-      };
-    } catch (error) {
-      console.log(error);
-      return {
-        message: "Server error userRegisterrequest Sevice",
-        status: false,
-        error: 501,
-      };
-    }
-  }
-
-  // updateRequest
-  async updateRequest(request_id, data, files, arrayDelete) {
-    try {
-      // console.log(files, arrayDelete);
-      const status_id = await userPageModel.getIdStatusByRequest(request_id);
-      if (!status_id) {
-        return {
-          message: "Server error get status ID Model",
-          status: false,
-          error: 501,
-        };
-      }
-      if (status_id != 1) {
-        return {
-          message: "Status not valid",
-          status: false,
-          error: 501,
-        };
-      }
-
-      const resultUpdate = await userPageModel.updateRequest(request_id, data);
-      if (!resultUpdate) {
-        return {
-          message: "Error updateRequest model",
-          status: false,
-          error: 501,
-        };
-      }
-      const listDelete = arrayDelete.length;
-      if (listDelete > 0) {
-        for (let i = 0; i < listDelete; i++) {
-          const file = arrayDelete[i];
-          // console.log(file);
-          const resutlDB = await userPageModel.deleteFile(file);
-          if (!resutlDB) {
-            return {
-              message: "Server error Delete File Model",
-              status: false,
-              error: 501,
-            };
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
           }
-          const resultDeleleSever = await midService.deleteFile(file, "files");
-          if (!resultDeleleSever) {
-            return {
-              message: "Server error Delete one File midService",
-              status: false,
-              error: 501,
-            };
-          }
-        }
-      }
-      const fileLength = files.length;
-      if (fileLength > 0) {
-        for (let i = 0; i < fileLength; i++) {
-          const file = files[i];
-          const resutl = await userPageModel.addRequestFile(
-            request_id,
-            file.filename
-          );
-          if (!resutl) {
-            return {
-              message: "Server error addRequestFile Model",
-              status: false,
-              error: 501,
-            };
-          }
-        }
-
-        const moveFile = await midService.moveFiles(files);
-        if (!moveFile) {
-          return {
-            message: "Server error moveFile",
+        : {
+            message: "Error model get list helper By search",
             status: false,
             error: 501,
           };
-        }
-      }
-      return {
-        message: "Update request successfully",
-        status: true,
-        error: 200,
-      };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error Update Request Sevice",
+        message: "Server error get list helper By search Sevice",
         status: false,
-        error: 501,
+        error: 500,
+      };
+    }
+  }
+  //
+
+  //
+  async getAllCompany(page) {
+    try {
+      const resutl = await adminModel.getAllCompany(page);
+
+      const userCount = await adminModel.getCompanyrCount();
+
+      return resutl
+        ? { data: resutl, userCount: parseInt(userCount) }
+        : {
+            message: "Error model getcompany By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getcompany By Admin Sevice",
+        status: false,
+        error: 500,
       };
     }
   }
 
-  async deleteRequest(user_id, request_id) {
+  async listCompanyBySearch(option, text, page) {
     try {
-      const status_id = await userPageModel.getIdStatusByRequest(request_id);
+      const resutl = await adminModel.listCompanyBySearchText(
+        option,
+        text,
+        page
+      );
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model get list company By search",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list company By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  //
 
-      if (!status_id) {
-        return {
-          message:
-            "Server error get status_id by request model or reqeusr_id not exist",
-          status: false,
-          error: 501,
-        };
-      }
-      const resutlRequest = await userPageModel.getRequestById(request_id);
-      // console.log(resutlRequest);
-      if (!resutlRequest) {
-        return {
-          message: "Server error get request by id model",
-          status: false,
-          error: 501,
-        };
-      }
+  async getAdminUserById(user_id) {
+    try {
+      const resutl = await adminModel.adminGetUserInfor(user_id);
 
-      if (status_id > 2) {
-        return {
-          message: "Status id  in valid",
-          status: false,
-          error: 400,
-        };
-      }
-      if (resutlRequest.petitioner_id != user_id) {
-        return {
-          message: "You not own request",
-          status: false,
-          error: 401,
-        };
-      }
+      let listStatus = await adminModel.adminGetAccountStatus();
 
-      // xoa file
-      let files = await userPageModel.getAllFileByRequest(request_id);
-      files = files.map((file) => {
-        return file.file_address;
+      listStatus = listStatus.map((item) => {
+        let checked = false;
+        if (item.id == resutl.status_id) {
+          checked = true;
+        }
+        return {
+          ...item,
+          checked,
+        };
       });
 
-      const filesLength = files.length;
-
-      if (filesLength > 0) {
-        for (let i = 0; i < filesLength; i++) {
-          const file = files[i];
-          console.log(file);
-          const resutlDB = await userPageModel.deleteFile(file);
-          if (!resutlDB) {
-            return {
-              message: "Server error Delete File Model",
-              status: false,
-              error: 501,
-            };
-          }
-          const resultDeleleSever = await midService.deleteFile(file, "files");
-          if (!resultDeleleSever) {
-            return {
-              message: "Server error Delete one File midService",
-              status: false,
-              error: 501,
-            };
-          }
-        }
-      }
-
-      // xoa request
-      const resutl = await userPageModel.deleteRequest(user_id, request_id);
-
       return resutl
-        ? { messsage: "Deleted Success!", status: true }
+        ? {
+            ...resutl,
+            statusList: listStatus,
+          }
         : {
-            messsage: "Delete Fail!, Error model delete",
+            message: "Error model getAllUser By Admin",
             status: false,
             error: 501,
           };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error delete Sevice",
+        message: "Server error getAllUser By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async updateUserStatus(user_id, status_id) {
+    try {
+      const resutl = await adminModel.updateUserStatus(user_id, status_id);
+
+      return resutl
+        ? {
+            message: "Update status success",
+            status: true,
+          }
+        : {
+            message: "Error model update User Status By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getAllUser By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async deleteUser(user_id) {
+    try {
+      const resutl = await adminModel.deleteUser(user_id);
+
+      return resutl
+        ? {
+            message: "delete user success",
+            status: true,
+          }
+        : {
+            message: "Error model delete user  By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete user By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getMaintenanceType() {
+    try {
+      const resutl = await userPageModel.getMaintenanceType();
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getMaintenance By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getMaintenance By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async registerHelper(data) {
+    try {
+      const exist = await authModel.checkExistId(data.id);
+
+      if (exist) {
+        if (exist.status == false) {
+          return {
+            message: exist.message,
+            status: exist.status,
+            error: exist.error,
+          };
+        } else {
+          const password_hash = bcrypt.hashSync(data.password, 8);
+          const dataRegister = {
+            ...data,
+            password: password_hash,
+            status_id: 2,
+            role_id: data.role_id,
+          };
+          console.log(dataRegister);
+          const resultRegister = await adminModel.registerHelper(dataRegister);
+
+          return resultRegister
+            ? resultRegister
+            : { message: "Registered fail", status: false, error: 501 };
+        }
+      } else {
+        return { message: "Server error find ID", status: false, error: 501 };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error register helper",
         status: false,
         error: 501,
-      };
-    }
-  }
-  async getUserInfor(user_id) {
-    try {
-      const resutl = await userPageModel.getUserInfor(user_id);
-
-      return resutl
-        ? resutl
-        : { message: "Error model getUserInfor", status: false, error: 501 };
-    } catch (error) {
-      console.log(error);
-      return {
-        message: "Server error getUserInfor Sevice",
-        status: false,
-        error: 500,
-      };
-    }
-  }
-
-  async getStatus() {
-    try {
-      const resutl = await userPageModel.getStatus();
-
-      return resutl
-        ? resutl
-        : { message: "Error model Get Status", status: false, error: 501 };
-    } catch (error) {
-      console.log(error);
-      return {
-        message: "Server error Get Status Sevice",
-        status: false,
-        error: 500,
       };
     }
   }
 }
-module.exports = new userPageService();
+module.exports = new adminPageService();
