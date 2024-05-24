@@ -13,7 +13,6 @@ class authService {
           return {
             message: exist.message,
             status: exist.status,
-            error: exist.error,
           };
         } else {
           const password_hash = bcrypt.hashSync(data.password, 8);

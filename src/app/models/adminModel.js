@@ -413,7 +413,7 @@ WHERE
         `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and  u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -509,7 +509,7 @@ WHERE
   adminGetUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,position,phone_number,tel_number, users.status_id FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
+        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,roles.id as role_id,position,phone_number,tel_number, users.status_id FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
       );
       return result[0];
     } catch (error) {
@@ -628,7 +628,7 @@ WHERE
     }
   },
 
-  getAllCompany: async (page) => {
+  getAllCompanyToAddInfor: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
@@ -644,20 +644,20 @@ WHERE
     }
   },
 
-  getCompanyrCount: async () => {
+  getCompanyrCountToAddInfor: async () => {
     try {
       const result = await pool.query(
-        `SELECT id, name_company,fax,phone_number,business_code
+        `SELECT count(id) as companyCount
            from company`
       );
       //   console.log(result);
-      return result[0].userCount;
+      return result[0].companyCount;
     } catch (error) {
       console.log("error model count company :", error);
       return false;
     }
   },
-  listCompanyBySearchText: async (option, text, page) => {
+  listCompanyBySearchTextToAddInfor: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
       let resutlSearch;
@@ -734,6 +734,389 @@ WHERE
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
       console.log("error model helper register:", error);
+      return false;
+    }
+  },
+
+  updateHelperInfor: async (user_id, data) => {
+    try {
+      result = await pool.query(
+        `update users set 
+          company_id="${data.company_id}",
+          email="${data.email}",
+          role_id="${data.role_id}",
+          status_id="${data.status_id}",
+          position="${data.position}",
+          phone_number="${data.phone_number}",
+          tel_number="${data.tel_number}"
+          where id="${user_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model UpdateUserStatus:", error);
+      return false;
+    }
+  },
+
+  checkCompanyName: async (name_company) => {
+    try {
+      const resultCheck = await pool.query(
+        `select * from company where name_company ="${name_company}"`
+      );
+      let result =
+        resultCheck.length > 0
+          ? { status: false, message: "Company name is exist" }
+          : { status: true, message: "Company name valid" };
+      return result;
+    } catch (error) {
+      console.log("error model checked name company By Admin :", error);
+      return false;
+    }
+  },
+
+  getAllCompanyToWatch: async (page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      const result = await pool.query(
+        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model all company :", error);
+      return false;
+    }
+  },
+
+  getCompanyCountToWatch: async () => {
+    try {
+      const result = await pool.query(
+        `SELECT count(company.id) as companyCount
+         FROM company `
+      );
+      //   console.log(result);
+      return result[0].companyCount;
+    } catch (error) {
+      console.log("error model get company count :", error);
+      return false;
+    }
+  },
+  listUserBySearchTextToWatch: async (option, text, page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      let resutlSearch;
+      let resultCount;
+      if (!text) {
+        resutlSearch = await pool.query(
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) amountHelper,c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+        );
+        resultCount = await pool.query(
+          `SELECT count(company.id) as companyCount
+         FROM company `
+        );
+      }
+
+      // search
+      else if (text) {
+        let nameCondition = "c.name_company";
+        if (option == 1) {
+          nameCondition = "c.name_company";
+        } else if (option == 2) {
+          nameCondition = "c.business_code";
+        }
+        // else if (option == 3) {
+        //   nameCondition = "u.affiliated_department";
+        // } else if (option == 4) {
+        //   nameCondition = "us.status_name";
+        // }
+
+        resutlSearch = await pool.query(
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id),c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id
+          where ${nameCondition}="${text}"
+          GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+        );
+        resultCount = await pool.query(
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id),c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id
+          where ${nameCondition}="${text}"`
+        );
+      }
+
+      return {
+        listFilter: resutlSearch,
+        requestCount: resultCount.length,
+      };
+    } catch (error) {
+      console.log("error model get Company By Search :", error);
+      return false;
+    }
+  },
+
+  registerCompany: async (data) => {
+    try {
+      const result = await pool.query(
+        "insert into company (name_company,fax,phone_number,business_code) values (?,?,?,?)",
+        [data.name_company, data.fax, data.phone_number, data.business_code]
+      );
+      // console.log(result)
+      if (result) {
+        return { message: "Registered company Successfully", status: true };
+      }
+      //    console.log("resssssssssssssssssss",result);
+    } catch (error) {
+      console.log("error model comapny register:", error);
+      return false;
+    }
+  },
+  getCompanyInforById: async (company_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT name_company,fax,phone_number,business_code
+      FROM
+           company
+      WHERE id = ${company_id}
+           `
+      );
+      //   console.log(result);
+      return result[0];
+    } catch (error) {
+      console.log("error model get companyInfor :", error);
+      return false;
+    }
+  },
+  updateCompanyInfor: async (data) => {
+    try {
+      const result = await pool.query(
+        "update  company set name_company=?, fax=?, phone_number=?, business_code=? where id =?",
+        [
+          data.name_company,
+          data.fax,
+          data.phone_number,
+          data.business_code,
+          data.company_id,
+        ]
+      );
+      // console.log(result)
+      if (result) {
+        return { message: "update company infor Successfully", status: true };
+      }
+      //    console.log("resssssssssssssssssss",result);
+    } catch (error) {
+      console.log("error model comapny company infor:", error);
+      return false;
+    }
+  },
+
+  deleteCompany: async (company_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM company WHERE id= "${company_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Delete company :", error);
+      return false;
+    }
+  },
+
+  getAllUserWaitAccept: async (role_id, page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      const result = await pool.query(
+        `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+      FROM
+           users u, account_status us
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      );
+      //   console.log(result);
+      return result;
+    } catch (error) {
+      console.log("error model all user wait accept :", error);
+      return false;
+    }
+  },
+
+  getUserCountWaitAccept: async (role_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT count(u.id) as userCount
+      FROM
+           users u
+      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3)
+           `
+      );
+      //   console.log(result);
+      return result[0].userCount;
+    } catch (error) {
+      console.log("error model all user wait accept:", error);
+      return false;
+    }
+  },
+  listUserWaitAcceptBySearchText: async (role_id, option, text, page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      let resutlSearch;
+      let resultCount;
+      if (!text) {
+        resutlSearch = await pool.query(
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+      FROM
+           users u, account_status us
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+        );
+        resultCount = await pool.query(
+          `SELECT count(u.id) as userCount
+      FROM
+           users u
+      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3)`
+        );
+      }
+
+      // search
+      else if (text) {
+        let nameCondition = "u.name";
+        if (option == 1) {
+          nameCondition = "u.name";
+        } else if (option == 2) {
+          nameCondition = "u.position";
+        } else if (option == 3) {
+          nameCondition = "u.affiliated_department";
+        } else if (option == 4) {
+          nameCondition = "us.status_name";
+        }
+
+        resutlSearch = await pool.query(
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+        );
+        resultCount = await pool.query(
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+        );
+      }
+
+      return {
+        listFilter: resutlSearch,
+        requestCount: resultCount.length,
+      };
+    } catch (error) {
+      console.log("error model wait accept By Search :", error);
+      return false;
+    }
+  },
+
+  updateLabelName: async (label_id, name) => {
+    try {
+      result = await pool.query(
+        `update list_label set 
+          label_name="${name}"
+          where id="${label_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model UpdateUserStatus:", error);
+      return false;
+    }
+  },
+
+  addNameLabel: async (name) => {
+    try {
+      const result = await pool.query(
+        "insert into list_label (label_name) values (?)",
+        [name]
+      );
+      // console.log(result)
+      if (result) {
+        return { message: "Registered name label Successfully", status: true };
+      }
+      //    console.log("resssssssssssssssssss",result);
+    } catch (error) {
+      console.log("error model name label register:", error);
+      return false;
+    }
+  },
+
+  getListLabel: async () => {
+    try {
+      const result = await pool.query(
+        `SELECT id, label_name
+      FROM
+           list_label
+        ORDER BY created_at desc LIMIT 12`
+      );
+      //   console.log(result);
+      return result;
+    } catch (error) {
+      console.log("error model get list label :", error);
+      return false;
+    }
+  },
+  listLabelBySearchText: async (text) => {
+    try {
+      let resutlSearch;
+
+      if (!text) {
+        resutlSearch = await pool.query(
+          `SELECT id, label_name
+      FROM
+           list_label
+        ORDER BY created_at desc LIMIT 12`
+        );
+      }
+
+      // search
+      else if (text) {
+        resutlSearch = await pool.query(
+          `SELECT id, label_name
+      FROM
+           list_label
+      WHERE label_name like "%${text}%"  ORDER BY created_at asc LIMIT 12`
+        );
+      }
+
+      return resutlSearch;
+    } catch (error) {
+      console.log("error model get list label By Search :", error);
+      return false;
+    }
+  },
+  // ///////
+  checkExistLabelId: async (maintenance_id, label_id) => {
+    try {
+      const resultCheck = await pool.query(
+        `select * from maintenance_class where maintenance_id=${maintenance_id} and list_label_id ="${label_id}"`
+      );
+      let result =
+        resultCheck.length > 0
+          ? { status: false, message: "list_label_id is exist" }
+          : { status: true, message: "list_label_id is valid" };
+      return result;
+    } catch (error) {
+      console.log("error model checked checkExistLabelId By Admin :", error);
+      return false;
+    }
+  },
+  UpdateLabelToMainClass: async (maintenance_class_id, list_label_id) => {
+    try {
+      const result = await pool.query(
+        "update maintenance_class set list_label_id=? where id=?",
+        [maintenance_class_id, list_label_id]
+      );
+      // console.log(result)
+      if (result) {
+        return {
+          message: "Update label in mainClass Successfully",
+          status: true,
+        };
+      }
+      //    console.log("resssssssssssssssssss",result);
+    } catch (error) {
+      console.log("error model Update label in mainClass:", error);
       return false;
     }
   },

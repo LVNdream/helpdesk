@@ -140,10 +140,9 @@ class adminPageService {
 
         const listMT_detail = Promise.all(
           MT_Register.map(async (item) => {
-            const resutlMainClass = await userPageModel.getMaintenanceClassId(
-              item.id
-            );
-            if (!resutlMainClass) {
+            const listMaintenanceClass =
+              await userPageModel.getMaintenanceClassId(item.id);
+            if (!listMaintenanceClass) {
               return {
                 message: "Serve have error in getMaintenanceClassRequest",
                 status: false,
@@ -158,7 +157,7 @@ class adminPageService {
               };
             }
             // console.log(resutlProcessingDetail);
-            const maintenanceClass = resutlMainClass.map((itemMC) => {
+            const maintenanceClass = listMaintenanceClass.map((itemMC) => {
               let checked = false;
               resutlProcessingDetail.forEach((itemPD) => {
                 if (itemMC.label_id == itemPD.label_id) {
@@ -384,14 +383,14 @@ class adminPageService {
   //
 
   //
-  async getAllCompany(page) {
+  async getAllCompanyToAddInfor(page) {
     try {
-      const resutl = await adminModel.getAllCompany(page);
+      let resutl = await adminModel.getAllCompanyToAddInfor(page);
 
-      const userCount = await adminModel.getCompanyrCount();
+      const companyCount = await adminModel.getCompanyrCountToAddInfor();
 
       return resutl
-        ? { data: resutl, userCount: parseInt(userCount) }
+        ? { data: resutl, companyCount: parseInt(companyCount) }
         : {
             message: "Error model getcompany By Admin",
             status: false,
@@ -407,9 +406,9 @@ class adminPageService {
     }
   }
 
-  async listCompanyBySearch(option, text, page) {
+  async listCompanyBySearchToAddInfor(option, text, page) {
     try {
-      const resutl = await adminModel.listCompanyBySearchText(
+      const resutl = await adminModel.listCompanyBySearchTextToAddInfor(
         option,
         text,
         page
@@ -558,7 +557,7 @@ class adminPageService {
             status_id: 2,
             role_id: data.role_id,
           };
-          console.log(dataRegister);
+          // console.relog(dataRegister);
           const resultRegister = await adminModel.registerHelper(dataRegister);
 
           return resultRegister
@@ -574,6 +573,454 @@ class adminPageService {
         message: "Server error register helper",
         status: false,
         error: 501,
+      };
+    }
+  }
+
+  async getAdminHelperById(user_id) {
+    try {
+      const resutl = await adminModel.adminGetUserInfor(user_id);
+
+      let listStatus = await adminModel.adminGetAccountStatus();
+
+      listStatus = listStatus.map((item) => {
+        let checked = false;
+        if (item.id == resutl.status_id) {
+          checked = true;
+        }
+        return {
+          ...item,
+          checked,
+        };
+      });
+      const listRole = await midService.getMaintenanceType_checked(
+        resutl.role_id
+      );
+
+      return resutl
+        ? {
+            ...resutl,
+            statusList: listStatus,
+            listRole,
+          }
+        : {
+            message: "Error model getAllUser By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getAllUser By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async updateHelperInfor(user_id, data) {
+    try {
+      const resutl = await adminModel.updateHelperInfor(user_id, data);
+
+      return resutl
+        ? {
+            message: "Update helper infor success",
+            status: true,
+          }
+        : {
+            message: "Error model update User helper infor By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error update helper infor By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async checkNameCompany(name_company) {
+    try {
+      const resutl = await adminModel.checkCompanyName(name_company);
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model checkNameCompany By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error checkNameCompany By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  //
+  async getAllCompanyToWatch(page) {
+    try {
+      let resutl = await adminModel.getAllCompanyToWatch(page);
+      resutl = resutl.map((item) => {
+        return {
+          ...item,
+          amountHelper: parseInt(item.amountHelper),
+          owner: "Admin",
+        };
+      });
+      const companyCount = await adminModel.getCompanyCountToWatch();
+
+      return resutl
+        ? { data: resutl, companyCount: parseInt(companyCount) }
+        : {
+            message: "Error model getcompany By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getcompany By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async listCompanyBySearchToWatch(option, text, page) {
+    try {
+      let resutl = await adminModel.listCompanyBySearchTextToWatch(
+        option,
+        text,
+        page
+      );
+      resutl = resutl.map((item) => {
+        return {
+          ...item,
+          amountHelper: parseInt(item.amountHelper),
+          owner: "Admin",
+        };
+      });
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model get list company By search",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list company By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  //
+
+  async registerCompany(data) {
+    try {
+      const exist = await adminModel.checkCompanyName(data.name_company);
+
+      if (exist) {
+        if (exist.status == false) {
+          return {
+            message: exist.message,
+            status: exist.status,
+            error: exist.error,
+          };
+        } else {
+          const resultRegister = await adminModel.registerCompany(data);
+
+          return resultRegister
+            ? resultRegister
+            : { message: "Registered fail", status: false, error: 501 };
+        }
+      } else {
+        return {
+          message: "Server error find company",
+          status: false,
+          error: 501,
+        };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error register helper",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  async getCompanyById(company_id) {
+    try {
+      const resutl = await adminModel.getCompanyInforById(company_id);
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getcompany By Id",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getcompany By Id Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async updateCompanyInfor(data) {
+    try {
+      const resultUpdate = await adminModel.updateCompanyInfor(data);
+
+      return resultUpdate
+        ? { message: "Update success", status: true }
+        : { message: "Update fail", status: false, error: 501 };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Update Company",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  async deleteCompany(company_id) {
+    try {
+      const resutl = await adminModel.deleteCompany(company_id);
+
+      return resutl
+        ? {
+            message: "delete company success",
+            status: true,
+          }
+        : {
+            message: "Error model delete company  By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete company By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getAllUserWaitAccept(role_id, page) {
+    try {
+      const resutl = await adminModel.getAllUserWaitAccept(role_id, page);
+
+      const userCount = await adminModel.getUserCountWaitAccept(role_id);
+
+      return resutl
+        ? { data: resutl, userCount: parseInt(userCount) }
+        : {
+            message: "Error model getAllUser wait accept By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getAllUser wait accept By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async listUserWaitAcceptBySearch(role_id, option, text, page) {
+    try {
+      const resutl = await adminModel.listUserWaitAcceptBySearchText(
+        role_id,
+        option,
+        text,
+        page
+      );
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model get list user wait accept By search",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list User wait accept By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async adminGetListMaintenanceType() {
+    try {
+      const listMaintenanceType = await userPageModel.getMaintenanceType();
+      const listMT_detail = Promise.all(
+        listMaintenanceType.map(async (item) => {
+          const listMaintenanceClass =
+            await userPageModel.getMaintenanceClassId(item.id);
+          if (!listMaintenanceClass) {
+            return {
+              message: "Serve have error in getMaintenanceClassRequest",
+              status: false,
+              error: 501,
+            };
+          }
+
+          if (item.id == 1) {
+            const maintenanceClass_class1 = listMaintenanceClass.filter(
+              (itemMC) => {
+                return itemMC.group_m == 1;
+              }
+            );
+            const maintenanceClass_class2 = listMaintenanceClass.filter(
+              (itemMC) => {
+                return itemMC.group_m == 2;
+              }
+            );
+            return {
+              ...item,
+              maintenanceClass: [
+                { name: "H/W", data: maintenanceClass_class1 },
+                { name: "S/W", data: maintenanceClass_class2 },
+              ],
+            };
+          } else if (item.id == 2) {
+            const maintenanceClass_class1 = listMaintenanceClass.filter(
+              (itemMC) => {
+                return itemMC.group_m == 1;
+              }
+            );
+            const maintenanceClass_class2 = listMaintenanceClass.filter(
+              (itemMC) => {
+                return itemMC.group_m == 2;
+              }
+            );
+            return {
+              ...item,
+              maintenanceClass: [
+                { name: "전산부분", data: maintenanceClass_class1 },
+                {
+                  name: "일반부분",
+                  data: maintenanceClass_class2,
+                },
+              ],
+            };
+          }
+        })
+      );
+      let result = await listMT_detail;
+      return result
+        ? result
+        : {
+            message: "Error model Admin getmaintenance class",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Admin getmaintenance class Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async updateLabelName(label_id, name) {
+    try {
+      const resultUpdate = await adminModel.updateLabelName(label_id, name);
+
+      return resultUpdate
+        ? { message: "Update success", status: true }
+        : { message: "Update fail", status: false, error: 501 };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Update label Name",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+  async addNameLabel(name) {
+    try {
+      const resultRegister = await adminModel.addNameLabel(name);
+
+      return resultRegister
+        ? resultRegister
+        : { message: "Registered fail", status: false, error: 501 };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error register label name",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  async getListLabel() {
+    try {
+      const resutl = await adminModel.getListLabel();
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getListLabel By Admin",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getListLabel By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async listLabelBySearch(text) {
+    try {
+      const resutl = await adminModel.listLabelBySearchText(text);
+      return resutl
+        ? resutl
+        : {
+            message: "Error model get lisLabelBySearch",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get lisLabelBySearch Sevice",
+        status: false,
+        error: 500,
       };
     }
   }

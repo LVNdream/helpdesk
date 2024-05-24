@@ -50,7 +50,11 @@ router.get(
   middlewareAuth.verifyAuthentication,
   adminController.adminGetUserById
 );
-
+router.get(
+  "/gethelperinfor/:user_id",
+  middlewareAuth.verifyAuthentication,
+  adminController.adminGethlperById
+);
 router.post(
   "/updateuser/status",
   middlewareAuth.verifyAuthentication,
@@ -74,14 +78,24 @@ router.post(
 );
 
 router.get(
-  "/getlistcompany",
+  "/getlistcompany/addinfor",
   middlewareAuth.verifyAuthentication,
-  adminController.getAllCompany
+  adminController.getAllCompanyToAddInfor
 );
 router.post(
-  "/getlistcompany/search",
+  "/getlistcompany/addinfor/search",
   middlewareAuth.verifyAuthentication,
-  adminController.listCompanyBySearch
+  adminController.listCompanyBySearchToAddInfor
+);
+router.get(
+  "/getlistcompany/watch",
+  middlewareAuth.verifyAuthentication,
+  adminController.getAllCompanyToWatch
+);
+router.post(
+  "/getlistcompany/watch/search",
+  middlewareAuth.verifyAuthentication,
+  adminController.listCompanyBySearchToWatch
 );
 router.post(
   "/register/helper",
@@ -92,6 +106,89 @@ router.get(
   "/getmaintenacetype",
   middlewareAuth.verifyAuthentication,
   adminController.getMaintenanceType
+);
+
+router.post(
+  "/updatehelper/infor",
+  middlewareAuth.verifyAuthentication,
+  adminController.updateHelperInfor
+);
+router.post(
+  "/checkcompanyname/",
+  middlewareAuth.verifyAuthentication,
+  adminController.checkCompanyName
+);
+
+router.post(
+  "/register/company",
+  middlewareAuth.verifyAuthentication,
+  adminController.registerCompany
+);
+
+router.get(
+  "/getcompanyinfor/:company_id",
+  middlewareAuth.verifyAuthentication,
+  adminController.getCompanyInfor
+);
+router.post(
+  "/updatecompany/infor",
+  middlewareAuth.verifyAuthentication,
+  adminController.updateCompanyInfor
+);
+
+router.post(
+  "/deletecompany",
+  middlewareAuth.verifyAuthentication,
+  adminController.deleteCompany
+);
+
+router.get(
+  "/getlistuser/waitaccept",
+  middlewareAuth.verifyAuthentication,
+  adminController.getAlluserWaitAccept
+);
+router.post(
+  "/getlistuser/waitaccept/search",
+  middlewareAuth.verifyAuthentication,
+  adminController.listUserWaitAcceptBySearch
+);
+
+router.post(
+  "/updateuser/status/normal",
+  middlewareAuth.verifyAuthentication,
+  adminController.updateUserStatusNormal
+);
+router.post(
+  "/updateuser/status/denied",
+  middlewareAuth.verifyAuthentication,
+  adminController.updateUserStatusDenied
+);
+router.get(
+  "/getmaintenance/class",
+  middlewareAuth.verifyAuthentication,
+  adminController.adminGetMaintenanceType
+);
+router.post(
+  "/update/namelabel",
+  middlewareAuth.verifyAuthentication,
+  adminController.updateLabelName
+);
+router.post(
+  "/add/namelabel",
+  middlewareAuth.verifyAuthentication,
+  adminController.addNameLabel
+);
+
+//
+router.get(
+  "/getlistlabel",
+  middlewareAuth.verifyAuthentication,
+  adminController.getListLabel
+);
+router.post(
+  "/getlistlabel/search",
+  middlewareAuth.verifyAuthentication,
+  adminController.listLabelBySearch
 );
 
 module.exports = router;

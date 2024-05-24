@@ -33,7 +33,7 @@ module.exports = {
     try {
       const result = await pool.query(`select * from users where id="${id}" `);
       if (result[0]) {
-        return { message: "ID have existed", status: false, error: 201 };
+        return { message: "ID have existed", status: false };
       } else {
         return { message: "ID valid", status: true };
       }
