@@ -462,4 +462,27 @@ LEFT JOIN
       return false;
     }
   },
+
+  getMainclassGroupById: async (maintenance_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT distinct group_m from maintenance_class where maintenance_id=${maintenance_id}`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model get  status :", error);
+      return false;
+    }
+  },
+  getMainTypeGroup: async () => {
+    try {
+      const result = await pool.query(
+        `SELECT distinct id,group_m,type_name from maintenance_type`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model get  status :", error);
+      return false;
+    }
+  },
 };

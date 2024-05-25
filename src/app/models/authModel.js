@@ -4,7 +4,7 @@ module.exports = {
   register: async (data) => {
     try {
       const result = await pool.query(
-        "insert into users (id,name,password,email,tel_number,phone_number,position,affiliated_department,status_id,role_id) values (?,?,?,?,?,?,?,?,?,?)",
+        "insert into users (account,name,password,email,tel_number,phone_number,position,affiliated_department,status_id,role_id) values (?,?,?,?,?,?,?,?,?,?)",
         [
           data.id,
           data.name,
@@ -31,7 +31,9 @@ module.exports = {
 
   checkExistId: async (id) => {
     try {
-      const result = await pool.query(`select * from users where id="${id}" `);
+      const result = await pool.query(
+        `select * from users where account="${id}" `
+      );
       if (result[0]) {
         return { message: "ID have existed", status: false };
       } else {
@@ -45,7 +47,9 @@ module.exports = {
 
   findAccountById: async (id) => {
     try {
-      const result = await pool.query(`select * from users where id=${id} `);
+      const result = await pool.query(
+        `select * from users where account="${id}" `
+      );
       return result[0] ? result[0] : {};
     } catch (error) {
       console.log("error model find ID:", error);
@@ -56,7 +60,7 @@ module.exports = {
   findId: async (data) => {
     try {
       const result = await pool.query(
-        `select id,name, email from users where 
+        `select account,name, email from users where 
         phone_number="${data.phone_number}" and
         name="${data.name}" and
         position="${data.position}" and  
@@ -75,7 +79,7 @@ module.exports = {
   updateFirstLogin: async (user_id) => {
     try {
       const result = await pool.query(
-        `update users set first_login=1 where id=${user_id} `
+        `update users set first_login=1 where id="${user_id}" `
       );
       return result;
     } catch (error) {

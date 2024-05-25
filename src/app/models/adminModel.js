@@ -329,83 +329,6 @@ WHERE
     }
   },
 
-  amountAccumulationRegister: async (maintenance_id, datetime, option) => {
-    try {
-      let nameCondition;
-      if (option == "y") {
-        nameCondition = "YEAR";
-      } else {
-        nameCondition = "MONTH";
-      }
-      const result = await pool.query(
-        `SELECT COUNT(rs.id) AS countRequest FROM request_storage rs WHERE rs.maintenance_id = ${maintenance_id} AND ${nameCondition}(rs.created_at)=${datetime};`
-      );
-      //   console.log(result);
-      return result[0].requestCount;
-    } catch (error) {
-      console.log("error model get amountAccumulationRegister :", error);
-      return false;
-    }
-  },
-
-  amountRequestCompleted: async (maintenance_id, datetime, option) => {
-    try {
-      let nameCondition;
-      if (option == "y") {
-        nameCondition = "YEAR";
-      } else {
-        nameCondition = "MONTH";
-      }
-      const result = await pool.query(
-        `SELECT COUNT(rs.id) AS countRequest FROM request_storage rs WHERE rs.maintenance_id = ${maintenance_id} AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${datetime};`
-      );
-      //   console.log(result);
-      return result[0].requestCount;
-    } catch (error) {
-      console.log("error model get  amountRequestCompleted :", error);
-      return false;
-    }
-  },
-  amountRequestProcessing: async (maintenance_id, datetime, option) => {
-    try {
-      let nameCondition;
-      if (option == "y") {
-        nameCondition = "YEAR";
-      } else {
-        nameCondition = "MONTH";
-      }
-      const result = await pool.query(
-        `SELECT COUNT(rs.id) AS countRequest FROM request_storage rs WHERE rs.maintenance_id = ${maintenance_id} AND (rs.status_id=2 OR rs.status_id=3) AND ${nameCondition}(rs.created_at)=${datetime};`
-      );
-      //   console.log(result);
-      return result[0].requestCount;
-    } catch (error) {
-      console.log("error model get  amountRequestProcessing :", error);
-      return false;
-    }
-  },
-  amountPerRequestCompleted: async (maintenance_id, dateime, option) => {
-    try {
-      let nameCondition;
-      if (option == "y") {
-        nameCondition = "YEAR";
-      } else {
-        nameCondition = "MONTH";
-      }
-      const result = await pool.query(
-        `SELECT ((COUNT(rs.id)/rs2.countRequest)*100) AS countRequest FROM request_storage rs,
-        (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs
-        WHERE rs.maintenance_id = ${maintenance_id} AND ${nameCondition}(rs.created_at)=${datetime}) AS rs2
-         WHERE rs.maintenance_id = 1 AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${dateime};`
-      );
-      //   console.log(result);
-      return result[0].requestCount;
-    } catch (error) {
-      console.log("error model get  amountPerRequestCompleted :", error);
-      return false;
-    }
-  },
-
   getAllUser: async (role_id, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -1041,12 +964,13 @@ WHERE
     }
   },
 
-  getListLabel: async () => {
+  getListLabel: async (maintenance_id) => {
     try {
       const result = await pool.query(
         `SELECT id, label_name
       FROM
            list_label
+      where maintenance_id="${maintenance_id}"
         ORDER BY created_at desc LIMIT 12`
       );
       //   console.log(result);
@@ -1056,7 +980,7 @@ WHERE
       return false;
     }
   },
-  listLabelBySearchText: async (text) => {
+  listLabelBySearchText: async (maintenance_id, text) => {
     try {
       let resutlSearch;
 
@@ -1065,6 +989,7 @@ WHERE
           `SELECT id, label_name
       FROM
            list_label
+          where maintenance_id="${maintenance_id}"
         ORDER BY created_at desc LIMIT 12`
         );
       }
@@ -1075,7 +1000,7 @@ WHERE
           `SELECT id, label_name
       FROM
            list_label
-      WHERE label_name like "%${text}%"  ORDER BY created_at asc LIMIT 12`
+      WHERE label_name like "%${text}% and maintenance_id="${maintenance_id}"  ORDER BY created_at asc LIMIT 12`
         );
       }
 
@@ -1094,18 +1019,18 @@ WHERE
       let result =
         resultCheck.length > 0
           ? { status: false, message: "list_label_id is exist" }
-          : { status: true, message: "list_label_id is valid" };
+          : { status: true, message: "location is valid" };
       return result;
     } catch (error) {
       console.log("error model checked checkExistLabelId By Admin :", error);
       return false;
     }
   },
-  UpdateLabelToMainClass: async (maintenance_class_id, list_label_id) => {
+  addLabelToMainClass: async (maintenance_class_id, label_id) => {
     try {
       const result = await pool.query(
         "update maintenance_class set list_label_id=? where id=?",
-        [maintenance_class_id, list_label_id]
+        [label_id, maintenance_class_id]
       );
       // console.log(result)
       if (result) {
@@ -1117,6 +1042,107 @@ WHERE
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
       console.log("error model Update label in mainClass:", error);
+      return false;
+    }
+  },
+
+  amountAccumulationRegister: async (nameCondition, datetime) => {
+    try {
+      let result = await pool.query(
+        `SELECT mt.type_name, COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+      );
+      result = result.map((item) => {
+        return { ...item, countRequest: parseInt(item.countRequest) };
+      });
+      return result;
+    } catch (error) {
+      console.log("error model get amountAccumulationRegister :", error);
+      return false;
+    }
+  },
+
+  amountRequestCompleted: async (nameCondition, datetime) => {
+    try {
+      let result = await pool.query(
+        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+      );
+      result = result.map((item) => {
+        return { ...item, countRequest: parseInt(item.countRequest) };
+      });
+      return result;
+    } catch (error) {
+      console.log("error model get  amountRequestCompleted :", error);
+      return false;
+    }
+  },
+  amountRequestProcessing: async (nameCondition, datetime) => {
+    try {
+      let result = await pool.query(
+        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND (rs.status_id=2 OR rs.status_id=3) AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+      );
+      result = result.map((item) => {
+        return { ...item, countRequest: parseInt(item.countRequest) };
+      });
+      return result;
+    } catch (error) {
+      console.log("error model get  amountRequestProcessing :", error);
+      return false;
+    }
+  },
+  amountPerRequestCompleted: async (nameCondition, dateime) => {
+    try {
+      let result = await pool.query(
+        `SELECT mt.type_name,((COUNT(rs.id)/rs2.countRequest)*100) AS percent
+        FROM request_storage rs,maintenance_type mt,
+        (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt WHERE rs.maintenance_id = mt.id AND ${nameCondition}(rs.created_at)=2024) AS rs2
+        WHERE rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${dateime} group BY mt.id;`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model get  amountPerRequestCompleted :", error);
+      return false;
+    }
+  },
+  getInforChartCurrentMonth: async (maintenance_id, group_m) => {
+    try {
+      let result = await pool.query(
+        `SELECT ll.id AS list_label_id, 
+COALESCE(SUM(CASE WHEN MONTH(rs.created_at) = MONTH(CURRENT_DATE() - INTERVAL 1 MONTH) AND YEAR(rs.created_at) = YEAR(CURRENT_DATE() - INTERVAL 1 MONTH) THEN 1 ELSE 0 END), 0) AS count_last_month,
+COALESCE(SUM(CASE WHEN MONTH(rs.created_at) = MONTH(CURRENT_DATE()) AND YEAR(rs.created_at) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END), 0) AS count_this_month
+FROM list_label ll 
+LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
+LEFT JOIN processing_details pd ON pd.label_id = ll.id 
+LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
+where  mc.maintenance_id = ${maintenance_id} AND  mc.group_m = ${group_m}  
+GROUP BY ll.id`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getInforChartCurrentMonth :", error);
+      return false;
+    }
+  },
+  getInforChartByOption: async (maintenance_id, group_m, option, data) => {
+    try {
+      const last = data[option] - 1;
+      const thisTime = data[option];
+      let result = await pool.query(
+        `SELECT ll.id AS list_label_id, 
+COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${last} AND YEAR(rs.created_at) = data.year THEN 1 ELSE 0 END), 0) AS count_lastTime,
+COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = data.year THEN 1 ELSE 0 END), 0) AS count_thisTime 
+FROM list_label ll 
+LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
+LEFT JOIN processing_details pd ON pd.label_id = ll.id 
+LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
+where  mc.group_m = ${maintenance_id} AND mc.maintenance_id = ${group_m} 
+GROUP BY ll.id`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getInforChartByOption :", error);
       return false;
     }
   },

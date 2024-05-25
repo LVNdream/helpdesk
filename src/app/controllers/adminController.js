@@ -358,7 +358,7 @@ class adminController {
   async updateUserStatusNormal(req, res) {
     try {
       const result = await adminService.updateUserStatus(req.body.user_id, 2);
-      console.log(result);
+      // console.log(result);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -368,7 +368,7 @@ class adminController {
   async updateUserStatusDenied(req, res) {
     try {
       const result = await adminService.updateUserStatus(req.body.user_id, 3);
-      console.log(result);
+      // console.log(result);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -412,7 +412,7 @@ class adminController {
 
   async getListLabel(req, res) {
     try {
-      const result = await adminService.getListLabel();
+      const result = await adminService.getListLabel(req.body.maintenance_id);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -422,7 +422,44 @@ class adminController {
 
   async listLabelBySearch(req, res) {
     try {
-      const result = await adminService.listLabelBySearch(req.body.text);
+      const result = await adminService.listLabelBySearch(
+        req.body.maintenance_id,
+        req.body.text
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async getMainClassById(req, res) {
+    try {
+      const result = await adminService.getMaintenanceClassById(
+        req.body.maintenance_id
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async addLabelInMainclass(req, res) {
+    try {
+      const result = await adminService.addLabelInMainclass(
+        req.body.maintenance_id,
+        req.body.maintenance_class_id,
+        req.body.label_id
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async getInforReport(req, res) {
+    try {
+      const result = await adminService.getInforReport();
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

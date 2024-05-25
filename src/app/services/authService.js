@@ -101,13 +101,7 @@ class authService {
 
   async checkId(data) {
     try {
-      if (typeof data.id != typeof 123) {
-        return {
-          message: "Please enter number not string",
-          status: true,
-          error: 400,
-        };
-      }
+      
       const exist = await authModel.checkExistId(data.id);
       if (exist) {
         return {

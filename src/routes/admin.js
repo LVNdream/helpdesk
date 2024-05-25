@@ -190,5 +190,21 @@ router.post(
   middlewareAuth.verifyAuthentication,
   adminController.listLabelBySearch
 );
+router.post(
+  "/getlistmainclass",
+  middlewareAuth.verifyAuthentication,
+  adminController.getMainClassById
+);
+
+router.post(
+  "/addlabel-in-mainclass",
+  middlewareAuth.verifyAuthentication,
+  adminController.addLabelInMainclass
+);
+router.get(
+  "/getinforreport",
+  middlewareAuth.verifyAuthentication,
+  adminController.getInforReport
+);
 
 module.exports = router;

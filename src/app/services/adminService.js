@@ -984,9 +984,9 @@ class adminPageService {
     }
   }
 
-  async getListLabel() {
+  async getListLabel(maintenance_id) {
     try {
-      const resutl = await adminModel.getListLabel();
+      const resutl = await adminModel.getListLabel(maintenance_id);
 
       return resutl
         ? resutl
@@ -1005,9 +1005,12 @@ class adminPageService {
     }
   }
 
-  async listLabelBySearch(text) {
+  async listLabelBySearch(maintenance_id, text) {
     try {
-      const resutl = await adminModel.listLabelBySearchText(text);
+      const resutl = await adminModel.listLabelBySearchText(
+        maintenance_id,
+        text
+      );
       return resutl
         ? resutl
         : {
@@ -1019,6 +1022,188 @@ class adminPageService {
       console.log(error);
       return {
         message: "Server error get lisLabelBySearch Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async getMaintenanceClassById(maintenance_id) {
+    try {
+      let resutlMainClass = await userPageModel.getMaintenanceClassId(
+        maintenance_id
+      );
+      resutlMainClass = resutlMainClass.map((item) => {
+        return {
+          mc_id: item.mc_id,
+          group_m: item.group_m,
+        };
+      });
+      let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
+        maintenance_id
+      );
+      let mainClassFilter;
+      resutlMainClassGroup = resutlMainClassGroup.map((mc_group) => {
+        (mainClassFilter = resutlMainClass.filter((item) => {
+          return mc_group.group_m == item.group_m;
+        })),
+          (mainClassFilter = mainClassFilter.map((item) => {
+            delete item.group_m;
+            return item;
+          }));
+        return {
+          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          data: mainClassFilter,
+        };
+      });
+
+      // const classSW = resutlMainClass.filter((item) => {
+      //   return item.group_m == 2;
+      // });
+      return resutlMainClass
+        ? resutlMainClassGroup
+        : {
+            message: "Error model getMaintenanceClassById",
+            status: false,
+            error: 501,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getMaintenanceClassById Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async addLabelInMainclass(maintenance_id, maintenance_class_id, label_id) {
+    try {
+      const exist = await adminModel.checkExistLabelId(
+        maintenance_id,
+        label_id
+      );
+
+      if (exist) {
+        if (exist.status == false) {
+          return {
+            message: exist.message,
+            status: exist.status,
+          };
+        } else {
+          const resultRegister = await adminModel.addLabelToMainClass(
+            maintenance_class_id,
+            label_id
+          );
+
+          return resultRegister
+            ? resultRegister
+            : { message: "add Label succsess", status: false, error: 501 };
+        }
+      } else {
+        return { message: "Server error find ID", status: false, error: 501 };
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error addLabelInMainclass",
+        status: false,
+        error: 501,
+      };
+    }
+  }
+
+  async getInforReport() {
+    try {
+      const currentDateTime = new Date(Date.now());
+      let accumulationRegisterYear =
+        await adminModel.amountAccumulationRegister(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
+        "year",
+        currentDateTime.getFullYear()
+      );
+      let amountRequestProcessingYear =
+        await adminModel.amountRequestProcessing(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let amountRequestCompletedPercentYear =
+        await adminModel.amountPerRequestCompleted(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let accumulationRegisterMonth =
+        await adminModel.amountAccumulationRegister(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
+        "year",
+        currentDateTime.getFullYear()
+      );
+      let amountRequestProcessingMonth =
+        await adminModel.amountRequestProcessing(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let amountRequestCompletedPercentMonth =
+        await adminModel.amountPerRequestCompleted(
+          "year",
+          currentDateTime.getFullYear()
+        );
+      let mainType = await userPageModel.getMaintenanceType();
+      mainType = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          group = await Promise.all(
+            group.map(async (itemG) => {
+              const chart = await adminModel.getInforChartCurrentMonth(
+                itemMT.id,
+                itemG.group_m
+              );
+              let group_name = "";
+              if (itemMT.id == 1 && itemG.group_m == 1) {
+                group_name = "H/W";
+              } else if (itemMT.id == 1 && itemG.group_m == 2) {
+                group_name = "S/W";
+              } else if (itemMT.id == 2 && itemG.group_m == 1) {
+                group_name = "전산부분";
+              } else if (itemMT.id == 2 && itemG.group_m == 2) {
+                group_name = "일반부분";
+              }
+              return {
+                group_name,
+                group_m: itemG.group_m,
+                chart,
+              };
+            })
+          );
+          return {
+            ...itemMT,
+            group,
+          };
+        })
+      );
+
+      return {
+        titleCurrentYear: {
+          accumulationRegisterYear,
+          amountRequestCompletedYear,
+          amountRequestProcessingYear,
+          amountRequestCompletedPercentYear,
+          accumulationRegisterMonth,
+          amountRequestCompletedMonth,
+          amountRequestProcessingMonth,
+          amountRequestCompletedPercentMonth,
+        },
+        mainType,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getInforReport Sevice",
         status: false,
         error: 500,
       };
