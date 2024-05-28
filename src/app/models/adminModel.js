@@ -1049,7 +1049,7 @@ WHERE
   amountAccumulationRegister: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name, COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+        `SELECT mt.type_name, COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on rs.maintenance_id = mt.id  and  ${nameCondition}(rs.created_at)="${datetime}" GROUP BY mt.type_name;`
       );
       result = result.map((item) => {
         return { ...item, countRequest: parseInt(item.countRequest) };
@@ -1064,7 +1064,8 @@ WHERE
   amountRequestCompleted: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM  maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id  
+        and (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${datetime}" GROUP BY mt.type_name;`
       );
       result = result.map((item) => {
         return { ...item, countRequest: parseInt(item.countRequest) };
@@ -1078,7 +1079,7 @@ WHERE
   amountRequestProcessing: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt  WHERE rs.maintenance_id = mt.id AND (rs.status_id=2 OR rs.status_id=3) AND ${nameCondition}(rs.created_at)=${datetime} GROUP BY mt.id;`
+        `SELECT mt.type_name,COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on rs.maintenance_id = mt.id   and  (rs.status_id=2 OR rs.status_id=3) AND ${nameCondition}(rs.created_at)="${datetime}" GROUP BY mt.type_name;`
       );
       result = result.map((item) => {
         return { ...item, countRequest: parseInt(item.countRequest) };
@@ -1092,10 +1093,10 @@ WHERE
   amountPerRequestCompleted: async (nameCondition, dateime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name,((COUNT(rs.id)/rs2.countRequest)*100) AS percent
-        FROM request_storage rs,maintenance_type mt,
-        (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs,maintenance_type mt WHERE rs.maintenance_id = mt.id AND ${nameCondition}(rs.created_at)=2024) AS rs2
-        WHERE rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)=${dateime} group BY mt.id;`
+        `SELECT mt.type_name, ROUND(((COUNT(rs.id)/rs2.countRequest)*100), 2) AS percent
+        FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id and rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
+        (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2
+         group BY mt.type_name;`
       );
 
       return result;
@@ -1126,23 +1127,89 @@ GROUP BY ll.id`
   },
   getInforChartByOption: async (maintenance_id, group_m, option, data) => {
     try {
-      const last = data[option] - 1;
+      const lastTime = data[option] - 1;
       const thisTime = data[option];
+      
       let result = await pool.query(
         `SELECT ll.id AS list_label_id, 
-COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${last} AND YEAR(rs.created_at) = data.year THEN 1 ELSE 0 END), 0) AS count_lastTime,
-COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = data.year THEN 1 ELSE 0 END), 0) AS count_thisTime 
-FROM list_label ll 
-LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
-LEFT JOIN processing_details pd ON pd.label_id = ll.id 
-LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
-where  mc.group_m = ${maintenance_id} AND mc.maintenance_id = ${group_m} 
-GROUP BY ll.id`
+          COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${lastTime} AND YEAR(rs.created_at) =${data.year} THEN 1 ELSE 0 END), 0) AS count_lastTime,
+          COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_thisTime 
+          FROM list_label ll 
+          LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
+          LEFT JOIN processing_details pd ON pd.label_id = ll.id 
+          LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
+          where  mc.group_m = ${maintenance_id} AND mc.maintenance_id = ${group_m} 
+          GROUP BY ll.id`
       );
 
       return result;
     } catch (error) {
       console.log("error model getInforChartByOption :", error);
+      return false;
+    }
+  },
+  getCountRequestNotCompleteOption: async (maintenance_id, option, data) => {
+    try {
+      const lastTwoTime = data[option] - 2;
+      const lastTime = data[option] - 1;
+      const thisTime = data[option];
+
+      let result = await pool.query(
+        `SELECT
+        COALESCE(sum(CASE WHEN ${option}(rs.created_at) = ${lastTwoTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_last_two_month,
+        COALESCE(sum(CASE WHEN ${option}(rs.created_at) =${lastTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_last_month,
+        COALESCE(sum(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_this_month
+        FROM request_storage rs
+        where  rs.status_id IN (1,2,3) and maintenance_id=${maintenance_id}`
+        //         `SELECT
+        //  COALESCE(sum(CASE WHEN MONTH(rs.created_at) = 3 AND YEAR(rs.created_at) = 2024 THEN 1 ELSE 0 END), 0) AS count_last_two_month,
+        //  COALESCE(sum(CASE WHEN MONTH(rs.created_at) =4 AND YEAR(rs.created_at) = 2024 THEN 1 ELSE 0 END), 0) AS count_last_month,
+        //  COALESCE(sum(CASE WHEN MONTH(rs.created_at) = 5 AND YEAR(rs.created_at) = 2024 THEN 1 ELSE 0 END), 0) AS count_this_month
+        //  FROM request_storage rs
+        //  where  rs.status_id IN (1,2,3) and maintenance_id=1`
+      );
+
+      return result[0];
+    } catch (error) {
+      console.log("error model getCountRequestNotCompleteCurrent :", error);
+      return false;
+    }
+  },
+
+  getCountAllMethod: async (option, datetime) => {
+    try {
+      let result = await pool.query(
+        `select mt.id,mt.method_name, CAST(COUNT(rs.id) as CHAR) AS count from method mt left join request_storage rs on rs.method_id=mt.id  and ${option}(rs.created_at)="${datetime}" group by mt.id`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getAllMethod :", error);
+      return false;
+    }
+  },
+
+  getCountAllSolution: async (option, datetime) => {
+    try {
+      let result = await pool.query(
+        `select s.id,s.solution_name, s.type, cast(count(rs.id) as char) as count from solution s left join request_storage rs on s.id=rs.solution_id  and ${option}(rs.created_at)="${datetime}"  group by s.id `
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getAllSolution :", error);
+      return false;
+    }
+  },
+  getListNewRequest: async () => {
+    try {
+      let result = await pool.query(
+        `select rs.title_request,rs.content_request,u.name,rs.created_at from request_storage rs left join users u on rs.petitioner_id = u.id order by rs.created_at desc limit 5`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model getListNewRequest :", error);
       return false;
     }
   },

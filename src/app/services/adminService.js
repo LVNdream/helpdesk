@@ -13,7 +13,7 @@ class adminPageService {
       const requestCount = await adminModel.getAdminRequestCount();
 
       return resutl
-        ? { data: resutl, requestCount: parseInt(requestCount) }
+        ? { resutl, requestCount: parseInt(requestCount) }
         : {
             message: "Error model getRequestList By Admin",
             status: false,
@@ -47,7 +47,10 @@ class adminPageService {
         page
       );
       return resutl
-        ? { data: resutl.listFilter, requestCount: resutl.requestCount }
+        ? {
+            data: resutl.listFilter,
+            requestCount: resutl.requestCount,
+          }
         : {
             message: "Error model getRequestList By search",
             status: false,
@@ -1112,56 +1115,39 @@ class adminPageService {
     }
   }
 
-  async getInforReport() {
+  async getInforReport(data) {
     try {
-      const currentDateTime = new Date(Date.now());
       let accumulationRegisterYear =
-        await adminModel.amountAccumulationRegister(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountAccumulationRegister("year", data.year);
       let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
         "year",
-        currentDateTime.getFullYear()
+        data.year
       );
       let amountRequestProcessingYear =
-        await adminModel.amountRequestProcessing(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountRequestProcessing("year", data.year);
       let amountRequestCompletedPercentYear =
-        await adminModel.amountPerRequestCompleted(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountPerRequestCompleted("year", data.year);
       let accumulationRegisterMonth =
-        await adminModel.amountAccumulationRegister(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
-        "year",
-        currentDateTime.getFullYear()
+        "month",
+        data.month
       );
       let amountRequestProcessingMonth =
-        await adminModel.amountRequestProcessing(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
-        await adminModel.amountPerRequestCompleted(
-          "year",
-          currentDateTime.getFullYear()
-        );
+        await adminModel.amountPerRequestCompleted("month", data.month);
       let mainType = await userPageModel.getMaintenanceType();
-      mainType = await Promise.all(
+      const mainTypeChart = await Promise.all(
         mainType.map(async (itemMT) => {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
           group = await Promise.all(
             group.map(async (itemG) => {
-              const chart = await adminModel.getInforChartCurrentMonth(
+              const chart = await adminModel.getInforChartByOption(
                 itemMT.id,
-                itemG.group_m
+                itemG.group_m,
+                "month",
+                data
               );
               let group_name = "";
               if (itemMT.id == 1 && itemG.group_m == 1) {
@@ -1187,6 +1173,40 @@ class adminPageService {
         })
       );
 
+      // ////////////
+      const mainTypeRequestNotComplete = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let listRequest = await adminModel.getCountRequestNotCompleteOption(
+            itemMT.id,
+            "month",
+            data
+          );
+
+          return {
+            ...itemMT,
+            listRequest,
+          };
+        })
+      );
+
+      const methodCount = await adminModel.getCountAllMethod(
+        "month",
+        data.month
+      );
+      const solutionCount = await adminModel.getCountAllSolution(
+        "month",
+        data.month
+      );
+
+      const solutionOnsite = solutionCount.filter((item) => {
+        return item.type == 1;
+      });
+
+      const solutionOrderCompany = solutionCount.filter((item) => {
+        return item.type == 2;
+      });
+      const listNewRequest = await adminModel.getListNewRequest();
+
       return {
         titleCurrentYear: {
           accumulationRegisterYear,
@@ -1198,12 +1218,367 @@ class adminPageService {
           amountRequestProcessingMonth,
           amountRequestCompletedPercentMonth,
         },
-        mainType,
+        titleCurrentMonth: {
+          accumulationRegisterMonth,
+          amountRequestCompletedMonth,
+          amountRequestProcessingMonth,
+          amountRequestCompletedPercentMonth,
+        },
+        mainTypeChart,
+        mainTypeRequestNotComplete,
+        methodCount,
+        solutionCount: [
+          { name: "자체처리", solutionOnsite },
+          { name: "외주기관 이관", solutionOrderCompany },
+        ],
+        listNewRequest,
       };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error getInforReport Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getInforReportDaily(data) {
+    try {
+      const datetime = data.year + "-" + data.month + "-" + data.day;
+      let accumulationRegisterMonth =
+        await adminModel.amountAccumulationRegister("date", datetime);
+      let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
+        "date",
+        datetime
+      );
+      let amountRequestProcessingMonth =
+        await adminModel.amountRequestProcessing("date", datetime);
+      let amountRequestCompletedPercentMonth =
+        await adminModel.amountPerRequestCompleted("date", datetime);
+
+      //
+      let mainType = await userPageModel.getMaintenanceType();
+      const mainTypeChart = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          group = await Promise.all(
+            group.map(async (itemG) => {
+              const chart = await adminModel.getInforChartByOption(
+                itemMT.id,
+                itemG.group_m,
+                "month",
+                data
+              );
+              let group_name = "";
+              if (itemMT.id == 1 && itemG.group_m == 1) {
+                group_name = "H/W";
+              } else if (itemMT.id == 1 && itemG.group_m == 2) {
+                group_name = "S/W";
+              } else if (itemMT.id == 2 && itemG.group_m == 1) {
+                group_name = "전산부분";
+              } else if (itemMT.id == 2 && itemG.group_m == 2) {
+                group_name = "일반부분";
+              }
+              return {
+                group_name,
+                group_m: itemG.group_m,
+                chart,
+              };
+            })
+          );
+          return {
+            ...itemMT,
+            group,
+          };
+        })
+      );
+
+      // ////////////
+      const mainTypeRequestNotComplete = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let listRequest = await adminModel.getCountRequestNotCompleteOption(
+            itemMT.id,
+            "month",
+            data
+          );
+
+          return {
+            ...itemMT,
+            listRequest,
+          };
+        })
+      );
+
+      const methodCount = await adminModel.getCountAllMethod("date", datetime);
+      const solutionCount = await adminModel.getCountAllSolution(
+        "date",
+        datetime
+      );
+
+      const solutionOnsite = solutionCount.filter((item) => {
+        return item.type == 1;
+      });
+
+      const solutionOrderCompany = solutionCount.filter((item) => {
+        return item.type == 2;
+      });
+      const listNewRequest = await adminModel.getListNewRequest();
+
+      return {
+        titleCurrentMonth: {
+          accumulationRegisterMonth,
+          amountRequestCompletedMonth,
+          amountRequestProcessingMonth,
+          amountRequestCompletedPercentMonth,
+        },
+        mainTypeChart,
+        mainTypeRequestNotComplete,
+        methodCount,
+        solutionCount: [
+          { name: "자체처리", solutionOnsite },
+          { name: "외주기관 이관", solutionOrderCompany },
+        ],
+        listNewRequest,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getInforReport Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async getInforReportWeek(data) {
+    try {
+      let month = new Date(Date.now()).getMonth() + 1;
+      let accumulationRegisterMonth =
+        await adminModel.amountAccumulationRegister("week", data.week);
+      let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
+        "week",
+        data.week
+      );
+      let amountRequestProcessingMonth =
+        await adminModel.amountRequestProcessing("week", data.week);
+      let amountRequestCompletedPercentMonth =
+        await adminModel.amountPerRequestCompleted("week", data.week);
+
+      //
+      let mainType = await userPageModel.getMaintenanceType();
+      const mainTypeChart = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          group = await Promise.all(
+            group.map(async (itemG) => {
+              const chart = await adminModel.getInforChartByOption(
+                itemMT.id,
+                itemG.group_m,
+                "month",
+                { month, year: data.year }
+              );
+              let group_name = "";
+              if (itemMT.id == 1 && itemG.group_m == 1) {
+                group_name = "H/W";
+              } else if (itemMT.id == 1 && itemG.group_m == 2) {
+                group_name = "S/W";
+              } else if (itemMT.id == 2 && itemG.group_m == 1) {
+                group_name = "전산부분";
+              } else if (itemMT.id == 2 && itemG.group_m == 2) {
+                group_name = "일반부분";
+              }
+              return {
+                group_name,
+                group_m: itemG.group_m,
+                chart,
+              };
+            })
+          );
+          return {
+            ...itemMT,
+            group,
+          };
+        })
+      );
+
+      // ////////////
+      const mainTypeRequestNotComplete = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let listRequest = await adminModel.getCountRequestNotCompleteOption(
+            itemMT.id,
+            "month",
+            { month, year: data.year }
+          );
+
+          return {
+            ...itemMT,
+            listRequest,
+          };
+        })
+      );
+
+      const methodCount = await adminModel.getCountAllMethod("week", data.week);
+      const solutionCount = await adminModel.getCountAllSolution(
+        "week",
+        data.week
+      );
+
+      const solutionOnsite = solutionCount.filter((item) => {
+        return item.type == 1;
+      });
+
+      const solutionOrderCompany = solutionCount.filter((item) => {
+        return item.type == 2;
+      });
+      const listNewRequest = await adminModel.getListNewRequest();
+
+      return {
+        titleCurrentMonth: {
+          accumulationRegisterMonth,
+          amountRequestCompletedMonth,
+          amountRequestProcessingMonth,
+          amountRequestCompletedPercentMonth,
+        },
+        mainTypeChart,
+        mainTypeRequestNotComplete,
+        methodCount,
+        solutionCount: [
+          { name: "자체처리", solutionOnsite },
+          { name: "외주기관 이관", solutionOrderCompany },
+        ],
+        listNewRequest,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getInforReport Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async getInforReportMonthly(data) {
+    try {
+      let accumulationRegisterMonth =
+        await adminModel.amountAccumulationRegister("month", data.month);
+      let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
+        "month",
+        data.month
+      );
+      let amountRequestProcessingMonth =
+        await adminModel.amountRequestProcessing("month", data.month);
+      let amountRequestCompletedPercentMonth =
+        await adminModel.amountPerRequestCompleted("month", data.month);
+      //
+
+      let accumulationRegisterYear =
+        await adminModel.amountAccumulationRegister("year", data.year);
+      let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
+        "year",
+        data.year
+      );
+      let amountRequestProcessingYear =
+        await adminModel.amountRequestProcessing("year", data.year);
+      let amountRequestCompletedPercentYear =
+        await adminModel.amountPerRequestCompleted("year", data.year);
+
+      //
+      let mainType = await userPageModel.getMaintenanceType();
+      const mainTypeChart = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          group = await Promise.all(
+            group.map(async (itemG) => {
+              const chart = await adminModel.getInforChartByOption(
+                itemMT.id,
+                itemG.group_m,
+                "month",
+                data
+              );
+              let group_name = "";
+              if (itemMT.id == 1 && itemG.group_m == 1) {
+                group_name = "H/W";
+              } else if (itemMT.id == 1 && itemG.group_m == 2) {
+                group_name = "S/W";
+              } else if (itemMT.id == 2 && itemG.group_m == 1) {
+                group_name = "전산부분";
+              } else if (itemMT.id == 2 && itemG.group_m == 2) {
+                group_name = "일반부분";
+              }
+              return {
+                group_name,
+                group_m: itemG.group_m,
+                chart,
+              };
+            })
+          );
+          return {
+            ...itemMT,
+            group,
+          };
+        })
+      );
+
+      // ////////////
+      const mainTypeRequestNotComplete = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let listRequest = await adminModel.getCountRequestNotCompleteOption(
+            itemMT.id,
+            "month",
+            data
+          );
+
+          return {
+            ...itemMT,
+            listRequest,
+          };
+        })
+      );
+
+      const methodCount = await adminModel.getCountAllMethod(
+        "month",
+        data.month
+      );
+      const solutionCount = await adminModel.getCountAllSolution(
+        "month",
+        data.month
+      );
+
+      const solutionOnsite = solutionCount.filter((item) => {
+        return item.type == 1;
+      });
+
+      const solutionOrderCompany = solutionCount.filter((item) => {
+        return item.type == 2;
+      });
+      const listNewRequest = await adminModel.getListNewRequest();
+
+      return {
+        titleCurrentMonth: {
+          accumulationRegisterMonth,
+          amountRequestCompletedMonth,
+          amountRequestProcessingMonth,
+          amountRequestCompletedPercentMonth,
+        },
+        titleCurrentYear: {
+          accumulationRegisterYear,
+          amountRequestCompletedYear,
+          amountRequestProcessingYear,
+          amountRequestCompletedPercentYear,
+        },
+        mainTypeChart,
+        mainTypeRequestNotComplete,
+        methodCount,
+        solutionCount: [
+          { name: "자체처리", solutionOnsite },
+          { name: "외주기관 이관", solutionOrderCompany },
+        ],
+        listNewRequest,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getInforReportMonthly Sevice",
         status: false,
         error: 500,
       };

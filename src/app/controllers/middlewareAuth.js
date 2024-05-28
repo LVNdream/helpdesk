@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const middlewareAuth = {
   verifyAuthentication: (req, res, next) => {
     try {
+      // console.log(req.headers.cookies)
       const token = req.headers.authorization.slice(7);
       if (!token) {
         return res.status(401).json({
@@ -25,7 +26,7 @@ const middlewareAuth = {
       });
     } catch (error) {
       console.log("rrororo", error);
-      return res.status(401).json({
+      return res.status(200).json({
         message: "Error server verifyAuthentication ",
         status: false,
         error: 501,
@@ -55,6 +56,21 @@ const middlewareAuth = {
       res
         .status(401)
         .json({ message: "Invalid ID Admin", status: true, error: 403 });
+    }
+  },
+  verifyNormalUser: async (req, res, next) => {
+    const user = await authModel.findAccountById(req.body.id);
+
+    if (user.role_id == 1 || user.role_id == 2 || user.role_id == 4) {
+      return next();
+    } else {
+      res
+        .status(401)
+        .json({
+          message: "You are not permission login ",
+          status: true,
+          error: 403,
+        });
     }
   },
   verifyToKenHelperAuth: (req, res, next) => {

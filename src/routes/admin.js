@@ -201,10 +201,26 @@ router.post(
   middlewareAuth.verifyAuthentication,
   adminController.addLabelInMainclass
 );
+
 router.get(
-  "/getinforreport",
+  "/getinforreport/",
   middlewareAuth.verifyAuthentication,
-  adminController.getInforReport
+  adminController.getInforReportCurrent
+);
+router.get(
+  "/getinforreport/daily",
+  middlewareAuth.verifyAuthentication,
+  adminController.getInforReportDaily
+);
+router.get(
+  "/getinforreport/week",
+  middlewareAuth.verifyAuthentication,
+  adminController.getInforReportWeek
+);
+router.get(
+  "/getinforreport/month",
+  middlewareAuth.verifyAuthentication,
+  adminController.getInforReportMonth
 );
 
 module.exports = router;

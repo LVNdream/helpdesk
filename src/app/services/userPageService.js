@@ -7,10 +7,10 @@ class userPageService {
     try {
       const resutl = await userPageModel.getRequestList(data.id, page);
       // console.log(resutl)
-      const requestCount = await userPageModel.getUserRequestCount(data.id)
+      const requestCount = await userPageModel.getUserRequestCount(data.id);
 
       return resutl
-        ? { data: resutl, requestCount:parseInt(requestCount) }
+        ? { data: resutl, requestCount: parseInt(requestCount) }
         : { message: "Error model getRequestList", status: false, error: 501 };
     } catch (error) {
       console.log(error);
@@ -89,9 +89,7 @@ class userPageService {
               title_request: resutlConfirm_Register.title_request,
               content_request: resutlConfirm_Register.content_request,
               maintenance_id: resutlConfirm_Register.maintenance_id,
-
               method_name: resutlConfirm_Register.method_name,
-
               solution_name: resutlConfirm_Register.solution_name,
               created_at: resutlConfirm_Register.created_at,
               infor_petitioner: {

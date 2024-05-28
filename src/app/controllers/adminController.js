@@ -57,7 +57,7 @@ class adminController {
       } else {
         page = req.query.page;
       }
-      const result = await adminService.getAllUser(0, page);
+      const result = await adminService.getAllUser(4, page);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -74,7 +74,7 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listUserBySearch(
-        0,
+        4,
         req.body.option,
         req.body.text,
         page
@@ -327,7 +327,7 @@ class adminController {
       } else {
         page = req.query.page;
       }
-      const result = await adminService.getAllUserWaitAccept(0, page);
+      const result = await adminService.getAllUserWaitAccept(4, page);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -457,9 +457,43 @@ class adminController {
     }
   }
 
-  async getInforReport(req, res) {
+  async getInforReportCurrent(req, res) {
     try {
-      const result = await adminService.getInforReport();
+      const currentDateTime = new Date(Date.now());
+      const data = {
+        month: currentDateTime.getMonth() + 1,
+        year: currentDateTime.getFullYear(),
+      };
+
+      const result = await adminService.getInforReport(data);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async getInforReportDaily(req, res) {
+    try {
+      const result = await adminService.getInforReportDaily(req.body);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async getInforReportWeek(req, res) {
+    try {
+      const result = await adminService.getInforReportWeek(req.body);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async getInforReportMonth(req, res) {
+    try {
+      const result = await adminService.getInforReportMonthly(req.body);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

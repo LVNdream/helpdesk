@@ -71,7 +71,7 @@ router.post(
   helperController.verifyCompleted
 );
 router.get(
-  "/getinforcompleted",
+  "/getinforcompleted/:request_id",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getInforComplted
 );

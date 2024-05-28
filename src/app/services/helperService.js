@@ -11,10 +11,13 @@ class helperPageService {
         page
       );
 
-      const requestCount = await helperModel.getHelperRequestCount(recipient_id,role_id);
+      const requestCount = await helperModel.getHelperRequestCount(
+        recipient_id,
+        role_id
+      );
 
       return resutl
-        ? { data: resutl, requestCount:parseInt(requestCount) }
+        ? { data: resutl, requestCount: parseInt(requestCount) }
         : {
             message: "Error model getRequestListByHelper",
             status: false,
@@ -50,7 +53,7 @@ class helperPageService {
         const resultInfor = await userPageModel.getRequestConfirm_Register(
           request_id
         );
-        console.log(resultInfor.recipient_id, recipient_id);
+        // console.log(resultInfor.recipient_id, recipient_id);
         if (
           (status_id == 2 || status_id == 3) &&
           resultInfor.recipient_id != recipient_id
@@ -85,17 +88,23 @@ class helperPageService {
             };
           }
           return {
-            ...resultInfor,
-            listProblem_RQ,
-            MT_Register,
-            status_id: status_id + 1,
+            data: {
+              ...resultInfor,
+              listProblem_RQ,
+              MT_Register,
+              status_id: status_id + 1,
+            },
+            status: true,
           };
         }
         return {
-          ...resultInfor,
-          listProblem_RQ,
-          MT_Register,
-          status_id: status_id,
+          data: {
+            ...resultInfor,
+            listProblem_RQ,
+            MT_Register,
+            status_id: status_id,
+          },
+          status: true,
         };
       } else if (status_id == 4 || status_id == 5) {
         const resultInfor = await userPageModel.getRequestCompleted(request_id);
@@ -109,33 +118,36 @@ class helperPageService {
         }
 
         return {
-          id: resultInfor.id,
-          title_request: resultInfor.title_request,
-          content_request: resultInfor.content_request,
-          created_at: resultInfor.created_at,
-          processing_content_problem: resultInfor.processing_content_problem,
-          solution_name: resultInfor.solution_name,
-          method_name: resultInfor.method_name,
+          data: {
+            id: resultInfor.id,
+            title_request: resultInfor.title_request,
+            content_request: resultInfor.content_request,
+            created_at: resultInfor.created_at,
+            processing_content_problem: resultInfor.processing_content_problem,
+            solution_name: resultInfor.solution_name,
+            method_name: resultInfor.method_name,
 
-          infor_petitioner: {
-            p_id: resultInfor.petitioner_id,
-            p_name: resultInfor.p_name,
-            p_affiliated_department: resultInfor.p_affiliated_department,
-            p_phone_number: resultInfor.p_phone_number,
-            p_position: resultInfor.p_position,
-            p_email: resultInfor.p_email,
+            infor_petitioner: {
+              p_id: resultInfor.petitioner_id,
+              p_name: resultInfor.p_name,
+              p_affiliated_department: resultInfor.p_affiliated_department,
+              p_phone_number: resultInfor.p_phone_number,
+              p_position: resultInfor.p_position,
+              p_email: resultInfor.p_email,
+            },
+            infor_recipient: {
+              r_id: resultInfor.r_id,
+              r_name: resultInfor.r_name,
+              r_affiliated_department: resultInfor.r_affiliated_department,
+              r_phone_number: resultInfor.r_phone_number,
+              r_position: resultInfor.r_position,
+              r_email: resultInfor.r_email,
+            },
+            MT_Register,
+            listProblem_RQ,
+            status_id,
           },
-          infor_recipient: {
-            r_id: resultInfor.r_id,
-            r_name: resultInfor.r_name,
-            r_affiliated_department: resultInfor.r_affiliated_department,
-            r_phone_number: resultInfor.r_phone_number,
-            r_position: resultInfor.r_position,
-            r_email: resultInfor.r_email,
-          },
-          MT_Register,
-          listProblem_RQ,
-          status_id,
+          status: true,
         };
       }
     } catch (error) {
@@ -401,7 +413,7 @@ class helperPageService {
         status_id: data.status_id,
       };
 
-      console.log(dataUpdate);
+      // console.log(dataUpdate);
       const resultUpdate = await helperModel.addDataTocompleted(
         request_id,
         dataUpdate
@@ -465,7 +477,7 @@ class helperPageService {
       };
     }
   }
-  async getInforComplted(recipient_id) {
+  async getInforComplted(recipient_id, request_id) {
     try {
       //  get Infor
       const infor_recipient = await userPageModel.getUserInfor(recipient_id);
@@ -533,8 +545,16 @@ class helperPageService {
           };
         })
       );
+      const files = await userPageModel.getAllFileByRequest(request_id);
       // console.log(main_type);
-      return { main_type, methods, solutions, status, infor_recipient };
+      return {
+        main_type,
+        methods,
+        solutions,
+        status,
+        infor_recipient,
+        files,
+      };
     } catch (error) {
       console.log(error);
       return {

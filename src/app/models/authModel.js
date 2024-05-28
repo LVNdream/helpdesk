@@ -60,7 +60,7 @@ module.exports = {
   findId: async (data) => {
     try {
       const result = await pool.query(
-        `select account,name, email from users where 
+        `select account from users where 
         phone_number="${data.phone_number}" and
         name="${data.name}" and
         position="${data.position}" and  
@@ -69,11 +69,11 @@ module.exports = {
       if (result[0]) {
         return { data: result[0], status: true };
       } else {
-        return { data: result[0], status: true };
+        return { data: result[0], status: false };
       }
     } catch (error) {
       console.log("error model find ID:", error);
-      return { message: "Error model find ID", status: false, error: 501 };
+      return false;
     }
   },
   updateFirstLogin: async (user_id) => {
@@ -84,6 +84,28 @@ module.exports = {
       return result;
     } catch (error) {
       console.log("error model updateFirstlogin:", error);
+      return false;
+    }
+  },
+  updateCountLogin: async (user_id, count) => {
+    try {
+      const result = await pool.query(
+        `update users set count_login=${count} where id="${user_id}" `
+      );
+      return result;
+    } catch (error) {
+      console.log("error model updateFirstlogin:", error);
+      return false;
+    }
+  },
+  updateLastTimeLogin: async (user_id, dateTime) => {
+    try {
+      const result = await pool.query(
+        `update users set last_login=${dateTime} where id="${user_id}" `
+      );
+      return result;
+    } catch (error) {
+      console.log("error model updateLastTimeLogin:", error);
       return false;
     }
   },

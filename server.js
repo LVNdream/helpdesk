@@ -34,9 +34,7 @@ app.use(
 );
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", [
-    "http://192.168.1.3:3000",
-  ]);
+  res.header("Access-Control-Allow-Origin", ["http://192.168.1.3:3000"]);
   next();
 });
 

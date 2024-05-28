@@ -28,6 +28,15 @@ class authController {
       res.status(500).json({ message: "Server error", error: 501 });
     }
   }
+  async loginAdmin(req, res) {
+    try {
+      const result = await authService.loginAdmin(req.body);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Server error", error: 501 });
+    }
+  }
 
   async getBackId(req, res) {
     try {

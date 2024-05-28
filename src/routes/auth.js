@@ -6,14 +6,18 @@ router.post("/checkid", authController.checkId);
 
 router.post("/register", authController.register);
 
-router.post("/login", authController.login);
+router.post("/login",middlewareAuth.verifyNormalUser, authController.login);
 
 router.post(
   "/loginadmin",
   middlewareAuth.verifyLoginAdmin,
-  authController.login
+  authController.loginAdmin
 );
 router.post("/getbackid", authController.getBackId);
-router.post("/verifypassword",middlewareAuth.verifyAuthentication, authController.verifyPassword);
+router.post(
+  "/verifypassword",
+  middlewareAuth.verifyAuthentication,
+  authController.verifyPassword
+);
 
 module.exports = router;

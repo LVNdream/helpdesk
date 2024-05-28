@@ -138,7 +138,10 @@ class helperController {
   }
   async getInforComplted(req, res) {
     try {
-      const result = await helperService.getInforComplted(req.user.id);
+      const result = await helperService.getInforComplted(
+        req.user.id,
+        req.params.request_id
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
