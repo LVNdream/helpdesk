@@ -15,10 +15,10 @@ const middlewareAuth = {
       jwt.verify(token, process.env.JWT_ACCESS_KEY, (error, user) => {
         if (error) {
           console.log(error);
-          return res.status(401).json({
+          return res.status(403).json({
             message: "Your token not valid",
             status: false,
-            error: 401,
+            error: 403,
           });
         }
         req.user = user;
@@ -26,10 +26,10 @@ const middlewareAuth = {
       });
     } catch (error) {
       console.log("rrororo", error);
-      return res.status(200).json({
+      return res.status(500).json({
         message: "Error server verifyAuthentication ",
         status: false,
-        error: 501,
+        error: 500,
       });
     }
   },
@@ -43,6 +43,7 @@ const middlewareAuth = {
         return res.status(403).json({
           message: "You're not admin",
           status: false,
+          error: 403,
         });
       }
     });
@@ -53,9 +54,11 @@ const middlewareAuth = {
     if (user.role_id == 3) {
       return next();
     } else {
-      res
-        .status(401)
-        .json({ message: "Invalid ID Admin", status: true, error: 403 });
+      res.status(403).json({
+        message: "You are not Admin",
+        status: false,
+        error: 403,
+      });
     }
   },
   verifyNormalUser: async (req, res, next) => {
@@ -64,13 +67,11 @@ const middlewareAuth = {
     if (user.role_id == 1 || user.role_id == 2 || user.role_id == 4) {
       return next();
     } else {
-      res
-        .status(401)
-        .json({
-          message: "You are not permission login ",
-          status: true,
-          error: 403,
-        });
+      res.status(403).json({
+        message: "You are not permission login ",
+        status: false,
+        error: 403,
+      });
     }
   },
   verifyToKenHelperAuth: (req, res, next) => {
@@ -82,6 +83,7 @@ const middlewareAuth = {
         return res.status(403).json({
           message: "You're not helper",
           status: false,
+          rror: 403,
         });
       }
     });

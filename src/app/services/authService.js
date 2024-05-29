@@ -28,17 +28,17 @@ class authService {
 
           return resultRegister
             ? resultRegister
-            : { message: "Registered fail", status: false, error: 501 };
+            : { message: "Registered fail", status: false, error: 500 };
         }
       } else {
-        return { message: "Server error find ID", status: false, error: 501 };
+        return { message: "Server error find ID", status: false, error: 500 };
       }
     } catch (error) {
       console.log(error);
       return {
         message: "Server error registerSevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -50,14 +50,14 @@ class authService {
         return { message: "Error get account", status: false, error: 500 };
       }
       if (!user.id) {
-        return { message: "Id not valid", status: false, error: 404 };
+        return { message: "Id not valid", status: false, error: "404_id" };
       }
       if (user.status_id != 2) {
         if (user.status_id == 1) {
           return {
             message: "Account is waitting accept from admin",
             status: false,
-            error: "fail_status",
+            error: "f_status",
           };
         } else if (user.status_id == 3) {
           return {
@@ -75,7 +75,7 @@ class authService {
           return {
             message: "Account policy volidation",
             status: false,
-            error: "false_pv",
+            error: "pv",
           };
         } else if (user.status_id == 6) {
           return {
@@ -113,7 +113,7 @@ class authService {
         return {
           message: "User policy violation",
           status: false,
-          error: "false_pv",
+          error: "pv",
         };
       }
       const validPass = await bcrypt.compareSync(
@@ -150,7 +150,7 @@ class authService {
         return {
           message: "Password not valid",
           status: false,
-          error: "false_pw",
+          error: "f_pw",
         };
       }
 
@@ -212,7 +212,7 @@ class authService {
       return {
         message: "Server error login service",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -224,7 +224,7 @@ class authService {
         return { message: "Error get account", status: false, error: 500 };
       }
       if (!user.id) {
-        return { message: "Id not valid", status: false, error: 404 };
+        return { message: "Id not valid", status: false, error: "404_id" };
       }
 
       const validPass = await bcrypt.compareSync(
@@ -236,7 +236,7 @@ class authService {
         return {
           message: "Password not valid",
           status: false,
-          error: "false_pw",
+          error: "f_pw",
         };
       }
 
@@ -274,7 +274,7 @@ class authService {
       return {
         message: "Server error login service",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -294,7 +294,7 @@ class authService {
       return {
         message: "Server error checkId service",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -303,7 +303,7 @@ class authService {
     try {
       const resutl = await authModel.findId(data);
       if (!resutl) {
-        return { message: "Error model find ID", status: false, error: 501 };
+        return { message: "Error model find ID", status: false, error: 500 };
       }
       if (!resutl.status) {
         return {

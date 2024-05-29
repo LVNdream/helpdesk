@@ -11,7 +11,7 @@ class userPageService {
 
       return resutl
         ? { data: resutl, requestCount: parseInt(requestCount) }
-        : { message: "Error model getRequestList", status: false, error: 501 };
+        : { message: "Error model getRequestList", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {
@@ -40,7 +40,7 @@ class userPageService {
         : {
             message: "Error model getRequestList By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -79,7 +79,7 @@ class userPageService {
           return {
             message: "Error get file by request",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
         return resutlConfirm_Register
@@ -110,7 +110,7 @@ class userPageService {
           : {
               message: "Error model getRequestConfirm_Register",
               status: false,
-              error: 501,
+              error: 500,
             };
       }
       if (status_id == 4 || status_id == 5) {
@@ -133,14 +133,14 @@ class userPageService {
               return {
                 message: "Serve have error in getMaintenanceClassRequest",
                 status: false,
-                error: 501,
+                error: 500,
               };
             }
             if (!resutlProcessingDetail) {
               return {
                 message: "Serve have error in ProcessingDetail",
                 status: false,
-                error: 501,
+                error: 500,
               };
             }
             // console.log(resutlProcessingDetail);
@@ -216,7 +216,7 @@ class userPageService {
           return {
             message: "Error get file by request",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
         return resutlComplete_AddProblem
@@ -257,7 +257,7 @@ class userPageService {
           : {
               message: "Error model getRequestConfirm_Register",
               status: false,
-              error: 501,
+              error: 500,
             };
       }
     } catch (error) {
@@ -314,14 +314,14 @@ class userPageService {
         : {
             messsage: "Update Fail!, Error model update",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error UpdateUser Sevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -333,7 +333,7 @@ class userPageService {
         return {
           message: "Server error registerrequest Model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const request_id = resutlAddRequest.insertId;
@@ -349,7 +349,7 @@ class userPageService {
           return {
             message: "Server error addRequestFile Model",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -359,7 +359,7 @@ class userPageService {
         return {
           message: "Server error moveFile",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const dataAdd = await userPageModel.getRequestJustRegister(
@@ -377,7 +377,7 @@ class userPageService {
       return {
         message: "Server error userRegisterrequest Sevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -391,14 +391,14 @@ class userPageService {
         return {
           message: "Server error get status ID Model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       if (status_id != 1) {
         return {
           message: "Status not valid",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
 
@@ -407,7 +407,7 @@ class userPageService {
         return {
           message: "Error updateRequest model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const listDelete = arrayDelete.length;
@@ -420,7 +420,7 @@ class userPageService {
             return {
               message: "Server error Delete File Model",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
           const resultDeleleSever = await midService.deleteFile(file, "files");
@@ -428,7 +428,7 @@ class userPageService {
             return {
               message: "Server error Delete one File midService",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
         }
@@ -445,7 +445,7 @@ class userPageService {
             return {
               message: "Server error addRequestFile Model",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
         }
@@ -455,7 +455,7 @@ class userPageService {
           return {
             message: "Server error moveFile",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -469,7 +469,7 @@ class userPageService {
       return {
         message: "Server error Update Request Sevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -483,7 +483,7 @@ class userPageService {
           message:
             "Server error get status_id by request model or reqeusr_id not exist",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const resutlRequest = await userPageModel.getRequestById(request_id);
@@ -492,7 +492,7 @@ class userPageService {
         return {
           message: "Server error get request by id model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
 
@@ -528,7 +528,7 @@ class userPageService {
             return {
               message: "Server error Delete File Model",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
           const resultDeleleSever = await midService.deleteFile(file, "files");
@@ -536,7 +536,7 @@ class userPageService {
             return {
               message: "Server error Delete one File midService",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
         }
@@ -550,14 +550,14 @@ class userPageService {
         : {
             messsage: "Delete Fail!, Error model delete",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error delete Sevice",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -567,7 +567,7 @@ class userPageService {
 
       return resutl
         ? resutl
-        : { message: "Error model getUserInfor", status: false, error: 501 };
+        : { message: "Error model getUserInfor", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {
@@ -584,7 +584,7 @@ class userPageService {
 
       return resutl
         ? resutl
-        : { message: "Error model Get Status", status: false, error: 501 };
+        : { message: "Error model Get Status", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {

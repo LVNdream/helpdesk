@@ -21,7 +21,7 @@ class helperPageService {
         : {
             message: "Error model getRequestListByHelper",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -39,7 +39,7 @@ class helperPageService {
         return {
           message: "Error model get status id by request",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const MT_Register = await midService.getMaintenanceType_checked(
@@ -73,7 +73,7 @@ class helperPageService {
             return {
               message: "Error model update status id",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
           const resultUpdateRecipient = await helperModel.updateRecipient_id(
@@ -84,7 +84,7 @@ class helperPageService {
             return {
               message: "Error model update request recipient",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
           return {
@@ -187,7 +187,7 @@ class helperPageService {
         : {
             message: "Error model getRequestList By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -223,7 +223,7 @@ class helperPageService {
               return {
                 message: "Error add request problem model",
                 status: false,
-                error: 501,
+                error: 500,
               };
             }
           }
@@ -237,7 +237,7 @@ class helperPageService {
             return {
               message: "Error update request status model",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
           return {
@@ -275,7 +275,7 @@ class helperPageService {
           return {
             message: "Error add request problem model",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -288,7 +288,7 @@ class helperPageService {
           return {
             message: "Error update request status model",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -322,7 +322,7 @@ class helperPageService {
         return {
           message: "Error update request problem model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
 
@@ -356,7 +356,7 @@ class helperPageService {
         return {
           message: "Error Delete request problem model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const listProblem = await userPageModel.getAllProblemByRequest_id(
@@ -366,7 +366,7 @@ class helperPageService {
         return {
           message: "Error get all problem model",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       if (listProblem.length == 0) {
@@ -378,7 +378,7 @@ class helperPageService {
           return {
             message: "Error update status model",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -422,7 +422,7 @@ class helperPageService {
         return {
           message: "Error Update data to completed",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       const listProcessing = data.listProcessing;
@@ -439,7 +439,7 @@ class helperPageService {
           return {
             message: "Error add process detai;",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -466,7 +466,7 @@ class helperPageService {
         : {
             message: "Error model get Request Files",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -485,7 +485,7 @@ class helperPageService {
         return {
           message: "Error model get infor User",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       //
@@ -495,7 +495,7 @@ class helperPageService {
         return {
           message: "Error model get Method",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       //
@@ -505,7 +505,7 @@ class helperPageService {
         return {
           message: "Error model get solutions",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       //
@@ -515,7 +515,7 @@ class helperPageService {
         return {
           message: "Error model get status",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       //
@@ -525,7 +525,7 @@ class helperPageService {
         return {
           message: "Error model get Maintenance Type",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
       main_type = await Promise.all(
@@ -623,7 +623,7 @@ class helperPageService {
           return {
             message: "Server error addRequestFile Model",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }
@@ -633,7 +633,7 @@ class helperPageService {
         return {
           message: "Server error moveFile",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
 
@@ -652,7 +652,7 @@ class helperPageService {
           return {
             message: "Error add process detai;",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
       }

@@ -13,11 +13,11 @@ class adminPageService {
       const requestCount = await adminModel.getAdminRequestCount();
 
       return resutl
-        ? { resutl, requestCount: parseInt(requestCount) }
+        ? { data: resutl, requestCount: parseInt(requestCount) }
         : {
             message: "Error model getRequestList By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -54,7 +54,7 @@ class adminPageService {
         : {
             message: "Error model getRequestList By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -94,7 +94,7 @@ class adminPageService {
           return {
             message: "Error get file by request",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
         return resutlConfirm_Register
@@ -127,7 +127,7 @@ class adminPageService {
           : {
               message: "Error model getRequestConfirm_Register",
               status: false,
-              error: 501,
+              error: 500,
             };
       }
       if (status_id == 4 || status_id == 5) {
@@ -149,14 +149,14 @@ class adminPageService {
               return {
                 message: "Serve have error in getMaintenanceClassRequest",
                 status: false,
-                error: 501,
+                error: 500,
               };
             }
             if (!resutlProcessingDetail) {
               return {
                 message: "Serve have error in ProcessingDetail",
                 status: false,
-                error: 501,
+                error: 500,
               };
             }
             // console.log(resutlProcessingDetail);
@@ -232,7 +232,7 @@ class adminPageService {
           return {
             message: "Error get file by request",
             status: false,
-            error: 501,
+            error: 500,
           };
         }
         return resutlComplete_AddProblem
@@ -273,7 +273,7 @@ class adminPageService {
           : {
               message: "Error model getRequestConfirm_Register",
               status: false,
-              error: 501,
+              error: 500,
             };
       }
     } catch (error) {
@@ -293,7 +293,7 @@ class adminPageService {
         : {
             message: "Error model getAllUser By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -321,7 +321,7 @@ class adminPageService {
         : {
             message: "Error model get list user By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -345,7 +345,7 @@ class adminPageService {
         : {
             message: "Error model getAllHepler By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -372,7 +372,7 @@ class adminPageService {
         : {
             message: "Error model get list helper By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -397,7 +397,7 @@ class adminPageService {
         : {
             message: "Error model getcompany By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -424,7 +424,7 @@ class adminPageService {
         : {
             message: "Error model get list company By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -462,7 +462,7 @@ class adminPageService {
         : {
             message: "Error model getAllUser By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -485,7 +485,7 @@ class adminPageService {
         : {
             message: "Error model update User Status By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -508,7 +508,7 @@ class adminPageService {
         : {
             message: "Error model delete user  By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -518,7 +518,7 @@ class adminPageService {
         error: 500,
       };
     }
-  }
+  }  
 
   async getMaintenanceType() {
     try {
@@ -529,7 +529,7 @@ class adminPageService {
         : {
             message: "Error model getMaintenance By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -565,17 +565,17 @@ class adminPageService {
 
           return resultRegister
             ? resultRegister
-            : { message: "Registered fail", status: false, error: 501 };
+            : { message: "Registered fail", status: false, error: 500 };
         }
       } else {
-        return { message: "Server error find ID", status: false, error: 501 };
+        return { message: "Server error find ID", status: false, error: 500 };
       }
     } catch (error) {
       console.log(error);
       return {
         message: "Server error register helper",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -609,7 +609,7 @@ class adminPageService {
         : {
             message: "Error model getAllUser By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -633,7 +633,7 @@ class adminPageService {
         : {
             message: "Error model update User helper infor By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -654,7 +654,7 @@ class adminPageService {
         : {
             message: "Error model checkNameCompany By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -684,7 +684,7 @@ class adminPageService {
         : {
             message: "Error model getcompany By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -718,7 +718,7 @@ class adminPageService {
         : {
             message: "Error model get list company By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -747,13 +747,13 @@ class adminPageService {
 
           return resultRegister
             ? resultRegister
-            : { message: "Registered fail", status: false, error: 501 };
+            : { message: "Registered fail", status: false, error: 500 };
         }
       } else {
         return {
           message: "Server error find company",
           status: false,
-          error: 501,
+          error: 500,
         };
       }
     } catch (error) {
@@ -761,7 +761,7 @@ class adminPageService {
       return {
         message: "Server error register helper",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -775,7 +775,7 @@ class adminPageService {
         : {
             message: "Error model getcompany By Id",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -793,13 +793,13 @@ class adminPageService {
 
       return resultUpdate
         ? { message: "Update success", status: true }
-        : { message: "Update fail", status: false, error: 501 };
+        : { message: "Update fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error Update Company",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -816,7 +816,7 @@ class adminPageService {
         : {
             message: "Error model delete company  By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -839,7 +839,7 @@ class adminPageService {
         : {
             message: "Error model getAllUser wait accept By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -867,7 +867,7 @@ class adminPageService {
         : {
             message: "Error model get list user wait accept By search",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -890,7 +890,7 @@ class adminPageService {
             return {
               message: "Serve have error in getMaintenanceClassRequest",
               status: false,
-              error: 501,
+              error: 500,
             };
           }
 
@@ -942,7 +942,7 @@ class adminPageService {
         : {
             message: "Error model Admin getmaintenance class",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -960,13 +960,13 @@ class adminPageService {
 
       return resultUpdate
         ? { message: "Update success", status: true }
-        : { message: "Update fail", status: false, error: 501 };
+        : { message: "Update fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error Update label Name",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -976,13 +976,13 @@ class adminPageService {
 
       return resultRegister
         ? resultRegister
-        : { message: "Registered fail", status: false, error: 501 };
+        : { message: "Registered fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
       return {
         message: "Server error register label name",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -996,7 +996,7 @@ class adminPageService {
         : {
             message: "Error model getListLabel By Admin",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -1019,7 +1019,7 @@ class adminPageService {
         : {
             message: "Error model get lisLabelBySearch",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -1067,7 +1067,7 @@ class adminPageService {
         : {
             message: "Error model getMaintenanceClassById",
             status: false,
-            error: 501,
+            error: 500,
           };
     } catch (error) {
       console.log(error);
@@ -1100,17 +1100,17 @@ class adminPageService {
 
           return resultRegister
             ? resultRegister
-            : { message: "add Label succsess", status: false, error: 501 };
+            : { message: "add Label succsess", status: false, error: 500 };
         }
       } else {
-        return { message: "Server error find ID", status: false, error: 501 };
+        return { message: "Server error find ID", status: false, error: 500 };
       }
     } catch (error) {
       console.log(error);
       return {
         message: "Server error addLabelInMainclass",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -1208,29 +1208,81 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleCurrentYear: {
-          accumulationRegisterYear,
-          amountRequestCompletedYear,
-          amountRequestProcessingYear,
-          amountRequestCompletedPercentYear,
-          accumulationRegisterMonth,
-          amountRequestCompletedMonth,
-          amountRequestProcessingMonth,
-          amountRequestCompletedPercentMonth,
-        },
-        titleCurrentMonth: {
-          accumulationRegisterMonth,
-          amountRequestCompletedMonth,
-          amountRequestProcessingMonth,
-          amountRequestCompletedPercentMonth,
-        },
+        titleYear: [
+          {
+            title: "누적 등록건수",
+            data: accumulationRegisterYear,
+            count: accumulationRegisterYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "누적 처리완료",
+            data: amountRequestCompletedYear,
+            count: amountRequestCompletedYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "누적 진행중",
+            data: amountRequestProcessingYear,
+            count: amountRequestProcessingYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentYear,
+            count: amountRequestCompletedPercentYear.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
+
+        titleMonth: [
+          {
+            title: "등록건수",
+            data: accumulationRegisterMonth,
+            count: accumulationRegisterMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리완료",
+            data: amountRequestCompletedMonth,
+            count: amountRequestCompletedMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "진행중",
+            data: amountRequestProcessingMonth,
+            count: amountRequestProcessingMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentMonth,
+            count: amountRequestCompletedPercentMonth.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
         mainTypeChart,
         mainTypeRequestNotComplete,
         methodCount,
-        solutionCount: [
-          { name: "자체처리", solutionOnsite },
-          { name: "외주기관 이관", solutionOrderCompany },
-        ],
+        solutionCount: {
+          onsite: { name: "자체처리", data: solutionOnsite },
+          ortherCoompany: { ...solutionOrderCompany[0] },
+        },
+
         listNewRequest,
       };
     } catch (error) {
@@ -1326,19 +1378,47 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleCurrentMonth: {
-          accumulationRegisterMonth,
-          amountRequestCompletedMonth,
-          amountRequestProcessingMonth,
-          amountRequestCompletedPercentMonth,
-        },
+        titleMonth: [
+          {
+            title: "등록건수",
+            data: accumulationRegisterMonth,
+            count: accumulationRegisterMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리완료",
+            data: amountRequestCompletedMonth,
+            count: amountRequestCompletedMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "진행중",
+            data: amountRequestProcessingMonth,
+            count: amountRequestProcessingMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentMonth,
+            count: amountRequestCompletedPercentMonth.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
         mainTypeChart,
         mainTypeRequestNotComplete,
         methodCount,
-        solutionCount: [
-          { name: "자체처리", solutionOnsite },
-          { name: "외주기관 이관", solutionOrderCompany },
-        ],
+        solutionCount: {
+          onsite: { name: "자체처리", data: solutionOnsite },
+          ortherCoompany: { ...solutionOrderCompany[0] },
+        },
+
         listNewRequest,
       };
     } catch (error) {
@@ -1433,19 +1513,47 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleCurrentMonth: {
-          accumulationRegisterMonth,
-          amountRequestCompletedMonth,
-          amountRequestProcessingMonth,
-          amountRequestCompletedPercentMonth,
-        },
+        titleMonth: [
+          {
+            title: "등록건수",
+            data: accumulationRegisterMonth,
+            count: accumulationRegisterMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리완료",
+            data: amountRequestCompletedMonth,
+            count: amountRequestCompletedMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "진행중",
+            data: amountRequestProcessingMonth,
+            count: amountRequestProcessingMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentMonth,
+            count: amountRequestCompletedPercentMonth.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
         mainTypeChart,
         mainTypeRequestNotComplete,
         methodCount,
-        solutionCount: [
-          { name: "자체처리", solutionOnsite },
-          { name: "외주기관 이관", solutionOrderCompany },
-        ],
+        solutionCount: {
+          onsite: { name: "자체처리", data: solutionOnsite },
+          ortherCoompany: { ...solutionOrderCompany[0] },
+        },
+
         listNewRequest,
       };
     } catch (error) {
@@ -1554,25 +1662,81 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleCurrentMonth: {
-          accumulationRegisterMonth,
-          amountRequestCompletedMonth,
-          amountRequestProcessingMonth,
-          amountRequestCompletedPercentMonth,
-        },
-        titleCurrentYear: {
-          accumulationRegisterYear,
-          amountRequestCompletedYear,
-          amountRequestProcessingYear,
-          amountRequestCompletedPercentYear,
-        },
+        titleYear: [
+          {
+            title: "누적 등록건수",
+            data: accumulationRegisterYear,
+            count: accumulationRegisterYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "누적 처리완료",
+            data: amountRequestCompletedYear,
+            count: amountRequestCompletedYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "누적 진행중",
+            data: amountRequestProcessingYear,
+            count: amountRequestProcessingYear.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentYear,
+            count: amountRequestCompletedPercentYear.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
+        titleMonth: [
+          {
+            title: "등록건수",
+            data: accumulationRegisterMonth,
+            count: accumulationRegisterMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리완료",
+            data: amountRequestCompletedMonth,
+            count: amountRequestCompletedMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "진행중",
+            data: amountRequestProcessingMonth,
+            count: amountRequestProcessingMonth.reduce((accumulator, item) => {
+              return accumulator + item.countRequest;
+            }, 0),
+          },
+          {
+            title: "처리율",
+            data: amountRequestCompletedPercentMonth,
+            count: amountRequestCompletedPercentMonth.reduce(
+              (accumulator, item) => {
+                return parseFloat(accumulator) + parseFloat(item.countRequest);
+              },
+              0
+            ),
+          },
+        ],
+
         mainTypeChart,
         mainTypeRequestNotComplete,
         methodCount,
-        solutionCount: [
-          { name: "자체처리", solutionOnsite },
-          { name: "외주기관 이관", solutionOrderCompany },
-        ],
+        solutionCount: {
+          onsite: { name: "자체처리", data: solutionOnsite },
+          ortherCoompany: { ...solutionOrderCompany[0] },
+        },
+
         listNewRequest,
       };
     } catch (error) {

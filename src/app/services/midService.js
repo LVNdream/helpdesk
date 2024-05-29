@@ -50,7 +50,7 @@ class midService {
       return {
         message: "Error delete file",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -68,7 +68,7 @@ class midService {
       return {
         message: "Error delete file",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }
@@ -91,7 +91,7 @@ class midService {
       return {
         message: "Error delete file",
         status: false,
-        error: 501,
+        error: 500,
       };
     }
   }

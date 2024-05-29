@@ -1000,7 +1000,7 @@ WHERE
           `SELECT id, label_name
       FROM
            list_label
-      WHERE label_name like "%${text}% and maintenance_id="${maintenance_id}"  ORDER BY created_at asc LIMIT 12`
+      WHERE label_name like "%${text}%" and maintenance_id="${maintenance_id}"  ORDER BY created_at asc LIMIT 12`
         );
       }
 
@@ -1093,7 +1093,7 @@ WHERE
   amountPerRequestCompleted: async (nameCondition, dateime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name, ROUND(((COUNT(rs.id)/rs2.countRequest)*100), 2) AS percent
+        `SELECT mt.type_name, ROUND(((COUNT(rs.id)/rs2.countRequest)*100), 2) AS countRequest
         FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id and rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
         (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2
          group BY mt.type_name;`
@@ -1131,7 +1131,7 @@ GROUP BY ll.id`
       const thisTime = data[option];
       
       let result = await pool.query(
-        `SELECT ll.id AS list_label_id, 
+        `SELECT ll.id AS list_label_id, ll.label_name as name,
           COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${lastTime} AND YEAR(rs.created_at) =${data.year} THEN 1 ELSE 0 END), 0) AS count_lastTime,
           COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_thisTime 
           FROM list_label ll 

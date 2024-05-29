@@ -46,7 +46,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async getAlluser(req, res) {
@@ -61,7 +61,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -130,7 +130,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -167,7 +167,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -206,7 +206,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -296,7 +296,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async updateCompanyInfor(req, res) {
@@ -305,7 +305,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -331,7 +331,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -382,7 +382,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -416,7 +416,7 @@ class adminController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -461,7 +461,7 @@ class adminController {
     try {
       const currentDateTime = new Date(Date.now());
       const data = {
-        month: currentDateTime.getMonth() + 1,
+        month: currentDateTime.getMonth() +1,
         year: currentDateTime.getFullYear(),
       };
 

@@ -48,7 +48,7 @@ class userController {
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async updateUserInfor(req, res) {
@@ -60,7 +60,7 @@ class userController {
       res.status(200).json(resutl);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -70,7 +70,7 @@ class userController {
       return res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async userRegisterRequest(req, res) {
@@ -90,7 +90,7 @@ class userController {
       return res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
 
@@ -118,7 +118,7 @@ class userController {
       return res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async deleteRequest(req, res) {
@@ -130,7 +130,7 @@ class userController {
       return res.status(200).json(result);
     } catch (error) {
       console.log(error);
-      res.status(501).json("Server error");
+      res.status(500).json("Server error");
     }
   }
   async getUserInfor(req, res) {
@@ -154,7 +154,5 @@ class userController {
       res.status(500).json("Server error");
     }
   }
-
-  
 }
 module.exports = new userController();
