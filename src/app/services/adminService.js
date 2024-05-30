@@ -288,8 +288,24 @@ class adminPageService {
 
       const userCount = await adminModel.getUserCount(role_id);
 
+      let listStatus = await adminModel.adminGetAccountStatus();
+
+      const listUserFilterStatus = resutl.map((user) => {
+        let listStatusCheck = listStatus.map((item) => {
+          let checked = false;
+          item.id == user.status_id ? (checked = true) : (checked = false);
+          return { ...item, checked };
+        });
+        delete user.status_id;
+        delete user.status_name;
+        return {
+          ...user,
+          listStatusCheck,
+        };
+      });
+
       return resutl
-        ? { data: resutl, userCount: parseInt(userCount) }
+        ? { data: listUserFilterStatus, userCount: parseInt(userCount) }
         : {
             message: "Error model getAllUser By Admin",
             status: false,
@@ -313,9 +329,25 @@ class adminPageService {
         text,
         page
       );
+
+      let listStatus = await adminModel.adminGetAccountStatus();
+
+      const listUserFilterStatus = resutl.listFilter.map((user) => {
+        let listStatusCheck = listStatus.map((item) => {
+          let checked = false;
+          item.id == user.status_id ? (checked = true) : (checked = false);
+          return { ...item, checked };
+        });
+        delete user.status_id;
+        delete user.status_name;
+        return {
+          ...user,
+          listStatusCheck,
+        };
+      });
       return resutl
         ? {
-            data: resutl.listFilter,
+            data: listUserFilterStatus,
             requestCount: parseInt(resutl.requestCount),
           }
         : {
@@ -518,7 +550,7 @@ class adminPageService {
         error: 500,
       };
     }
-  }  
+  }
 
   async getMaintenanceType() {
     try {
@@ -703,13 +735,15 @@ class adminPageService {
         text,
         page
       );
-      resutl = resutl.map((item) => {
+
+      resutl.listFilter = resutl.listFilter.map((item) => {
         return {
           ...item,
           amountHelper: parseInt(item.amountHelper),
           owner: "Admin",
         };
       });
+
       return resutl
         ? {
             data: resutl.listFilter,
@@ -830,10 +864,25 @@ class adminPageService {
 
   async getAllUserWaitAccept(role_id, page) {
     try {
-      const resutl = await adminModel.getAllUserWaitAccept(role_id, page);
+      let resutl = await adminModel.getAllUserWaitAccept(role_id, page);
 
       const userCount = await adminModel.getUserCountWaitAccept(role_id);
 
+      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+
+      resutl = resutl.map((user) => {
+        let listStatusCheck = listStatus.map((item) => {
+          let checked = false;
+          item.id == user.status_id ? (checked = true) : (checked = false);
+          return { ...item, checked };
+        });
+        delete user.status_id;
+        delete user.status_name;
+        return {
+          ...user,
+          listStatusCheck,
+        };
+      });
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
         : {
@@ -853,15 +902,31 @@ class adminPageService {
 
   async listUserWaitAcceptBySearch(role_id, option, text, page) {
     try {
-      const resutl = await adminModel.listUserWaitAcceptBySearchText(
+      let resutl = await adminModel.listUserWaitAcceptBySearchText(
         role_id,
         option,
         text,
         page
       );
+      // console.log(resutl)
+      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+
+      const listUserFilterStatus = resutl.listFilter.map((user) => {
+        let listStatusCheck = listStatus.map((item) => {
+          let checked = false;
+          item.id == user.status_id ? (checked = true) : (checked = false);
+          return { ...item, checked };
+        });
+        delete user.status_id;
+        delete user.status_name;
+        return {
+          ...user,
+          listStatusCheck,
+        };
+      });
       return resutl
         ? {
-            data: resutl.listFilter,
+            data: listUserFilterStatus,
             requestCount: parseInt(resutl.requestCount),
           }
         : {
@@ -895,16 +960,29 @@ class adminPageService {
           }
 
           if (item.id == 1) {
-            const maintenanceClass_class1 = listMaintenanceClass.filter(
+            let maintenanceClass_class1 = listMaintenanceClass.filter(
               (itemMC) => {
                 return itemMC.group_m == 1;
               }
             );
-            const maintenanceClass_class2 = listMaintenanceClass.filter(
+
+            let maintenanceClass_class2 = listMaintenanceClass.filter(
               (itemMC) => {
                 return itemMC.group_m == 2;
               }
             );
+            maintenanceClass_class1 = maintenanceClass_class1.map((itemMC) => {
+              delete itemMC.mc_id;
+              delete itemMC.group_m;
+
+              return itemMC;
+            });
+            maintenanceClass_class2 = maintenanceClass_class2.map((itemMC) => {
+              delete itemMC.mc_id;
+              delete itemMC.group_m;
+
+              return itemMC;
+            });
             return {
               ...item,
               maintenanceClass: [
@@ -913,16 +991,28 @@ class adminPageService {
               ],
             };
           } else if (item.id == 2) {
-            const maintenanceClass_class1 = listMaintenanceClass.filter(
+            let maintenanceClass_class1 = listMaintenanceClass.filter(
               (itemMC) => {
                 return itemMC.group_m == 1;
               }
             );
-            const maintenanceClass_class2 = listMaintenanceClass.filter(
+            let maintenanceClass_class2 = listMaintenanceClass.filter(
               (itemMC) => {
                 return itemMC.group_m == 2;
               }
             );
+            maintenanceClass_class1 = maintenanceClass_class1.map((itemMC) => {
+              delete itemMC.mc_id;
+              delete itemMC.group_m;
+
+              return itemMC;
+            });
+            maintenanceClass_class2 = maintenanceClass_class2.map((itemMC) => {
+              delete itemMC.mc_id;
+              delete itemMC.group_m;
+
+              return itemMC;
+            });
             return {
               ...item,
               maintenanceClass: [
@@ -989,10 +1079,36 @@ class adminPageService {
 
   async getListLabel(maintenance_id) {
     try {
-      const resutl = await adminModel.getListLabel(maintenance_id);
+      const resutlLabel = await adminModel.getListLabel(maintenance_id);
 
-      return resutl
-        ? resutl
+      let resutlMainClass = await userPageModel.getMaintenanceClassId(
+        maintenance_id
+      );
+      resutlMainClass = resutlMainClass.map((item) => {
+        return {
+          mc_id: item.mc_id,
+          group_m: item.group_m,
+        };
+      });
+      let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
+        maintenance_id
+      );
+      let mainClassFilter;
+      resutlMainClassGroup = resutlMainClassGroup.map((mc_group) => {
+        (mainClassFilter = resutlMainClass.filter((item) => {
+          return mc_group.group_m == item.group_m;
+        })),
+          (mainClassFilter = mainClassFilter.map((item) => {
+            delete item.group_m;
+            return item;
+          }));
+        return {
+          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          data: mainClassFilter,
+        };
+      });
+      return resutlLabel && resutlMainClass
+        ? { listLabel: resutlLabel, mainClass: resutlMainClassGroup }
         : {
             message: "Error model getListLabel By Admin",
             status: false,
@@ -1280,7 +1396,7 @@ class adminPageService {
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
-          ortherCoompany: { ...solutionOrderCompany[0] },
+          ortherCompany: { ...solutionOrderCompany[0] },
         },
 
         listNewRequest,
@@ -1298,6 +1414,7 @@ class adminPageService {
   async getInforReportDaily(data) {
     try {
       const datetime = data.year + "-" + data.month + "-" + data.day;
+      // console.log(datetime);
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("date", datetime);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1416,7 +1533,7 @@ class adminPageService {
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
-          ortherCoompany: { ...solutionOrderCompany[0] },
+          ortherCompany: { ...solutionOrderCompany[0] },
         },
 
         listNewRequest,
@@ -1551,7 +1668,7 @@ class adminPageService {
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
-          ortherCoompany: { ...solutionOrderCompany[0] },
+          ortherCompany: { ...solutionOrderCompany[0] },
         },
 
         listNewRequest,
@@ -1734,7 +1851,11 @@ class adminPageService {
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
-          ortherCoompany: { ...solutionOrderCompany[0] },
+          ortherCompany: {
+            solution_name: solutionOrderCompany[0].solution_name,
+            type: solutionOrderCompany[0].type,
+            count: solutionOrderCompany[0].count,
+          },
         },
 
         listNewRequest,

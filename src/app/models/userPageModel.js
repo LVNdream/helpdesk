@@ -30,7 +30,7 @@ module.exports = {
           users AS users2 ON rs.recipient_id = users2.id,
           method mth
       WHERE
-          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
       );
 
       return result;
@@ -63,7 +63,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.id asc  LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
       );
 
       if (status_id && Number(status_id) && !text) {
@@ -82,7 +82,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage} ;`
+               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
       } else if (text && !Number(status_id)) {
@@ -111,7 +111,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       } else if (status_id && text) {
@@ -141,7 +141,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                 
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       }

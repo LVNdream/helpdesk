@@ -25,7 +25,7 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-     mth.id=rs.method_id ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage};`
+     mth.id=rs.method_id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
       );
 
       return result;
@@ -63,7 +63,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id ORDER BY rs.id asc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -96,7 +96,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.id asc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -129,7 +129,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and data.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = user_id) ORDER BY rs.id asc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id and data.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = user_id) ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -165,7 +165,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage}  ;`
+                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage}  ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -210,7 +210,7 @@ WHERE
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage} ;`
+                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -256,7 +256,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.id asc LIMIT 10 OFFSET ${numberPage} ;`
+                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -333,10 +333,10 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -369,16 +369,16 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT count(u.id) as userCount
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u
-      WHERE u.role_id=${role_id} and u.status_id!=1`
+           users u, account_status us
+      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc`
         );
       }
 
@@ -396,8 +396,8 @@ WHERE
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
@@ -420,6 +420,22 @@ WHERE
         `SELECT id,status_name
       FROM
            account_status
+           where id=2 or id=4
+           `
+      );
+      return result;
+    } catch (error) {
+      console.log("error model account status :", error);
+      return false;
+    }
+  },
+  adminGetAccountStatusWaitAccept: async () => {
+    try {
+      const result = await pool.query(
+        `SELECT id,status_name
+      FROM
+           account_status
+           where id=1 or id=2 or id =3
            `
       );
       return result;
@@ -469,10 +485,10 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and  (u.role_id=1 or u.role_id=2) ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id!=1 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -505,13 +521,13 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2) and ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT count(u.id) as userCount
+          `SELECT *
       FROM
            users u
       WHERE (u.role_id=1 or u.role_id=2)  and u.status_id!=1`
@@ -532,8 +548,8 @@ WHERE
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+          `SELECT u.id, u.account,u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
@@ -557,7 +573,7 @@ WHERE
       const result = await pool.query(
         `SELECT id, name_company,fax,phone_number,business_code
            from company
-       ORDER BY id asc LIMIT 10 OFFSET ${numberPage}`
+       ORDER BY created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -571,7 +587,7 @@ WHERE
     try {
       const result = await pool.query(
         `SELECT count(id) as companyCount
-           from company`
+           from company ORDER BY  created_at DESC `
       );
       //   console.log(result);
       return result[0].companyCount;
@@ -589,7 +605,7 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT id, name_company,fax,phone_number,business_code
            from company
-       ORDER BY id asc LIMIT 10 OFFSET ${numberPage}`
+       ORDER BY created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT id, name_company,fax,phone_number,business_code
@@ -614,7 +630,7 @@ WHERE
           `SELECT id, name_company,fax,phone_number,business_code
            from company
            WHERE ${nameCondition} like "%${text}%"
-       ORDER BY id asc LIMIT 10 OFFSET ${numberPage}`
+       ORDER BY created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT id, name_company,fax,phone_number,business_code
@@ -703,7 +719,7 @@ WHERE
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
         `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 10 OFFSET ${numberPage}`
       );
 
       return result;
@@ -726,18 +742,18 @@ WHERE
       return false;
     }
   },
-  listUserBySearchTextToWatch: async (option, text, page) => {
+  listCompanyBySearchTextToWatch: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
       let resutlSearch;
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id ORDER BY c.created_at DESC  LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT count(company.id) as companyCount
+          `SELECT *
          FROM company `
         );
       }
@@ -750,22 +766,17 @@ WHERE
         } else if (option == 2) {
           nameCondition = "c.business_code";
         }
-        // else if (option == 3) {
-        //   nameCondition = "u.affiliated_department";
-        // } else if (option == 4) {
-        //   nameCondition = "us.status_name";
-        // }
 
         resutlSearch = await pool.query(
-          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id),c.created_at
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
          FROM company c left JOIN users u ON c.id=u.company_id
-          where ${nameCondition}="${text}"
-          GROUP BY c.id  LIMIT 10 OFFSET ${numberPage}`
+          where ${nameCondition} like "%${text}%"
+          GROUP BY c.id ORDER BY c.created_at DESC LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT c.id,c.name_company,c.business_code, COUNT(u.id),c.created_at
          FROM company c left JOIN users u ON c.id=u.company_id
-          where ${nameCondition}="${text}"`
+          where ${nameCondition} like "%${text}%" GROUP BY c.id ORDER BY c.created_at DESC `
         );
       }
 
@@ -850,10 +861,10 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -886,16 +897,16 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT count(u.id) as userCount
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u
-      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3)`
+           users u, account_status us
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc `
         );
       }
 
@@ -914,7 +925,7 @@ WHERE
 
         resutlSearch = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.id asc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
@@ -1093,7 +1104,11 @@ WHERE
   amountPerRequestCompleted: async (nameCondition, dateime) => {
     try {
       let result = await pool.query(
-        `SELECT mt.type_name, ROUND(((COUNT(rs.id)/rs2.countRequest)*100), 2) AS countRequest
+        `SELECT mt.type_name, CASE
+    WHEN rs2.countRequest=0 THEN 0
+    
+    ELSE  ROUND(((COUNT(rs.id)/rs2.countRequest)*100),2)
+END AS  countRequest
         FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id and rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
         (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2
          group BY mt.type_name;`
@@ -1129,7 +1144,7 @@ GROUP BY ll.id`
     try {
       const lastTime = data[option] - 1;
       const thisTime = data[option];
-      
+
       let result = await pool.query(
         `SELECT ll.id AS list_label_id, ll.label_name as name,
           COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = ${lastTime} AND YEAR(rs.created_at) =${data.year} THEN 1 ELSE 0 END), 0) AS count_lastTime,
