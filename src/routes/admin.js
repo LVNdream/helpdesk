@@ -181,7 +181,7 @@ router.post(
 
 //
 router.get(
-  "/getlistlabel",
+  "/getlistlabel/:maintenance_id",
   middlewareAuth.verifyAuthentication,
   adminController.getListLabel
 );
@@ -212,12 +212,12 @@ router.get(
   middlewareAuth.verifyAuthentication,
   adminController.getInforReportDaily
 );
-router.get(
+router.post(
   "/getinforreport/week",
   middlewareAuth.verifyAuthentication,
   adminController.getInforReportWeek
 );
-router.get(
+router.post(
   "/getinforreport/month",
   middlewareAuth.verifyAuthentication,
   adminController.getInforReportMonth

@@ -344,7 +344,7 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listUserWaitAcceptBySearch(
-        0,
+        4,
         req.body.option,
         req.body.text,
         page
@@ -412,7 +412,14 @@ class adminController {
 
   async getListLabel(req, res) {
     try {
-      const result = await adminService.getListLabel(req.body.maintenance_id);
+      if (!Number(req.params.maintenance_id)) {
+        return res.json({
+          message: "Params invalid",
+          status: false,
+          error: "f_params",
+        });
+      }
+      const result = await adminService.getListLabel(req.params.maintenance_id);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -461,7 +468,7 @@ class adminController {
     try {
       const currentDateTime = new Date(Date.now());
       const data = {
-        month: currentDateTime.getMonth() +1,
+        month: currentDateTime.getMonth() + 1,
         year: currentDateTime.getFullYear(),
       };
 
@@ -475,7 +482,15 @@ class adminController {
 
   async getInforReportDaily(req, res) {
     try {
-      const result = await adminService.getInforReportDaily(req.body);
+      const dateCurrent = new Date(Date.now());
+      const data = {
+        day: dateCurrent.getDate(),
+
+        month: dateCurrent.getMonth() + 1,
+        year: dateCurrent.getFullYear(),
+      };
+
+      const result = await adminService.getInforReportDaily(data);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

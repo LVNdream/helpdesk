@@ -14,7 +14,7 @@ const middlewareAuth = {
       }
       jwt.verify(token, process.env.JWT_ACCESS_KEY, (error, user) => {
         if (error) {
-          console.log(error);
+          console.log("error Token", error);
           return res.status(403).json({
             message: "Your token not valid",
             status: false,
@@ -54,7 +54,7 @@ const middlewareAuth = {
     if (user.role_id == 3) {
       return next();
     } else {
-      res.status(403).json({
+      res.status(200).json({
         message: "You are not Admin",
         status: false,
         error: 403,
@@ -67,7 +67,7 @@ const middlewareAuth = {
     if (user.role_id == 1 || user.role_id == 2 || user.role_id == 4) {
       return next();
     } else {
-      res.status(403).json({
+      res.status(200).json({
         message: "You are not permission login ",
         status: false,
         error: 403,
