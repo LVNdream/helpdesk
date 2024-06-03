@@ -394,7 +394,7 @@ class userPageService {
           error: 500,
         };
       }
-      if (status_id != 1) {
+      if (status_id >2) {
         return {
           message: "Status not valid",
           status: false,
@@ -496,7 +496,7 @@ class userPageService {
         };
       }
 
-      if (status_id > 2) {
+      if (status_id > 3) {
         return {
           message: "Status id  in valid",
           status: false,
@@ -546,7 +546,7 @@ class userPageService {
       const resutl = await userPageModel.deleteRequest(user_id, request_id);
 
       return resutl
-        ? { messsage: "Deleted Success!", status: true }
+        ? { messsage: "Deleted Success!", status: true,request_id }
         : {
             messsage: "Delete Fail!, Error model delete",
             status: false,

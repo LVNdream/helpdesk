@@ -8,6 +8,7 @@ router.post("/register", authController.register);
 
 router.post("/login",middlewareAuth.verifyNormalUser, authController.login);
 
+router.post("/refreshtoken", middlewareAuth.verifyRefreshToken, authController.handleRefreshToken);
 router.post(
   "/loginadmin",
   middlewareAuth.verifyLoginAdmin,

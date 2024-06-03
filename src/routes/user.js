@@ -57,8 +57,8 @@ router.post(
   upload.any(),
   userController.updateRegisterRequest
 );
-router.post(
-  "/delete-request",
+router.delete(
+  "/request/:request_id",
   middlewareAuth.verifyAuthentication,
   userController.deleteRequest
 );

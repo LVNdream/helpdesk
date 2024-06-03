@@ -28,9 +28,9 @@ class adminController {
       const result = await adminService.getRequestListBySearch(
         req.user.id,
         req.user.role_id,
-        req.body.option,
-        req.body.text,
-        req.body.status_id,
+        req.query.option,
+        req.query.text,
+        req.query.status_id,
         page
       );
       res.status(200).json(result);

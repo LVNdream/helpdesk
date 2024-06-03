@@ -50,8 +50,8 @@ WHERE
       // init
       if (role_id == 3) {
         resutlSearch = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -66,8 +66,8 @@ WHERE
                 mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
         );
         resultNoLimit = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -81,10 +81,10 @@ WHERE
             WHERE 
                 mth.id=rs.method_id;`
         );
-      } else if (role_id == 0) {
+      } else if (role_id == 4) {
         resutlSearch = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -116,8 +116,8 @@ WHERE
         );
       } else if (role_id == 1 || role_id == 2) {
         resutlSearch = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -129,7 +129,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and data.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = user_id) ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}") ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -145,15 +145,15 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and data.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = user_id);`
+                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}");`
         );
       }
 
       // search
       if (status_id && Number(status_id) && !text) {
         const result = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -196,8 +196,8 @@ WHERE
           nameCondition = "users2.name";
         }
         const result = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -243,8 +243,8 @@ WHERE
         }
 
         const result = await pool.query(
-          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
-            users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
+          `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
+            users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
             JOIN 
@@ -277,12 +277,13 @@ WHERE
         );
       }
 
+      // console.log(1231231231231233123,resultNoLimit)
       let resultByRoleById;
       let requestToCount;
       if (role_id == 3) {
         resultByRoleById = resutlSearch;
         requestToCount = resultNoLimit;
-      } else if (role_id == 0) {
+      } else if (role_id == 4) {
         resultByRoleById = resutlSearch.filter((data) => {
           return data.petitioner_id == user_id;
         });
@@ -303,6 +304,7 @@ WHERE
           );
         });
       }
+      // console.log(565656565656565,requestToCount)
 
       return {
         listFilter: resultByRoleById,
@@ -514,6 +516,7 @@ WHERE
       return false;
     }
   },
+
   listHelperBySearchText: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -596,6 +599,7 @@ WHERE
       return false;
     }
   },
+
   listCompanyBySearchTextToAddInfor: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -806,6 +810,7 @@ WHERE
       return false;
     }
   },
+
   getCompanyInforById: async (company_id) => {
     try {
       const result = await pool.query(
@@ -822,6 +827,7 @@ WHERE
       return false;
     }
   },
+
   updateCompanyInfor: async (data) => {
     try {
       const result = await pool.query(
@@ -890,6 +896,7 @@ WHERE
       return false;
     }
   },
+  
   listUserWaitAcceptBySearchText: async (role_id, option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;

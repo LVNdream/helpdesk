@@ -22,7 +22,7 @@ class authService {
             ...data,
             password: password_hash,
             status_id: 1,
-            role_id: 2,
+            role_id: 4,
           };
           const resultRegister = await authModel.register(dataRegister);
 
@@ -57,7 +57,7 @@ class authService {
           return {
             message: "Account is waitting accept from admin",
             status: false,
-            error: "f_status",
+            error: "wait",
           };
         } else if (user.status_id == 3) {
           return {
@@ -211,6 +211,31 @@ class authService {
       console.log(error);
       return {
         message: "Server error login service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async handleRefreshToken(user) {
+    try {
+      const dataToken = {
+        id: parseInt(user.id),
+        role_id: parseInt(user.role_id),
+      };
+
+      const accessToken = jwtService.generateAccessToken(dataToken);
+
+      return {
+        name: user.name,
+        role_id: user.role_id,
+        accessToken,
+        status: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error handleRefreshToken service",
         status: false,
         error: 500,
       };

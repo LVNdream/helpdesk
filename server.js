@@ -49,7 +49,7 @@ app.listen(port, () => {
 // const job = schedule.scheduleJob("* * * * * 7", function () {
 //   console.log("The answer to life, the universe, and everything!");
 // });
-cron.schedule("* * * * * 7", () => {
+cron.schedule("* * 0 * * 7", () => {
   console.log("Start delete");
   const resultDelete = midService.removeAllfile("./src/public/temps");
 });
