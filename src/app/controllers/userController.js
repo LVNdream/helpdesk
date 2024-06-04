@@ -55,7 +55,9 @@ class userController {
     try {
       const resutl = await userPageService.updateUserInfor(
         req.body,
-        req.user.id
+        req.user.id,
+        req.user.role_id
+
       );
       res.status(200).json(resutl);
     } catch (error) {
@@ -135,7 +137,7 @@ class userController {
   }
   async getUserInfor(req, res) {
     try {
-      const result = await userPageService.getUserInfor(req.user.id);
+      const result = await userPageService.getUserInfor(req.user.id,req.user.role_id);
 
       return res.status(200).json(result);
     } catch (error) {

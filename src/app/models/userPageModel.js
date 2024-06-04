@@ -301,7 +301,6 @@ LEFT JOIN
       if (!data.password) {
         result = await pool.query(
           `update users set 
-          name="${data.name}",
           affiliated_department= "${data.affiliated_department}",
           position= "${data.position}",
           phone_number= "${data.phone_number}",
@@ -315,7 +314,6 @@ LEFT JOIN
         result = await pool.query(
           `update users set
           password="${password_hash}",
-          name="${data.name}",
           affiliated_department= "${data.affiliated_department}",
           position= "${data.position}",
           phone_number= "${data.phone_number}",
@@ -482,6 +480,17 @@ LEFT JOIN
       return result;
     } catch (error) {
       console.log("error model get  status :", error);
+      return false;
+    }
+  },
+  deleteListProblem: async (request_id) => {
+    try {
+      const result = await pool.query(
+        `delete from list_problem where request_id="${request_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model DeleteListProblem :", error);
       return false;
     }
   },

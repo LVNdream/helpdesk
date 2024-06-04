@@ -199,6 +199,38 @@ class helperPageService {
     }
   }
 
+  // updateHelpdeskInfor
+  async updateHelpdeskInfor(data, user_id) {
+    try {
+      const resutl = await helperModel.updateHelpdeskInfor(data, user_id);
+
+      if (!resutl) {
+        return {
+          messsage: "Update Fail!, Error model update",
+          status: false,
+          error: 500,
+        };
+      }
+
+      const resutlInfor = await userPageModel.getUserInfor(user_id);
+
+      return resutlInfor
+        ? { messsage: "Update help desk Success!", status: true, resutlInfor }
+        : {
+            messsage: "Get infor helpdesk fail",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error updateHelpdeskInfor Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async saveStatusProcessing(request_id, recipient_id, listProblem) {
     try {
       const resutlRQ = await userPageModel.getRequestById(request_id);
@@ -545,7 +577,10 @@ class helperPageService {
           };
         })
       );
-      const files = await userPageModel.getAllFileByRequest(request_id);
+      let files = [];
+      if (request_id) {
+        files = await userPageModel.getAllFileByRequest(request_id);
+      }
       // console.log(main_type);
       return {
         main_type,

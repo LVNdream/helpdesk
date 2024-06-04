@@ -56,6 +56,21 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  // updateHelpDeskInfor
+
+  async updateHelpdeskInfor(req, res) {
+    try {
+      const resutl = await helperService.updateHelpdeskInfor(
+        req.body,
+        req.user.id
+      );
+      res.status(200).json(resutl);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   // save status processing
   async saveStatusProcessing(req, res) {
     try {
@@ -140,7 +155,7 @@ class helperController {
     try {
       const result = await helperService.getInforComplted(
         req.user.id,
-        req.params.request_id
+        req.query.request_id
       );
       res.status(200).json(result);
     } catch (error) {

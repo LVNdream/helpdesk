@@ -34,6 +34,12 @@ router.post(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.acceptRequest
 );
+// 
+router.post(
+  "/update/userinfor",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.updateHelpdeskInfor
+);
 
 // thay doi trang thai
 router.get(
@@ -71,7 +77,7 @@ router.post(
   helperController.verifyCompleted
 );
 router.get(
-  "/getinforcompleted/:request_id",
+  "/getinforcompleted/",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getInforComplted
 );

@@ -109,4 +109,15 @@ module.exports = {
       return false;
     }
   },
+  getUserName: async (id) => {
+    try {
+      const result = await pool.query(
+        `select name,role_id from users where id="${id}" `
+      );
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model getUserName", error);
+      return false;
+    }
+  },
 };

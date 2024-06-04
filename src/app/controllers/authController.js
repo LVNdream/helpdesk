@@ -68,5 +68,14 @@ class authController {
       res.status(500).json({ message: "Server error", error: 500 });
     }
   }
+
+  async getUserName(req, res) {
+    try {
+      const resutl = await authService.getNameUser(req.user.id);
+      res.status(200).json(resutl);
+    } catch (error) {
+      res.status(500).json({ message: "Server error ", error: 500 });
+    }
+  }
 }
 module.exports = new authController();

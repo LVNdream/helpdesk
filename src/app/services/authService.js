@@ -378,5 +378,25 @@ class authService {
       };
     }
   }
+
+  async getNameUser(id) {
+    try {
+      const resutl = await authModel.getUserName(id);
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getNameUser",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getNameUser",
+        status: false,
+        error: 500,
+      };
+    }
+  }
 }
 module.exports = new authService();

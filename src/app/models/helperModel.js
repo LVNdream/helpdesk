@@ -1,4 +1,6 @@
 const { pool } = require("../../config/db");
+const bcrypt = require("bcryptjs");
+
 
 module.exports = {
   getRequestListByHelper: async (role_id, recipient_id, page) => {
@@ -175,6 +177,51 @@ WHERE
       return false;
     }
   },
+  // getInforHelpdesk
+
+  getHelpdeskInfor: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT users.id,users.name,company.name_company,email,roles.name as leveluser,users.position,users.phone_number,users.tel_number FROM users left join roles on users.role_id= roles.id left join company on users.company_id= company.id  WHERE users.id=${user_id};`
+      );
+      return result[0];
+    } catch (error) {
+      console.log("error model get helpdesk infor:", error);
+      return false;
+    }
+  },
+  // updateInforHelpdesk
+  updateHelpdeskInfor: async (data, user_id) => {
+    try {
+      let result;
+      if (!data.password) {
+        result = await pool.query(
+          `update users set 
+          position= "${data.position}",
+          phone_number= "${data.phone_number}",
+          tel_number= "${data.tel_number}" ,
+          email= "${data.email}" 
+          where id="${user_id}";`
+        );
+      } else {
+        const password_hash = bcrypt.hashSync(data.password, 8);
+
+        result = await pool.query(
+          `update users set
+          password="${password_hash}",
+          position= "${data.position}",
+          phone_number= "${data.phone_number}",
+          email= "${data.email}",
+          tel_number= "${data.tel_number}"
+          where id="${user_id}";`
+        );
+      }
+      return result;
+    } catch (error) {
+      console.log("error model updateHelpdeskInfor:", error);
+      return false;
+    }
+  },
 
   addListProblem: async (request_id, problem) => {
     try {
@@ -326,7 +373,7 @@ WHERE
     }
   },
 
-  getHelperRequestCount: async (recipient_id,role_id) => {
+  getHelperRequestCount: async (recipient_id, role_id) => {
     try {
       const result = await pool.query(
         `SELECT count(rs.id) as requestCount
@@ -335,7 +382,6 @@ WHERE
       WHERE
           rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id});`
       );
-      console.log(result)
       return result[0].requestCount;
     } catch (error) {
       console.log("error model get  count request :", error);

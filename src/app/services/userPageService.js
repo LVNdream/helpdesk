@@ -1,4 +1,7 @@
 const authModel = require("../models/authModel");
+const adminModel = require("../models/adminModel");
+
+const helperModel = require("../models/helperModel");
 const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
 
@@ -305,14 +308,48 @@ class userPageService {
     }
   }
 
-  async updateUserInfor(data, user_id) {
+  async updateUserInfor(data, user_id, role_id) {
     try {
-      const resutl = await userPageModel.updateUserInfor(data, user_id);
-
-      return resutl
-        ? { messsage: "Update Success!", status: true }
-        : {
+      let resutlInfor;
+      if (role_id == 4) {
+        const resutl = await userPageModel.updateUserInfor(data, user_id);
+        resutlInfor = await userPageModel.getUserInfor(user_id, role_id);
+        if (!resutl) {
+          return {
             messsage: "Update Fail!, Error model update",
+            status: false,
+            error: 500,
+          };
+        }
+      } else if (role_id == 1 || role_id == 2) {
+        const resutl = await helperModel.updateHelpdeskInfor(data, user_id);
+
+        if (!resutl) {
+          return {
+            messsage: "Update Fail!, Error model update",
+            status: false,
+            error: 500,
+          };
+        }
+        resutlInfor = await this.getUserInfor(user_id,role_id)
+        // let resutlGetInfor = await helperModel.getHelpdeskInfor(user_id);
+        // let main_type = await helperModel.getMaintenanceType();
+        // main_type = main_type.map((item) => {
+        //   let checked = false;
+        //   item.id == role_id ? (checked = true) : (checked = false);
+        //   delete item.id;
+        //   return {
+        //     ...item,
+        //     checked,
+        //   };
+        // });
+        // resutlInfor = { ...resutlGetInfor, main_type };
+      }
+
+      return resutlInfor
+        ? { messsage: "Update Success!", status: true, resutlInfor }
+        : {
+            messsage: "Get infor fail",
             status: false,
             error: 500,
           };
@@ -394,7 +431,7 @@ class userPageService {
           error: 500,
         };
       }
-      if (status_id >2) {
+      if (status_id > 2) {
         return {
           message: "Status not valid",
           status: false,
@@ -542,11 +579,21 @@ class userPageService {
         }
       }
 
+      //  xoa list_problem
+      const deleteProblem = await userPageModel.deleteListProblem(request_id);
+
+      if (!deleteProblem) {
+        return {
+          message: "Server error Delete list Problem midService",
+          status: false,
+          error: 500,
+        };
+      }
       // xoa request
       const resutl = await userPageModel.deleteRequest(user_id, request_id);
 
       return resutl
-        ? { messsage: "Deleted Success!", status: true,request_id }
+        ? { messsage: "Deleted Success!", status: true, request_id }
         : {
             messsage: "Delete Fail!, Error model delete",
             status: false,
@@ -561,10 +608,26 @@ class userPageService {
       };
     }
   }
-  async getUserInfor(user_id) {
+  async getUserInfor(user_id, role_id) {
     try {
-      const resutl = await userPageModel.getUserInfor(user_id);
-
+      let resutl;
+      if (role_id == 4) {
+        resutl = await userPageModel.getUserInfor(user_id);
+      }
+      if (role_id == 1 || role_id == 2) {
+        resutl = await helperModel.getHelpdeskInfor(user_id);
+        let main_type = await helperModel.getMaintenanceType();
+        main_type = main_type.map((item) => {
+          let checked = false;
+          item.id == role_id ? (checked = true) : (checked = false);
+          delete item.id;
+          return {
+            ...item,
+            checked,
+          };
+        });
+        resutl = { ...resutl, main_type };
+      }
       return resutl
         ? resutl
         : { message: "Error model getUserInfor", status: false, error: 500 };
