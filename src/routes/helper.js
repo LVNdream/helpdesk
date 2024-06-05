@@ -29,8 +29,8 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getRequestListSearch
 );
-router.post(
-  "/acceptrequest",
+router.get(
+  "/acceptrequest/:request_id",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.acceptRequest
 );
@@ -75,6 +75,11 @@ router.post(
   "/verifycompleted",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.verifyCompleted
+);
+router.get(
+  "/getinforcompleted/:request_id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getInforComplted
 );
 router.get(
   "/getinforcompleted/",

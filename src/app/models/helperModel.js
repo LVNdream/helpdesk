@@ -1,7 +1,6 @@
 const { pool } = require("../../config/db");
 const bcrypt = require("bcryptjs");
 
-
 module.exports = {
   getRequestListByHelper: async (role_id, recipient_id, page) => {
     try {
@@ -223,12 +222,12 @@ WHERE
     }
   },
 
-  addListProblem: async (request_id, problem) => {
+  addListProblem: async (request_id, data) => {
     try {
       // console.log(data);
       result = await pool.query(
-        `insert into list_problem(request_id,problem) values (?,?);`,
-        [request_id, problem]
+        `insert into list_problem(request_id,problem,created_at,updated_at) values (?,?,?,?);`,
+        [request_id, data.problem, data.created_at, data.created_at]
       );
       return result;
     } catch (error) {
@@ -241,7 +240,8 @@ WHERE
     try {
       result = await pool.query(
         `update list_problem set
-          problem="${problem}"
+          problem="${problem}",
+          updated_at=now()
           where id="${problem_id}";`
       );
 
@@ -329,12 +329,25 @@ WHERE
       return false;
     }
   },
-  getAllUser: async () => {
+  getAllUser: async (page) => {
     try {
+      const numberPage = (page - 1) * 10;
+
       result = await pool.query(
-        `select id,name,position,affiliated_department,phone_number,email from users where role_id=0`
+        `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
       );
       return result;
+    } catch (error) {
+      console.log("error model get all user:", error);
+      return false;
+    }
+  },
+  getUserCount: async () => {
+    try {
+      result = await pool.query(
+        `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc`
+      );
+      return result ? result.length : 0;
     } catch (error) {
       console.log("error model get all user:", error);
       return false;

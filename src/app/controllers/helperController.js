@@ -47,7 +47,7 @@ class helperController {
   async acceptRequest(req, res) {
     try {
       const result = await helperService.acceptRequest(
-        req.body.request_id,
+        req.params.request_id,
         req.user.id
       );
       res.status(200).json(result);
@@ -155,7 +155,8 @@ class helperController {
     try {
       const result = await helperService.getInforComplted(
         req.user.id,
-        req.query.request_id
+        req.params.request_id,
+        req.user.role_id
       );
       res.status(200).json(result);
     } catch (error) {
@@ -166,7 +167,9 @@ class helperController {
 
   async getAllUser(req, res) {
     try {
-      const result = await helperService.getAllUser();
+      let page;
+      Number(req.query.page) ? (page = req.query.page) : (page = 1);
+      const result = await helperService.getAllUser(page);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

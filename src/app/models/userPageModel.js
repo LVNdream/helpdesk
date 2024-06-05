@@ -332,8 +332,8 @@ LEFT JOIN
   getAllProblemByRequest_id: async (request_id) => {
     try {
       result = await pool.query(
-        `select id, problem, created_at from list_problem
-          where request_id="${request_id}";`
+        `select id, problem, updated_at as created_at from list_problem
+          where request_id="${request_id}" order by created_at desc;`
       );
       return result;
     } catch (error) {
