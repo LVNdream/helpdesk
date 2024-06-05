@@ -225,9 +225,11 @@ WHERE
   addListProblem: async (request_id, data) => {
     try {
       // console.log(data);
+      let timeCreate = new Date(data.created_at);
+      // console.log(timeCreate)
       result = await pool.query(
         `insert into list_problem(request_id,problem,created_at,updated_at) values (?,?,?,?);`,
-        [request_id, data.problem, data.created_at, data.created_at]
+        [request_id, data.problem, timeCreate, timeCreate]
       );
       return result;
     } catch (error) {
