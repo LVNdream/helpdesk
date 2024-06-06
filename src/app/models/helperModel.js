@@ -404,7 +404,8 @@ WHERE
 
   addRequestCompelted: async (data) => {
     try {
-      // console.log(data);
+      // console.log(data)
+      const timeRequest = new Date(parseInt(data.timeRequest));
       result = await pool.query(
         `insert request_storage(
         title_request,
@@ -415,7 +416,8 @@ WHERE
         solution_id,
         status_id,
         processing_content_problem,
-        completion_date) values (?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP());`,
+        created_at,
+        completion_date) values (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP());`,
         [
           data.title_request,
           data.content_request,
@@ -425,6 +427,7 @@ WHERE
           data.solution_id,
           data.status_id,
           data.processing_content_problem,
+          timeRequest,
         ]
       );
       return result;

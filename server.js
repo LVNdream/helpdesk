@@ -54,6 +54,7 @@ router(app);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
+  // console.log(Date.now())
 });
 
 // const job = schedule.scheduleJob("* * * * * 7", function () {

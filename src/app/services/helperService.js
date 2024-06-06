@@ -652,7 +652,7 @@ class helperPageService {
   async getInforComplted(recipient_id, request_id, role_id) {
     try {
       //  get Infor
-      const infor_recipient = await userPageModel.getUserInfor(recipient_id);
+      const infor_recipient = await helperModel.getHelpdeskInfor(recipient_id);
       if (!infor_recipient) {
         return {
           message: "Error model get infor User",
@@ -822,6 +822,30 @@ class helperPageService {
     }
   }
 
+  async getUserById(user_id) {
+    try {
+      let user = await userPageModel.getUserInfor(user_id);
+      if (!user) {
+        return {
+          message: "Error in get users infor model",
+          status: false,
+          error: 500,
+        };
+      }
+      delete user.phone_number;
+      delete user.leveluser;
+
+      return user;
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get maintenance type Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async helperSearchUser(option, text, page) {
     try {
       const resutl = await helperModel.helperSearchUser(option, text, page);
@@ -857,6 +881,7 @@ class helperPageService {
         solution_id: data.solution_id,
         status_id: data.status_id,
         processing_content_problem: data.processing_content_problem,
+        timeRequest: data.timeRequest,
       };
       // console.log(dataRequest)
       // add request

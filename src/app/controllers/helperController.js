@@ -177,6 +177,15 @@ class helperController {
     }
   }
 
+  async getUserById(req, res) {
+    try {
+      const result = await helperService.getUserById(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   async helperSearchUser(req, res) {
     try {
       let page;

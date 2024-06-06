@@ -91,6 +91,11 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getAllUser
 );
+router.get(
+  "/user/:id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getUserById
+);
 router.post(
   "/usersearch",
   middlewareAuth.verifyToKenHelperAuth,
