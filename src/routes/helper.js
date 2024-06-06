@@ -34,7 +34,7 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.acceptRequest
 );
-// 
+//
 router.post(
   "/update/userinfor",
   middlewareAuth.verifyToKenHelperAuth,
@@ -90,6 +90,11 @@ router.get(
   "/getalluser",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getAllUser
+);
+router.post(
+  "/usersearch",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.helperSearchUser
 );
 
 router.post(

@@ -709,7 +709,14 @@ class helperPageService {
         };
       }
       //
-      let main_type = await midService.getMaintenanceType_checked(inforRequest.maintenance_id);
+      let main_type;
+      if (inforRequest) {
+        main_type = await midService.getMaintenanceType_checked(
+          inforRequest.maintenance_id
+        );
+      } else {
+        main_type = await helperModel.getMaintenanceType();
+      }
 
       if (!main_type) {
         return {
@@ -815,6 +822,29 @@ class helperPageService {
     }
   }
 
+  async helperSearchUser(option, text, page) {
+    try {
+      const resutl = await helperModel.helperSearchUser(option, text, page);
+
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            requestCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model helperSearchUser",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list User By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
   async addRequestCompleted(recipient_id, data, files) {
     try {
       // console.log(recipient_id, data, files);

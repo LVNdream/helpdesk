@@ -177,6 +177,26 @@ class helperController {
     }
   }
 
+  async helperSearchUser(req, res) {
+    try {
+      let page;
+      if (!req.query.page || !Number(req.query.page)) {
+        page = 1;
+      } else {
+        page = req.query.page;
+      }
+      const result = await helperService.helperSearchUser(
+        req.body.option,
+        req.body.text,
+        page
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async addRequestComplete(req, res) {
     try {
       // console.log(req.body);

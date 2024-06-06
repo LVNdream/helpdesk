@@ -344,6 +344,52 @@ WHERE
       return false;
     }
   },
+
+  helperSearchUser: async (option, text, page) => {
+    try {
+      const numberPage = (page - 1) * 10;
+      let resutlSearch;
+      let resultCount;
+      if (!text) {
+        resutlSearch = await pool.query(
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
+        );
+        resultCount = await pool.query(
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc `
+        );
+      }
+
+      // search
+      else if (text) {
+        let nameCondition = "u.name";
+        if (option == 1) {
+          nameCondition = "u.name";
+        } else if (option == 2) {
+          nameCondition = "u.position";
+        } else if (option == 3) {
+          nameCondition = "u.affiliated_department";
+        } else if (option == 4) {
+          nameCondition = "u_s.status_name";
+        }
+
+        resutlSearch = await pool.query(
+          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
+          where role_id=4 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
+        );
+        resultCount = await pool.query(
+          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id where role_id=4 and ${nameCondition} like "%${text}%" `
+        );
+      }
+
+      return {
+        listFilter: resutlSearch,
+        requestCount: resultCount.length,
+      };
+    } catch (error) {
+      console.log("error model helperSearchUser :", error);
+      return false;
+    }
+  },
   getUserCount: async () => {
     try {
       result = await pool.query(
