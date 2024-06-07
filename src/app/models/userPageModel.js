@@ -206,6 +206,41 @@ WHERE
       return false;
     }
   },
+  getNewRequest: async (id) => {
+    try {
+      const result = await pool.query(
+        `SELECT DISTINCT
+
+          rs.id,
+          rs.title_request,
+          mt.type_name,
+          rs.status_id,
+          users.name AS petitioner,
+          users2.name AS recipient,
+          rs.created_at,
+          rs.completion_date,
+          mth.method_name
+
+      FROM
+          request_storage rs
+      JOIN
+          maintenance_type mt ON rs.maintenance_id = mt.id
+      JOIN
+          request_status rstt ON rs.status_id = rstt.id
+      JOIN
+          users ON rs.petitioner_id = users.id
+      LEFT JOIN
+          users AS users2 ON rs.recipient_id = users2.id,
+          method mth
+      WHERE
+          rs.id=${id}`
+      );
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model get request by ID:", error);
+      return false;
+    }
+  },
   // status_Register
 
   getMaintenanceType: async () => {

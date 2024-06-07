@@ -210,7 +210,7 @@ class helperController {
     try {
       // console.log(req.body);
       const result = await helperService.addRequestCompleted(
-        req.user.id,
+        req.user,
         req.body,
         req.files
       );

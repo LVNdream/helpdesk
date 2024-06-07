@@ -32,16 +32,11 @@ app.use(bodyParser.json());
 //     credentials: true,
 //   })
 // );
-app.use(
-  cors({
-    origin: "http://172.16.0.2:3000",
-    credentials: true,
-  })
-);
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://172.16.0.2:3000");
-  next();
-});
+app.use(cors());
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "http://172.16.0.2:3000");
+//   next();
+// });
 
 // app.use((req, res, next) => {
 //   res.header("Access-Control-Allow-Origin", ["http://192.168.1.3:3000"]);

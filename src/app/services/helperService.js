@@ -700,13 +700,22 @@ class helperPageService {
       }
       //
       // get status
-      const status = await helperModel.getStatus();
+      let status = await helperModel.getStatus();
       if (!status) {
         return {
           message: "Error model get status",
           status: false,
           error: 500,
         };
+      }
+      if (request_id) {
+        status = status.filter((item) => {
+          return item.id == 4 || item.id == 5;
+        });
+      } else {
+        status = status.filter((item) => {
+          return item.id == 2 || item.id == 4;
+        });
       }
       //
       let main_type;
@@ -715,7 +724,7 @@ class helperPageService {
           inforRequest.maintenance_id
         );
       } else {
-        main_type = await helperModel.getMaintenanceType();
+        main_type = await midService.getMaintenanceType_checked(role_id);
       }
 
       if (!main_type) {
@@ -869,19 +878,20 @@ class helperPageService {
       };
     }
   }
-  async addRequestCompleted(recipient_id, data, files) {
+  async addRequestCompleted(infor_user, data, files) {
     try {
       // console.log(recipient_id, data, files);
       const dataRequest = {
         title_request: data.title_request,
         content_request: data.content_request,
-        maintenance_id: data.maintenance_id,
+        maintenance_id: infor_user.role_id,
         petitioner_id: data.petitioner_id,
-        recipient_id,
+        recipient_id: infor_user.id,
         solution_id: data.solution_id,
         status_id: data.status_id,
         processing_content_problem: data.processing_content_problem,
         timeRequest: data.timeRequest,
+        method_id: data.method_id,
       };
       // console.log(dataRequest)
       // add request
@@ -893,17 +903,73 @@ class helperPageService {
           error: 500,
         };
       }
+      const request_id = resultAddRQ.insertId;
+
+      //processing detail
+      const listProcessing = data.listProcessing;
+
+      const listProcessLength = listProcessing.length;
+      // add data
+      if (data.status_id == 4) {
+        for (let i = 0; i < listProcessLength; i++) {
+          const label_id = listProcessing[i];
+          const resultAddprocess = await helperModel.addProcessingDetail(
+            request_id,
+            label_id
+          );
+
+          if (!resultAddprocess) {
+            console.log(infor_user.id, request_id);
+            const deleteRequest = await helperModel.helperDeleteRequest(
+              infor_user.id,
+              request_id
+            );
+            if (!deleteRequest) {
+              return {
+                message: "Error deleteRequest;",
+                status: false,
+                error: 500,
+              };
+            }
+            return {
+              message: "Error add process detai11;",
+              status: false,
+              error: 500,
+            };
+          }
+        }
+      }
+
       // add file
 
-      const request_id = resultAddRQ.insertId;
       const filelLength = files.length;
-      for (let i = 0; i < filelLength; i++) {
+      for (let i = 0; i < filelLength; i++) { 
         const file = files[i];
         const resutl = await userPageModel.addRequestFile(
           request_id,
           file.filename
         );
         if (!resutl) {
+          const deleteProcessDetail =
+            await helperModel.deleteListProcessByRequest(request_id);
+          if (!deleteProcessDetail) {
+            return {
+              message: "Error deleteProcessDetail;",
+              status: false,
+              error: 500,
+            };
+          }
+          const deleteRequest = await userPageModel.deleteRequest(
+            infor_user.id,
+            request_id
+          );
+          if (!deleteRequest) {
+            return {
+              message: "Error deleteRequest;",
+              status: false,
+              error: 500,
+            };
+          }
           return {
             message: "Server error addRequestFile Model",
             status: false,
@@ -921,26 +987,10 @@ class helperPageService {
         };
       }
 
-      //processing detail
-      const listProcessing = data.listProcessing;
+      let inforNewRequest = await userPageModel.getNewRequest(request_id);
 
-      const listProcessLength = listProcessing.length;
-      // add data
-      for (let i = 0; i < listProcessLength; i++) {
-        const label_id = listProcessing[i];
-        const resultAddprocess = await helperModel.addProcessingDetail(
-          request_id,
-          label_id
-        );
-        if (!resultAddprocess) {
-          return {
-            message: "Error add process detai;",
-            status: false,
-            error: 500,
-          };
-        }
-      }
       return {
+        data: { ...inforNewRequest },
         message: "Register request completed success",
         status: true,
       };

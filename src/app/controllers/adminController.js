@@ -108,6 +108,16 @@ class adminController {
       res.status(500).json("Server error");
     }
   }
+  async AdminUpdateUserInfor(req, res) {
+    try {
+      const result = await adminService.AdminUpdateUserInfor(req.body);
+      // console.log(result);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   async deleteUser(req, res) {
     try {
       const result = await adminService.deleteUser(req.body.user_id);

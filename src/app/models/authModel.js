@@ -56,6 +56,17 @@ module.exports = {
       return false;
     }
   },
+  findAccountCheckPass: async (id) => {
+    try {
+      const result = await pool.query(
+        `select * from users where id="${id}" `
+      );
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model find ID:", error);
+      return false;
+    }
+  },
 
   findId: async (data) => {
     try {

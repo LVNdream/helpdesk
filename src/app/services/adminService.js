@@ -522,7 +522,30 @@ class adminPageService {
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error getAllUser By Admin Sevice",
+        message: "Server error updateUserStatus Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async AdminUpdateUserInfor(data) {
+    try {
+      const resutl = await adminModel.AdminUpdateUserInfor(data);
+
+      return resutl
+        ? {
+            message: " AdminUpdateUserInfor success",
+            status: true,
+          }
+        : {
+            message: "Error model AdminUpdateUserInfor",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error AdminUpdateUserInfor Admin Sevice",
         status: false,
         error: 500,
       };
@@ -530,6 +553,15 @@ class adminPageService {
   }
   async deleteUser(user_id) {
     try {
+      const getUser = await userPageModel.getUserInfor(user_id);
+
+      if (!getUser) {
+        return {
+          message: "Not found ID ",
+          status: false,
+          error: "u_404",
+        };
+      }
       const resutl = await adminModel.deleteUser(user_id);
 
       return resutl

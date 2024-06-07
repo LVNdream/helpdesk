@@ -335,10 +335,10 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,r.name as leveluser
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u, account_status us,roles r
+      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} and r.id=u.role_id ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -371,7 +371,7 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
       FROM
            users u, account_status us
       WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
@@ -398,7 +398,8 @@ WHERE
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
+          FROM users u, account_status us
       WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
@@ -473,6 +474,26 @@ WHERE
       return false;
     }
   },
+  AdminUpdateUserInfor: async (data) => {
+    try {
+      result = await pool.query(
+        `update users set 
+          status_id="${data.status_id}",
+          email="${data.email}",
+          tel_number="${data.tel_number}",
+          phone_number="${data.phone_number}",
+          position="${data.position}",
+          affiliated_department="${data.affiliated_department}"
+          where id="${data.user_id}";`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model AdminUpdateUserInfor:", error);
+      return false;
+    }
+  },
+
   deleteUser: async (user_id) => {
     try {
       result = await pool.query(`DELETE FROM users WHERE id= "${user_id}"`);
@@ -896,7 +917,7 @@ WHERE
       return false;
     }
   },
-  
+
   listUserWaitAcceptBySearchText: async (role_id, option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -1235,4 +1256,5 @@ GROUP BY ll.id`
       return false;
     }
   },
+  
 };

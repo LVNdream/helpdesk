@@ -265,7 +265,17 @@ WHERE
       return false;
     }
   },
-
+  deleteListProcessByRequest: async (request_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM processing_details WHERE request_id= "${request_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Delete company :", error);
+      return false;
+    }
+  },
   addProcessingDetail: async (request_id, label_id) => {
     try {
       // console.log(data);
@@ -276,6 +286,17 @@ WHERE
       return result;
     } catch (error) {
       console.log("error model add ProcessingDetail:", error);
+      return false;
+    }
+  },
+  helperDeleteRequest: async (user_id, request_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM request_storage WHERE recipient_id= "${user_id}" and id="${request_id}"`
+      );
+      return result;
+    } catch (error) {
+      console.log("error model Delete request in Request storage:", error);
       return false;
     }
   },
@@ -306,7 +327,7 @@ WHERE
   },
   getMethod: async () => {
     try {
-      result = await pool.query(`select id,method_name from method`);
+      result = await pool.query(`select id,method_name as name from method`);
       return result;
     } catch (error) {
       console.log("error model get method:", error);
@@ -315,7 +336,9 @@ WHERE
   },
   getSolution: async () => {
     try {
-      result = await pool.query(`select id,solution_name from solution`);
+      result = await pool.query(
+        `select id,solution_name as name from solution`
+      );
       return result;
     } catch (error) {
       console.log("error model get solution:", error);
@@ -324,7 +347,9 @@ WHERE
   },
   getStatus: async () => {
     try {
-      result = await pool.query(`select id,status_name from request_status`);
+      result = await pool.query(
+        `select id,status_name as name from request_status`
+      );
       return result;
     } catch (error) {
       console.log("error model get status:", error);
@@ -413,17 +438,19 @@ WHERE
         maintenance_id,
         petitioner_id,
         recipient_id,
+        method_id,
         solution_id,
         status_id,
         processing_content_problem,
         created_at,
-        completion_date) values (?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP());`,
+        completion_date) values (?,?,?,?,?,?,?,?,?,?,CURRENT_TIMESTAMP());`,
         [
           data.title_request,
           data.content_request,
           data.maintenance_id,
           data.petitioner_id,
           data.recipient_id,
+          data.method_id,
           data.solution_id,
           data.status_id,
           data.processing_content_problem,

@@ -126,7 +126,7 @@ class authService {
         if (countLogin >= 5) {
           const resultUpdateStatus = await adminModel.updateUserStatus(
             user.id,
-            4
+            5
           );
           if (!resultUpdateStatus) {
             return {
@@ -352,7 +352,8 @@ class authService {
   // xac thuc pass de update thong tin user
   async verifyPassword(data, password) {
     try {
-      const user = await authModel.findAccountById(data.id);
+      // console.log(data)
+      const user = await authModel.findAccountCheckPass(data.id);
       if (!user) {
         return { message: "Error get account", status: false, error: 500 };
       }

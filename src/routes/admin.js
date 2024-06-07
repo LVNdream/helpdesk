@@ -61,6 +61,11 @@ router.post(
   adminController.updateUserStatus
 );
 router.post(
+  "/updateuser/infor",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.AdminUpdateUserInfor
+);
+router.post(
   "/deleteuser",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteUser
