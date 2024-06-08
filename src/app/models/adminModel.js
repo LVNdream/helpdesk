@@ -1,4 +1,5 @@
 const { pool } = require("../../config/db");
+const bcrypt = require("bcryptjs");
 
 module.exports = {
   getRequestListByAdmin: async (page) => {
@@ -459,6 +460,18 @@ WHERE
       return false;
     }
   },
+  adminGetHelperInfor: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT users.id,users.name,company.name_company as company_name,company.id as company_id,email,roles.name as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
+        FROM users,roles,company  WHERE company.id=users.company_id and users.id=${user_id} and users.role_id= roles.id;`
+      );
+      return result[0];
+    } catch (error) {
+      console.log("error model get user infor:", error);
+      return false;
+    }
+  },
 
   updateUserStatus: async (user_id, status_id) => {
     try {
@@ -511,7 +524,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id=2 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -527,7 +540,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2) and u.status_id!=1
+      WHERE (u.role_id=1 or u.role_id=2) and u.status_id=2
            `
       );
       //   console.log(result);
@@ -548,13 +561,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2)  and u.status_id!=1`
+      WHERE (u.role_id=1 or u.role_id=2)  and u.status_id=2`
         );
       }
 
@@ -573,11 +586,11 @@ WHERE
 
         resutlSearch = await pool.query(
           `SELECT u.id, u.account,u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%"`
+      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -677,7 +690,7 @@ WHERE
   registerHelper: async (data) => {
     try {
       const result = await pool.query(
-        "insert into users (id,password,name,company_id,email,role_id,tel_number,phone_number,position,status_id) values (?,?,?,?,?,?,?,?,?,?)",
+        "insert into users (account,password,name,company_id,email,role_id,tel_number,phone_number,position,status_id) values (?,?,?,?,?,?,?,?,?,?)",
         [
           data.id,
           data.password,
@@ -693,7 +706,7 @@ WHERE
       );
       // console.log(result)
       if (result) {
-        return { message: "Registered helper Successfully", status: true };
+        return result;
       }
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
@@ -704,7 +717,7 @@ WHERE
 
   updateHelperInfor: async (user_id, data) => {
     try {
-      result = await pool.query(
+      const result = await pool.query(
         `update users set 
           company_id="${data.company_id}",
           email="${data.email}",
@@ -1256,5 +1269,51 @@ GROUP BY ll.id`
       return false;
     }
   },
-  
+
+  updateAdminInfor: async (user_id, data) => {
+    try {
+      let result;
+      if (!data.password) {
+        result = await pool.query(
+          `update users set 
+          email="${data.email}",
+          tel_number="${data.tel_number}",
+          name="${data.name}",
+          phone_number="${data.phone_number}"
+          where id="${user_id}";`
+        );
+      } else {
+        const password_hash = bcrypt.hashSync(data.password);
+
+        result = await pool.query(
+          `update users set
+          email="${data.email}",    
+          password="${password_hash}",
+          tel_number="${data.tel_number}",
+          name="${data.name}",
+          phone_number="${data.phone_number}"
+          where id="${user_id}";`
+        );
+      }
+      return result;
+    } catch (error) {
+      console.log("error model UpdateUserStatus:", error);
+      return false;
+    }
+  },
+  getNewHelper: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+      FROM
+           users u, account_status us
+      WHERE u.status_id=us.id and u.status_id=2 and u.id=${user_id} `
+      );
+
+      return result[0];
+    } catch (error) {
+      console.log("error model getNewHelper :", error);
+      return false;
+    }
+  },
 };

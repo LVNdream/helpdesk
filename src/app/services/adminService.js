@@ -289,13 +289,40 @@ class adminPageService {
       const userCount = await adminModel.getUserCount(role_id);
 
       let listStatus = await adminModel.adminGetAccountStatus();
-
+      if (!listStatus) {
+        return {
+          message: "Error model  get listStatus",
+          status: false,
+          error: 500,
+        };
+      }
+      // listStatus.push({ id: user.id, status_name: user.status_name });
       const listUserFilterStatus = resutl.map((user) => {
         let listStatusCheck = listStatus.map((item) => {
           let checked = false;
           item.id == user.status_id ? (checked = true) : (checked = false);
           return { ...item, checked };
         });
+
+        const listStatusLength = listStatusCheck.length;
+        let isExisted = false;
+        for (let i = 0; i < listStatusLength; i++) {
+          const item = listStatusCheck[i];
+          // console.log(item)
+          if (item.checked) {
+            isExisted = true;
+            break;
+          }
+        }
+
+        !isExisted
+          ? listStatusCheck.push({
+              id: user.status_id,
+              status_name: user.status_name,
+              checked: true,
+            })
+          : listStatusCheck;
+
         delete user.status_id;
         delete user.status_name;
         return {
@@ -331,13 +358,40 @@ class adminPageService {
       );
 
       let listStatus = await adminModel.adminGetAccountStatus();
-
+      if (!listStatus) {
+        return {
+          message: "Error model  get listStatus",
+          status: false,
+          error: 500,
+        };
+      }
+      // listStatus.push({ id: user.id, status_name: user.status_name });
       const listUserFilterStatus = resutl.listFilter.map((user) => {
         let listStatusCheck = listStatus.map((item) => {
           let checked = false;
           item.id == user.status_id ? (checked = true) : (checked = false);
           return { ...item, checked };
         });
+
+        const listStatusLength = listStatusCheck.length;
+        let isExisted = false;
+        for (let i = 0; i < listStatusLength; i++) {
+          const item = listStatusCheck[i];
+          // console.log(item)
+          if (item.checked) {
+            isExisted = true;
+            break;
+          }
+        }
+
+        !isExisted
+          ? listStatusCheck.push({
+              id: user.status_id,
+              status_name: user.status_name,
+              checked: true,
+            })
+          : listStatusCheck;
+
         delete user.status_id;
         delete user.status_name;
         return {
@@ -368,10 +422,11 @@ class adminPageService {
   //
   async getAllHelper(page) {
     try {
-      const resutl = await adminModel.getAllHelper(page);
+      let resutl = await adminModel.getAllHelper(page);
 
       const userCount = await adminModel.getHelperCount();
 
+      // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
         : {
@@ -396,6 +451,8 @@ class adminPageService {
         text,
         page
       );
+
+      // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? {
             data: resutl.listFilter,
@@ -626,9 +683,19 @@ class adminPageService {
           };
           // console.relog(dataRegister);
           const resultRegister = await adminModel.registerHelper(dataRegister);
+          console.log(resultRegister);
+          let newHelper = {};
+          if (resultRegister) {
+            const newUser_id = resultRegister.insertId;
+            newHelper = await adminModel.getNewHelper(newUser_id);
+          }
 
           return resultRegister
-            ? resultRegister
+            ? {
+                message: "Registered helper Successfully",
+                status: true,
+                data: newHelper,
+              }
             : { message: "Registered fail", status: false, error: 500 };
         }
       } else {
@@ -646,7 +713,7 @@ class adminPageService {
 
   async getAdminHelperById(user_id) {
     try {
-      const resutl = await adminModel.adminGetUserInfor(user_id);
+      const resutl = await adminModel.adminGetHelperInfor(user_id);
 
       let listStatus = await adminModel.adminGetAccountStatus();
 
@@ -656,7 +723,8 @@ class adminPageService {
           checked = true;
         }
         return {
-          ...item,
+          id: item.id,
+          name: item.status_name,
           checked,
         };
       });
@@ -668,7 +736,7 @@ class adminPageService {
         ? {
             ...resutl,
             statusList: listStatus,
-            listRole,
+            main_type: listRole,
           }
         : {
             message: "Error model getAllUser By Admin",
@@ -688,17 +756,20 @@ class adminPageService {
   async updateHelperInfor(user_id, data) {
     try {
       const resutl = await adminModel.updateHelperInfor(user_id, data);
-
-      return resutl
-        ? {
-            message: "Update helper infor success",
-            status: true,
-          }
-        : {
-            message: "Error model update User helper infor By Admin",
-            status: false,
-            error: 500,
-          };
+      if (resutl) {
+        const inforUpdate = await adminModel.getNewHelper(user_id);
+        return {
+          data: inforUpdate,
+          message: "Update helper infor success",
+          status: true,
+        };
+      } else {
+        return {
+          message: "Error model update User helper infor By Admin",
+          status: false,
+          error: 500,
+        };
+      }
     } catch (error) {
       console.log(error);
       return {
@@ -1896,6 +1967,37 @@ class adminPageService {
       console.log(error);
       return {
         message: "Server error getInforReportMonthly Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async updateAdminInfor(user_id, data) {
+    try {
+      const userInfor = await userPageModel.getUserInfor(user_id);
+      if (!userInfor) {
+        return {
+          message: "Id not found",
+          status: false,
+          error: "u_404",
+        };
+      }
+      const resultUpdate = await adminModel.updateAdminInfor(user_id, data);
+      return resultUpdate
+        ? {
+            message: "Update Admin infor success",
+            status: true,
+            error: 500,
+          }
+        : {
+            message: "Error upadte Admin infor model",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Error upadte Admin infor service",
         status: false,
         error: 500,
       };
