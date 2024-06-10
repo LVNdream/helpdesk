@@ -338,8 +338,8 @@ WHERE
       const result = await pool.query(
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,r.name as leveluser
       FROM
-           users u, account_status us,roles r
-      WHERE u.status_id=us.id and u.status_id != 1 and  u.role_id=${role_id} and r.id=u.role_id ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
+      WHERE  u.status_id != 1 and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -374,14 +374,14 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u left join account_status us on u.status_id=us.id
+      WHERE u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc`
+           users u left join account_status us on u.status_id=us.id
+      WHERE  u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc`
         );
       }
 
@@ -400,12 +400,13 @@ WHERE
 
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
-          FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+          FROM users u left join account_status us on u.status_id=us.id
+      WHERE  u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          FROM users u left join account_status us on u.status_id=us.id
+      WHERE  u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -481,7 +482,7 @@ WHERE
           where id="${user_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserStatus:", error);
       return false;
@@ -500,7 +501,7 @@ WHERE
           where id="${data.user_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model AdminUpdateUserInfor:", error);
       return false;
@@ -510,7 +511,7 @@ WHERE
   deleteUser: async (user_id) => {
     try {
       result = await pool.query(`DELETE FROM users WHERE id= "${user_id}"`);
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete user :", error);
       return false;
@@ -521,10 +522,14 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id=2 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u
+            left join account_status us on u.status_id=us.id
+            left join roles r on u.role_id= r.id
+            left join company c on u.company_id= c.id
+
+      WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -558,10 +563,13 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u
+            left join account_status us on u.status_id=us.id
+            left join roles r on u.role_id= r.id
+            left join company c on u.company_id= c.id
+      WHERE  u.status_id=2  and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
@@ -577,19 +585,24 @@ WHERE
         if (option == 1) {
           nameCondition = "u.name";
         } else if (option == 2) {
-          nameCondition = "u.position";
+          nameCondition = "c.name_company";
         } else if (option == 3) {
-          nameCondition = "u.affiliated_department";
-        } else if (option == 4) {
           nameCondition = "us.status_name";
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id, u.account,u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+          `SELECT u.id, u.account,u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
+           FROM users u
+           left join account_status us on u.status_id=us.id
+           left join  roles r on u.role_id = r.id
+           left join company c on u.company_id = c.id
+      WHERE  u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u
+           left join account_status us on u.status_id=us.id
+           left join  roles r on u.role_id = r.id
+           left join company c on u.company_id = c.id
       WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%"`
         );
       }
@@ -729,7 +742,7 @@ WHERE
           where id="${user_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserStatus:", error);
       return false;
@@ -834,9 +847,9 @@ WHERE
         "insert into company (name_company,fax,phone_number,business_code) values (?,?,?,?)",
         [data.name_company, data.fax, data.phone_number, data.business_code]
       );
-      // console.log(result)
+
       if (result) {
-        return { message: "Registered company Successfully", status: true };
+        return result;
       }
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
@@ -874,11 +887,8 @@ WHERE
           data.company_id,
         ]
       );
-      // console.log(result)
-      if (result) {
-        return { message: "update company infor Successfully", status: true };
-      }
-      //    console.log("resssssssssssssssssss",result);
+
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model comapny company infor:", error);
       return false;
@@ -890,7 +900,7 @@ WHERE
       result = await pool.query(
         `DELETE FROM company WHERE id= "${company_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete company :", error);
       return false;
@@ -903,8 +913,8 @@ WHERE
       const result = await pool.query(
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u left join account_status us on u.status_id=us.id
+      WHERE (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -940,14 +950,14 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+           users u left join account_status us on u.status_id=us.id
+      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc `
+           users u left join account_status us on u.status_id=us.id
+      WHERE (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc `
         );
       }
 
@@ -965,12 +975,14 @@ WHERE
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+          `SELECT u.id, u.name,u.account, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          FROM users u left join account_status us on u.status_id=us.id
+      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
-          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u, account_status us
-      WHERE u.status_id=us.id and (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+          `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+          FROM users u left join account_status us on u.status_id=us.id
+      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -992,7 +1004,7 @@ WHERE
           where id="${label_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserStatus:", error);
       return false;
@@ -1295,7 +1307,7 @@ GROUP BY ll.id`
           where id="${user_id}";`
         );
       }
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserStatus:", error);
       return false;
@@ -1304,15 +1316,48 @@ GROUP BY ll.id`
   getNewHelper: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
       FROM
-           users u, account_status us
-      WHERE u.status_id=us.id and u.status_id=2 and u.id=${user_id} `
+           users u
+           left join account_status us on u.status_id=us.id
+           left join roles r on r.id = u.role_id
+           left join company c on u.company_id=c.id
+      WHERE   u.status_id=2 and u.id=${user_id} `
       );
 
       return result[0];
     } catch (error) {
       console.log("error model getNewHelper :", error);
+      return false;
+    }
+  },
+  getNewUser: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,tel_number,phone_number,email, r.name as leveluser
+      FROM
+           users u left join  account_status us on us.id=u.status_id left join roles r on r.id=u.role_id
+      WHERE u.status_id=us.id and  u.id=${user_id} `
+      );
+
+      return result[0];
+    } catch (error) {
+      console.log("error model getNewUser :", error);
+      return false;
+    }
+  },
+
+  getNewCompany: async (company_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id
+         where c.id=${company_id}`
+      );
+
+      return result[0];
+    } catch (error) {
+      console.log("error model getNewCompany :", error);
       return false;
     }
   },

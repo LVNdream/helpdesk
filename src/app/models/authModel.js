@@ -58,9 +58,7 @@ module.exports = {
   },
   findAccountCheckPass: async (id) => {
     try {
-      const result = await pool.query(
-        `select * from users where id="${id}" `
-      );
+      const result = await pool.query(`select * from users where id="${id}" `);
       return result[0] ? result[0] : {};
     } catch (error) {
       console.log("error model find ID:", error);
@@ -92,7 +90,7 @@ module.exports = {
       const result = await pool.query(
         `update users set first_login=1 where id="${user_id}" `
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model updateFirstlogin:", error);
       return false;
@@ -103,7 +101,7 @@ module.exports = {
       const result = await pool.query(
         `update users set count_login=${count} where id="${user_id}" `
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model updateFirstlogin:", error);
       return false;
@@ -114,7 +112,7 @@ module.exports = {
       const result = await pool.query(
         `update users set last_login=${dateTime} where id="${user_id}" `
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model updateLastTimeLogin:", error);
       return false;

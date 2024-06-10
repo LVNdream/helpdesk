@@ -508,7 +508,7 @@ class adminPageService {
       return resutl
         ? {
             data: resutl.listFilter,
-            requestCount: parseInt(resutl.requestCount),
+            companyCount: parseInt(resutl.requestCount),
           }
         : {
             message: "Error model get list company By search",
@@ -566,16 +566,31 @@ class adminPageService {
     try {
       const resutl = await adminModel.updateUserStatus(user_id, status_id);
 
-      return resutl
-        ? {
-            message: "Update status success",
-            status: true,
-          }
-        : {
-            message: "Error model update User Status By Admin",
-            status: false,
-            error: 500,
-          };
+      if (!resutl) {
+        return {
+          message: "Error model update User Status By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+
+      let updateInfor = await adminModel.getNewUser(user_id);
+      if (!updateInfor) {
+        return {
+          message: "Error model get new user By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+      return {
+        data: {
+          user_id: updateInfor.id,
+          status_id: updateInfor.status_id,
+          status_name: updateInfor.status_name,
+        },
+        message: "Update status success",
+        status: true,
+      };
     } catch (error) {
       console.log(error);
       return {
@@ -588,17 +603,56 @@ class adminPageService {
   async AdminUpdateUserInfor(data) {
     try {
       const resutl = await adminModel.AdminUpdateUserInfor(data);
+      let updateInfor;
+      if (!resutl) {
+        return {
+          message: "Error model AdminUpdateUserInfor",
+          status: false,
+          error: 500,
+        };
+      }
+      updateInfor = await adminModel.getNewUser(data.user_id);
+      // console.log(updateInfor);
+      let listStatus = await adminModel.adminGetAccountStatus();
+      if (!listStatus) {
+        return {
+          message: "Error model  get listStatus",
+          status: false,
+          error: 500,
+        };
+      }
+      let listStatusCheck = listStatus.map((item) => {
+        let checked = false;
+        item.id == updateInfor.status_id ? (checked = true) : (checked = false);
+        return { ...item, checked };
+      });
+      const listStatusLength = listStatusCheck.length;
+      let isExisted = false;
+      for (let i = 0; i < listStatusLength; i++) {
+        const item = listStatusCheck[i];
+        // console.log(item)
+        if (item.checked) {
+          isExisted = true;
+          break;
+        }
+      }
 
-      return resutl
-        ? {
-            message: " AdminUpdateUserInfor success",
-            status: true,
-          }
-        : {
-            message: "Error model AdminUpdateUserInfor",
-            status: false,
-            error: 500,
-          };
+      !isExisted
+        ? listStatusCheck.push({
+            id: updateInfor.status_id,
+            status_name: updateInfor.status_name,
+            checked: true,
+          })
+        : listStatusCheck;
+
+      delete updateInfor.status_id;
+      delete updateInfor.status_name;
+
+      return {
+        data: { ...updateInfor, listStatusCheck },
+        message: " AdminUpdateUserInfor success",
+        status: true,
+      };
     } catch (error) {
       console.log(error);
       return {
@@ -623,6 +677,7 @@ class adminPageService {
 
       return resutl
         ? {
+            deleteId: user_id,
             message: "delete user success",
             status: true,
           }
@@ -674,7 +729,10 @@ class adminPageService {
             error: exist.error,
           };
         } else {
-          const password_hash = bcrypt.hashSync(data.password, 8);
+          let password_hash;
+          if (data.password) {
+            password_hash = bcrypt.hashSync(data.password, 8);
+          }
           const dataRegister = {
             ...data,
             password: password_hash,
@@ -683,7 +741,7 @@ class adminPageService {
           };
           // console.relog(dataRegister);
           const resultRegister = await adminModel.registerHelper(dataRegister);
-          console.log(resultRegister);
+          // console.log(resultRegister);
           let newHelper = {};
           if (resultRegister) {
             const newUser_id = resultRegister.insertId;
@@ -850,7 +908,7 @@ class adminPageService {
       return resutl
         ? {
             data: resutl.listFilter,
-            requestCount: parseInt(resutl.requestCount),
+            companyCount: parseInt(resutl.requestCount),
           }
         : {
             message: "Error model get list company By search",
@@ -881,10 +939,22 @@ class adminPageService {
           };
         } else {
           const resultRegister = await adminModel.registerCompany(data);
-
-          return resultRegister
-            ? resultRegister
-            : { message: "Registered fail", status: false, error: 500 };
+          // console.log(resultRegister)
+          if (!resultRegister) {
+            return { message: "Registered fail", status: false, error: 500 };
+          }
+          let newCompany = await adminModel.getNewCompany(
+            resultRegister.insertId
+          );
+          return {
+            data: {
+              ...newCompany,
+              amountHelper: parseInt(newCompany.amountHelper),
+              owner: "Admin",
+            },
+            message: "Register success",
+            status: true,
+          };
         }
       } else {
         return {
@@ -928,9 +998,18 @@ class adminPageService {
     try {
       const resultUpdate = await adminModel.updateCompanyInfor(data);
 
-      return resultUpdate
-        ? { message: "Update success", status: true }
-        : { message: "Update fail", status: false, error: 500 };
+      if (!resultUpdate) {
+        return { message: "Update fail", status: false, error: 500 };
+      }
+      let updateInfor = await adminModel.getNewCompany(data.company_id);
+      return {
+        data: {
+          ...updateInfor,
+          amountHelper: parseInt(updateInfor.amountHelper),
+        },
+        message: "Update success",
+        status: true,
+      };
     } catch (error) {
       console.log(error);
       return {
@@ -947,6 +1026,7 @@ class adminPageService {
 
       return resutl
         ? {
+            deleteId: company_id,
             message: "delete company success",
             status: true,
           }
@@ -1152,7 +1232,12 @@ class adminPageService {
       const resultUpdate = await adminModel.updateLabelName(label_id, name);
 
       return resultUpdate
-        ? { message: "Update success", status: true }
+        ? {
+            label_id,
+            label_name: name,
+            message: "Update label name success",
+            status: true,
+          }
         : { message: "Update fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
@@ -1206,7 +1291,14 @@ class adminPageService {
             return item;
           }));
         return {
-          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          name:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? "H/W"
+                : "SW"
+              : mc_group.group_m == 2
+              ? "전산부분"
+              : "일반부분",
           data: mainClassFilter,
         };
       });
@@ -1254,6 +1346,13 @@ class adminPageService {
       let resutlMainClass = await userPageModel.getMaintenanceClassId(
         maintenance_id
       );
+      if (!resutlMainClass) {
+        return {
+          message: "Error model getMaintenanceClassById",
+          status: false,
+          error: 500,
+        };
+      }
       resutlMainClass = resutlMainClass.map((item) => {
         return {
           mc_id: item.mc_id,
@@ -1263,6 +1362,14 @@ class adminPageService {
       let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
         maintenance_id
       );
+
+      if (!resutlMainClassGroup) {
+        return {
+          message: "Error model resutlMainClassGroup",
+          status: false,
+          error: 500,
+        };
+      }
       let mainClassFilter;
       resutlMainClassGroup = resutlMainClassGroup.map((mc_group) => {
         (mainClassFilter = resutlMainClass.filter((item) => {
@@ -1273,14 +1380,18 @@ class adminPageService {
             return item;
           }));
         return {
-          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          name:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? "H/W"
+                : "SW"
+              : mc_group.group_m == 2
+              ? "전산부분"
+              : "일반부분",
           data: mainClassFilter,
         };
       });
 
-      // const classSW = resutlMainClass.filter((item) => {
-      //   return item.group_m == 2;
-      // });
       return resutlMainClass
         ? resutlMainClassGroup
         : {

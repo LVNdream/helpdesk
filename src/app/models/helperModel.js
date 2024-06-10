@@ -156,7 +156,7 @@ WHERE
           where id="${request_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Update request Status_id:", error);
       return false;
@@ -170,7 +170,7 @@ WHERE
           where id="${request_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Update  request recipient_id:", error);
       return false;
@@ -215,7 +215,7 @@ WHERE
           where id="${user_id}";`
         );
       }
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model updateHelpdeskInfor:", error);
       return false;
@@ -247,7 +247,7 @@ WHERE
           where id="${problem_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Update  request problem:", error);
       return false;
@@ -259,7 +259,7 @@ WHERE
       result = await pool.query(
         `DELETE FROM list_problem WHERE id="${problem_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete problem in list problem:", error);
       return false;
@@ -270,7 +270,7 @@ WHERE
       result = await pool.query(
         `DELETE FROM processing_details WHERE request_id= "${request_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete company :", error);
       return false;
@@ -294,7 +294,7 @@ WHERE
       result = await pool.query(
         `DELETE FROM request_storage WHERE recipient_id= "${user_id}" and id="${request_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete request in Request storage:", error);
       return false;

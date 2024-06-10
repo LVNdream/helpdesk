@@ -28,8 +28,8 @@ app.use(express.static(path.join(__dirname, "src/public")));
 app.use(bodyParser.json());
 // app.use(
 //   cors({
-//     origin: "http://192.168.1.3:3000",
-//     credentials: true,
+//     origin: "http://192.168.1.40:3000",
+//     // credentials: true,
 //   })
 // );
 app.use(cors());

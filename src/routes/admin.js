@@ -39,7 +39,7 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getAlluser
 );
-router.post(
+router.get(
   "/getlistuser/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listUserBySearch
@@ -65,8 +65,8 @@ router.post(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.AdminUpdateUserInfor
 );
-router.post(
-  "/deleteuser",
+router.delete(
+  "/deleteuser/:user_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteUser
 );
@@ -76,7 +76,7 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllHelper
 );
-router.post(
+router.get(
   "/getlisthelper/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listHelperBySearch
@@ -87,7 +87,7 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllCompanyToAddInfor
 );
-router.post(
+router.get(
   "/getlistcompany/addinfor/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listCompanyBySearchToAddInfor
@@ -97,7 +97,7 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllCompanyToWatch
 );
-router.post(
+router.get(
   "/getlistcompany/watch/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listCompanyBySearchToWatch
@@ -141,8 +141,8 @@ router.post(
   adminController.updateCompanyInfor
 );
 
-router.post(
-  "/deletecompany",
+router.delete(
+  "/deletecompany/:company_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteCompany
 );
@@ -152,7 +152,7 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getAlluserWaitAccept
 );
-router.post(
+router.get(
   "/getlistuser/waitaccept/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listUserWaitAcceptBySearch
@@ -190,13 +190,13 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getListLabel
 );
-router.post(
-  "/getlistlabel/search",
+router.get(
+  "/getlistlabel/:maintenance_id/search",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.listLabelBySearch
 );
-router.post(
-  "/getlistmainclass",
+router.get(
+  "/getlistmainclass/:maintenance_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getMainClassById
 );
@@ -232,6 +232,5 @@ router.post(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.updateAdminInfor
 );
-
 
 module.exports = router;

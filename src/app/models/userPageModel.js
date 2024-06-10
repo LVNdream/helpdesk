@@ -293,8 +293,13 @@ LEFT JOIN
          JOIN
     method mth ON rs.method_id = mth.id
      LEFT JOIN
-    solution s ON s.id=rs.solution_id,maintenance_type mt, users u,request_status rstt,  users AS u2
-        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id AND rs.status_id=rstt.id AND u2.id=rs.recipient_id;`
+    solution s ON s.id=rs.solution_id
+    LEFT JOIN
+    users u ON rs.petitioner_id =u.id
+    left join
+    users AS u2 on u2.id=rs.recipient_id,
+    maintenance_type mt, request_status rstt,
+        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.status_id=rstt.id;`
       );
 
       return result[0] ? result[0] : {};
@@ -357,7 +362,7 @@ LEFT JOIN
           where id="${user_id}";`
         );
       }
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserInfor:", error);
       return false;
@@ -416,7 +421,7 @@ LEFT JOIN
           where id="${request_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateRequest:", error);
       return false;
@@ -428,7 +433,7 @@ LEFT JOIN
         "DELETE FROM request_file WHERE file_address= ?",
         [filename]
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Deletefile in Request:", error);
       return false;
@@ -451,7 +456,7 @@ LEFT JOIN
       result = await pool.query(
         `DELETE FROM request_storage WHERE petitioner_id= "${user_id}" and id="${request_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete request in Request storage:", error);
       return false;
@@ -523,7 +528,7 @@ LEFT JOIN
       const result = await pool.query(
         `delete from list_problem where request_id="${request_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model DeleteListProblem :", error);
       return false;

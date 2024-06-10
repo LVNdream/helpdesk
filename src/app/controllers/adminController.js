@@ -75,8 +75,8 @@ class adminController {
       }
       const result = await adminService.listUserBySearch(
         4,
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -120,7 +120,7 @@ class adminController {
   }
   async deleteUser(req, res) {
     try {
-      const result = await adminService.deleteUser(req.body.user_id);
+      const result = await adminService.deleteUser(req.params.user_id);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -153,8 +153,8 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listHelperBySearch(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -190,8 +190,8 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listCompanyBySearchToAddInfor(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -229,8 +229,8 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listCompanyBySearchToWatch(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -321,7 +321,7 @@ class adminController {
 
   async deleteCompany(req, res) {
     try {
-      const result = await adminService.deleteCompany(req.body.company_id);
+      const result = await adminService.deleteCompany(req.params.company_id);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -355,8 +355,8 @@ class adminController {
       }
       const result = await adminService.listUserWaitAcceptBySearch(
         4,
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -439,9 +439,16 @@ class adminController {
 
   async listLabelBySearch(req, res) {
     try {
+      if (!Number(req.params.maintenance_id)) {
+        return res.json({
+          message: "Params invalid",
+          status: false,
+          error: "f_params",
+        });
+      }
       const result = await adminService.listLabelBySearch(
-        req.body.maintenance_id,
-        req.body.text
+        req.params.maintenance_id,
+        req.query.text
       );
       res.status(200).json(result);
     } catch (error) {
@@ -452,7 +459,7 @@ class adminController {
   async getMainClassById(req, res) {
     try {
       const result = await adminService.getMaintenanceClassById(
-        req.body.maintenance_id
+        req.params.maintenance_id
       );
       res.status(200).json(result);
     } catch (error) {
