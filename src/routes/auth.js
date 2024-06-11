@@ -29,5 +29,10 @@ router.get(
   middlewareAuth.verifyAuthentication,
   authController.getUserName
 );
+router.post(
+  "/update/pw",
+  middlewareAuth.verifyAuthentication,
+  authController.updatePassword
+);
 
 module.exports = router;

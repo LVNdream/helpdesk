@@ -59,6 +59,19 @@ class authController {
     }
   }
 
+  async updatePassword(req, res) {
+    try {
+      const result = await authService.updatePassword({
+        user_id: req.user.id,
+        password: req.body.password,
+      });
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Server error", error: 500 });
+    }
+  }
+
   async handleRefreshToken(req, res) {
     try {
       const result = await authService.handleRefreshToken(req.user);

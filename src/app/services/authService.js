@@ -304,6 +304,26 @@ class authService {
     }
   }
 
+  async updatePassword(data) {
+    try {
+      // console.log(data)
+      const resultUpdate = await authModel.updatePassword(
+        data.user_id,
+        data.password
+      );
+      return resultUpdate
+        ? { message: "Update password sucess", status: true }
+        : { message: "Update password fail", status: false };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error updatePassword service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async checkId(data) {
     try {
       const exist = await authModel.checkExistId(data.id);

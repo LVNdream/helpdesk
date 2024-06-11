@@ -1,10 +1,11 @@
 const { pool } = require("../../config/db");
+const bcrypt = require("bcryptjs");
 
 module.exports = {
   register: async (data) => {
     try {
       const result = await pool.query(
-        "insert into users (account,name,password,email,tel_number,phone_number,position,affiliated_department,status_id,role_id) values (?,?,?,?,?,?,?,?,?,?)",
+        "insert into users (account,name,password,email,tel_number,phone_number,position,affiliated_department,status_id,role_id,first_login) values (?,?,?,?,?,?,?,?,?,?,?)",
         [
           data.id,
           data.name,
@@ -16,6 +17,7 @@ module.exports = {
           data.affiliated_department,
           data.status_id,
           data.role_id,
+          1,
         ]
       );
       // console.log(result)
@@ -126,6 +128,24 @@ module.exports = {
       return result[0] ? result[0] : {};
     } catch (error) {
       console.log("error model getUserName", error);
+      return false;
+    }
+  },
+  updatePassword: async (user_id, password) => {
+    try {
+      let result;
+// console.log(user_id, password)
+      const password_hash = bcrypt.hashSync(password, 8);
+
+      result = await pool.query(
+        `update users set
+          password="${password_hash}"
+          where id="${user_id}";`
+      );
+
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model updatePassword:", error);
       return false;
     }
   },

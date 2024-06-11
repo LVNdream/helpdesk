@@ -64,6 +64,7 @@ class helperPageService {
         const resultInfor = await userPageModel.getRequestConfirm_Register(
           request_id
         );
+
         if (
           (status_id == 2 || status_id == 3) &&
           resultInfor.recipient_id != recipient_id
@@ -808,6 +809,109 @@ class helperPageService {
     }
   }
 
+  async deleteRequest(user_id, request_id) {
+    try {
+      const status_id = await userPageModel.getIdStatusByRequest(request_id);
+
+      if (!status_id) {
+        return {
+          message:
+            "Server error get status_id by request model or reqeusr_id not exist",
+          status: false,
+          error: 500,
+        };
+      }
+      const resutlRequest = await userPageModel.getRequestById(request_id);
+      // console.log(resutlRequest);
+      if (!resutlRequest) {
+        return {
+          message: "Server error get request by id model",
+          status: false,
+          error: 500,
+        };
+      }
+
+      if (status_id > 3) {
+        return {
+          message: "Status id  in valid",
+          status: false,
+          error: 400,
+        };
+      }
+      if (resutlRequest.recipient_id != user_id) {
+        return {
+          message: "You not own request",
+          status: false,
+          error: 401,
+        };
+      }
+
+      // xoa file
+      let files = await userPageModel.getAllFileByRequest(request_id);
+      files = files.map((file) => {
+        return file.file_address;
+      });
+
+      const filesLength = files.length;
+
+      if (filesLength > 0) {
+        for (let i = 0; i < filesLength; i++) {
+          const file = files[i];
+          console.log(file);
+          const resutlDB = await userPageModel.deleteFile(file);
+          if (!resutlDB) {
+            return {
+              message: "Server error Delete File Model",
+              status: false,
+              error: 500,
+            };
+          }
+          const resultDeleleSever = await midService.deleteFile(file, "files");
+          if (!resultDeleleSever) {
+            return {
+              message: "Server error Delete one File midService",
+              status: false,
+              error: 500,
+            };
+          }
+        }
+      }
+
+      //  xoa list_problem
+      const listProblem = await userPageModel.getAllProblemByRequest_id(
+        request_id
+      );
+      if (listProblem.length > 0) {
+        const deleteProblem = await userPageModel.deleteListProblem(request_id);
+
+        if (!deleteProblem) {
+          return {
+            message: "Server error Delete list Problem midService",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+      // xoa request
+      const resutl = await helperModel.deleteRequest(user_id, request_id);
+
+      return resutl
+        ? { messsage: "Deleted Success!", status: true, request_id }
+        : {
+            messsage: "Delete Fail!, Error model delete",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async getAllUser(page) {
     try {
       let users = await helperModel.getAllUser(page);
@@ -943,7 +1047,7 @@ class helperPageService {
       // add file
 
       const filelLength = files.length;
-      for (let i = 0; i < filelLength; i++) { 
+      for (let i = 0; i < filelLength; i++) {
         const file = files[i];
         const resutl = await userPageModel.addRequestFile(
           request_id,

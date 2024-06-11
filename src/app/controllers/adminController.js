@@ -95,6 +95,17 @@ class adminController {
       res.status(500).json("Server error");
     }
   }
+  async adminGetUserByIdAccept(req, res) {
+    try {
+      const result = await adminService.adminGetUserByIdAccept(
+        req.params.user_id
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   async updateUserStatus(req, res) {
     try {
       const result = await adminService.updateUserStatus(
@@ -516,7 +527,7 @@ class adminController {
   }
   async getInforReportWeek(req, res) {
     try {
-      const result = await adminService.getInforReportWeek(req.body);
+      const result = await adminService.getInforReportWeek(req.query);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -525,8 +536,10 @@ class adminController {
   }
   async getInforReportMonth(req, res) {
     try {
-      const result = await adminService.getInforReportMonthly(req.body);
+      
+      const result = await adminService.getInforReportMonthly(req.query);
       res.status(200).json(result);
+
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");

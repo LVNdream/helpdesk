@@ -529,24 +529,39 @@ class adminPageService {
   async getAdminUserById(user_id) {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
-
+      // console.log(re)
       let listStatus = await adminModel.adminGetAccountStatus();
 
-      listStatus = listStatus.map((item) => {
+      let listStatusCheck = listStatus.map((item) => {
         let checked = false;
-        if (item.id == resutl.status_id) {
-          checked = true;
-        }
-        return {
-          ...item,
-          checked,
-        };
+        item.id == resutl.status_id ? (checked = true) : (checked = false);
+        return { ...item, checked };
       });
+      const listStatusLength = listStatusCheck.length;
+      let isExisted = false;
+      for (let i = 0; i < listStatusLength; i++) {
+        const item = listStatusCheck[i];
+        // console.log(item)
+        if (item.checked) {
+          isExisted = true;
+          break;
+        }
+      }
 
+      !isExisted
+        ? listStatusCheck.push({
+            id: resutl.status_id,
+            status_name: resutl.status_name,
+            checked: true,
+          })
+        : listStatusCheck;
+
+      delete resutl.status_id;
+      delete resutl.status_name;
       return resutl
         ? {
             ...resutl,
-            statusList: listStatus,
+            listStatusCheck,
           }
         : {
             message: "Error model getAllUser By Admin",
@@ -557,6 +572,26 @@ class adminPageService {
       console.log(error);
       return {
         message: "Server error getAllUser By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async adminGetUserByIdAccept(user_id) {
+    try {
+      const resutl = await adminModel.adminGetUserInfor(user_id);
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model adminGetUserByIdAccept",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error adminGetUserByIdAccept Sevice",
         status: false,
         error: 500,
       };
@@ -1051,21 +1086,21 @@ class adminPageService {
 
       const userCount = await adminModel.getUserCountWaitAccept(role_id);
 
-      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+      // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
 
-      resutl = resutl.map((user) => {
-        let listStatusCheck = listStatus.map((item) => {
-          let checked = false;
-          item.id == user.status_id ? (checked = true) : (checked = false);
-          return { ...item, checked };
-        });
-        delete user.status_id;
-        delete user.status_name;
-        return {
-          ...user,
-          listStatusCheck,
-        };
-      });
+      // resutl = resutl.map((user) => {
+      //   let listStatusCheck = listStatus.map((item) => {
+      //     let checked = false;
+      //     item.id == user.status_id ? (checked = true) : (checked = false);
+      //     return { ...item, checked };
+      //   });
+      //   delete user.status_id;
+      //   delete user.status_name;
+      //   return {
+      //     ...user,
+      //     listStatusCheck,
+      //   };
+      // });
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
         : {
@@ -1092,24 +1127,24 @@ class adminPageService {
         page
       );
       // console.log(resutl)
-      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+      // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
 
-      const listUserFilterStatus = resutl.listFilter.map((user) => {
-        let listStatusCheck = listStatus.map((item) => {
-          let checked = false;
-          item.id == user.status_id ? (checked = true) : (checked = false);
-          return { ...item, checked };
-        });
-        delete user.status_id;
-        delete user.status_name;
-        return {
-          ...user,
-          listStatusCheck,
-        };
-      });
+      // const listUserFilterStatus = resutl.listFilter.map((user) => {
+      //   let listStatusCheck = listStatus.map((item) => {
+      //     let checked = false;
+      //     item.id == user.status_id ? (checked = true) : (checked = false);
+      //     return { ...item, checked };
+      //   });
+      //   delete user.status_id;
+      //   delete user.status_name;
+      //   return {
+      //     ...user,
+      //     listStatusCheck,
+      //   };
+      // });
       return resutl
         ? {
-            data: listUserFilterStatus,
+            data: resutl.listFilter,
             requestCount: parseInt(resutl.requestCount),
           }
         : {
@@ -1253,7 +1288,15 @@ class adminPageService {
       const resultRegister = await adminModel.addNameLabel(name);
 
       return resultRegister
-        ? resultRegister
+        ? {
+            data: {
+              label_id: parseInt(resultRegister.insertId),
+              label_name: name,
+            },
+
+            message: "Registered name label Successfully",
+            status: true,
+          }
         : { message: "Registered fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
@@ -1287,7 +1330,7 @@ class adminPageService {
           return mc_group.group_m == item.group_m;
         })),
           (mainClassFilter = mainClassFilter.map((item) => {
-            delete item.group_m;
+            // delete item.group_m;
             return item;
           }));
         return {
@@ -1295,10 +1338,11 @@ class adminPageService {
             maintenance_id == 1
               ? mc_group.group_m == 1
                 ? "H/W"
-                : "SW"
+                : "S/W"
               : mc_group.group_m == 2
               ? "전산부분"
               : "일반부분",
+
           data: mainClassFilter,
         };
       });
@@ -1384,10 +1428,18 @@ class adminPageService {
             maintenance_id == 1
               ? mc_group.group_m == 1
                 ? "H/W"
-                : "SW"
-              : mc_group.group_m == 2
+                : "S/W"
+              : mc_group.group_m == 1
               ? "전산부분"
               : "일반부분",
+          group_m:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? 1
+                : 2
+              : mc_group.group_m == 1
+              ? 1
+              : 2,
           data: mainClassFilter,
         };
       });
@@ -1428,9 +1480,24 @@ class adminPageService {
             label_id
           );
 
-          return resultRegister
-            ? resultRegister
-            : { message: "add Label succsess", status: false, error: 500 };
+          if (!resultRegister) {
+            return { message: "add Label fail", status: false, error: 500 };
+          }
+          const newMainClass = await adminModel.getNewMainClass(
+            maintenance_class_id
+          );
+          if (!newMainClass) {
+            return {
+              message: "error getNewMainClass",
+              status: false,
+              error: 500,
+            };
+          }
+          return {
+            data: { newMainClass },
+            message: "Update label in mainClass Successfully",
+            status: true,
+          };
         }
       } else {
         return { message: "Server error find ID", status: false, error: 500 };
@@ -1763,6 +1830,38 @@ class adminPageService {
   }
   async getInforReportWeek(data) {
     try {
+      if (!data.week && !data.year) {
+        //////
+
+        function getDateWeek(date) {
+          const currentDate = date ? date : new Date();
+          const januaryFirst = new Date(currentDate.getFullYear(), 0, 1);
+          const daysToNextMonday =
+            januaryFirst.getDay() === 1 ? 0 : (7 - januaryFirst.getDay()) % 7;
+          const nextMonday = new Date(
+            currentDate.getFullYear(),
+            0,
+            januaryFirst.getDate() + daysToNextMonday
+          );
+
+          return currentDate < nextMonday
+            ? 52
+            : currentDate > nextMonday
+            ? Math.ceil((currentDate - nextMonday) / (24 * 3600 * 1000) / 7)
+            : 1;
+        }
+        const currentDate = new Date(Date.now());
+
+        const weekNumber = getDateWeek(currentDate);
+
+        // console.log("Week number of " + " is : " + weekNumber);
+
+        data.week = weekNumber - 1;
+        data.year = currentDate.getFullYear();
+
+        // ////.
+      }
+
       let month = new Date(Date.now()).getMonth() + 1;
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("week", data.week);
@@ -1898,6 +1997,12 @@ class adminPageService {
   }
   async getInforReportMonthly(data) {
     try {
+      if (!data.month && !data.year) {
+        const currentTime = new Date(Date.now());
+        data.month = currentTime.getMonth();
+        data.year = currentTime.getFullYear();
+        // console.log(data);
+      }
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(

@@ -339,7 +339,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,r.name as leveluser
       FROM
            users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
-      WHERE  u.status_id != 1 and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 or u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -453,7 +453,8 @@ WHERE
   adminGetUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,roles.id as role_id,position,phone_number,tel_number, users.status_id FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
+        `SELECT u.id,u.name,u.affiliated_department,u.email,r.name as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name
+         FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id;`
       );
       return result[0];
     } catch (error) {
@@ -461,6 +462,7 @@ WHERE
       return false;
     }
   },
+
   adminGetHelperInfor: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1019,7 +1021,7 @@ WHERE
       );
       // console.log(result)
       if (result) {
-        return { message: "Registered name label Successfully", status: true };
+        return result;
       }
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
@@ -1098,10 +1100,7 @@ WHERE
       );
       // console.log(result)
       if (result) {
-        return {
-          message: "Update label in mainClass Successfully",
-          status: true,
-        };
+        return result;
       }
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
@@ -1358,6 +1357,20 @@ GROUP BY ll.id`
       return result[0];
     } catch (error) {
       console.log("error model getNewCompany :", error);
+      return false;
+    }
+  },
+  getNewMainClass: async (id) => {
+    try {
+      const result = await pool.query(
+        `SELECT *
+         FROM maintenance_class
+         where id=${id}`
+      );
+
+      return result[0];
+    } catch (error) {
+      console.log("error model getClassLabel :", error);
       return false;
     }
   },

@@ -127,6 +127,19 @@ class helperController {
     }
   }
 
+  async deleteRequest(req, res) {
+    try {
+      const result = await helperService.deleteRequest(
+        req.user.id,
+        req.params.request_id
+      );
+      return res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async getFiles(req, res) {
     try {
       const result = await helperService.getFiles(req.params.request_id);
@@ -195,8 +208,8 @@ class helperController {
         page = req.query.page;
       }
       const result = await helperService.helperSearchUser(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);

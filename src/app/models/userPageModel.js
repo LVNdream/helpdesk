@@ -298,13 +298,13 @@ LEFT JOIN
     users u ON rs.petitioner_id =u.id
     left join
     users AS u2 on u2.id=rs.recipient_id,
-    maintenance_type mt, request_status rstt,
+    maintenance_type mt, request_status rstt
         WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.status_id=rstt.id;`
       );
 
       return result[0] ? result[0] : {};
     } catch (error) {
-      console.log("error model getRequestProcessing:", error);
+      console.log("error model getRequestCompleted:", error);
       return false;
     }
   },

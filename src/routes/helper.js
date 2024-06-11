@@ -35,6 +35,13 @@ router.get(
   helperController.acceptRequest
 );
 //
+
+router.delete(
+  "/request/:request_id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.deleteRequest
+);
+
 router.post(
   "/update/userinfor",
   middlewareAuth.verifyToKenHelperAuth,
@@ -96,7 +103,7 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getUserById
 );
-router.post(
+router.get(
   "/usersearch",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.helperSearchUser

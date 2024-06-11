@@ -331,7 +331,7 @@ class userPageService {
             error: 500,
           };
         }
-        resutlInfor = await this.getUserInfor(user_id,role_id)
+        resutlInfor = await this.getUserInfor(user_id, role_id);
         // let resutlGetInfor = await helperModel.getHelpdeskInfor(user_id);
         // let main_type = await helperModel.getMaintenanceType();
         // main_type = main_type.map((item) => {
@@ -559,7 +559,7 @@ class userPageService {
       if (filesLength > 0) {
         for (let i = 0; i < filesLength; i++) {
           const file = files[i];
-          console.log(file);
+          // console.log(file);
           const resutlDB = await userPageModel.deleteFile(file);
           if (!resutlDB) {
             return {
@@ -580,15 +580,22 @@ class userPageService {
       }
 
       //  xoa list_problem
-      const deleteProblem = await userPageModel.deleteListProblem(request_id);
 
-      if (!deleteProblem) {
-        return {
-          message: "Server error Delete list Problem midService",
-          status: false,
-          error: 500,
-        };
+      const listProblem = await userPageModel.getAllProblemByRequest_id(
+        request_id
+      );
+      if (listProblem.length > 0) {
+        const deleteProblem = await userPageModel.deleteListProblem(request_id);
+
+        if (!deleteProblem) {
+          return {
+            message: "Server error Delete list Problem midService",
+            status: false,
+            error: 500,
+          };
+        }
       }
+
       // xoa request
       const resutl = await userPageModel.deleteRequest(user_id, request_id);
 

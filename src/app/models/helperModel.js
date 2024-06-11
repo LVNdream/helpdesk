@@ -253,6 +253,9 @@ WHERE
       return false;
     }
   },
+
+  //
+  
   // xao mot van de
   deleteProblem: async (problem_id) => {
     try {
@@ -476,6 +479,17 @@ WHERE
       return result[0].requestCount;
     } catch (error) {
       console.log("error model get  count request :", error);
+      return false;
+    }
+  },
+  deleteRequest: async (user_id, request_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM request_storage WHERE recipient_id= "${user_id}" and id="${request_id}"`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model Delete request in Request storage:", error);
       return false;
     }
   },

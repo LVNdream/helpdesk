@@ -55,6 +55,11 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.adminGethlperById
 );
+router.get(
+  "/getuserinfor/accept/:user_id",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.adminGetUserByIdAccept
+);
 router.post(
   "/updateuser/status",
   middlewareAuth.verifyToKenAdminAuth,
@@ -217,12 +222,12 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportDaily
 );
-router.post(
+router.get(
   "/getinforreport/week",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportWeek
 );
-router.post(
+router.get(
   "/getinforreport/month",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportMonth
