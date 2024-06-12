@@ -280,7 +280,9 @@ class userPageService {
           error: 500,
         };
       }
-      const inforUser = await authModel.findAccountById(user_id);
+
+      const inforUser = await authModel.findInforById(user_id);
+
       if (!inforUser) {
         return {
           message: "Server error findAccountById Model",
@@ -447,7 +449,7 @@ class userPageService {
           error: 500,
         };
       }
-      const listDelete = arrayDelete.length;
+      const listDelete = arrayDelete ? arrayDelete.length : 0;
       if (listDelete > 0) {
         for (let i = 0; i < listDelete; i++) {
           const file = arrayDelete[i];
@@ -496,10 +498,23 @@ class userPageService {
           };
         }
       }
+
+      const dataUpdate = await userPageModel.getRequestJustRegister(
+        data.petitioner_id,
+        request_id
+      );
+      if (!dataUpdate) {
+        return {
+          message: "get data update fail",
+          status: false,
+          error: 500,
+        };
+      }
       return {
         message: "Update request successfully",
         status: true,
         error: 200,
+        data: dataUpdate,
       };
     } catch (error) {
       console.log(error);

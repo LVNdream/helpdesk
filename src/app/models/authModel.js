@@ -58,6 +58,15 @@ module.exports = {
       return false;
     }
   },
+  findInforById: async (id) => {
+    try {
+      const result = await pool.query(`select * from users where id="${id}" `);
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model find ID:", error);
+      return false;
+    }
+  },
   findAccountCheckPass: async (id) => {
     try {
       const result = await pool.query(`select * from users where id="${id}" `);
@@ -134,7 +143,7 @@ module.exports = {
   updatePassword: async (user_id, password) => {
     try {
       let result;
-// console.log(user_id, password)
+      // console.log(user_id, password)
       const password_hash = bcrypt.hashSync(password, 8);
 
       result = await pool.query(

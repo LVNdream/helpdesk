@@ -339,7 +339,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,r.name as leveluser
       FROM
            users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
-      WHERE  (u.status_id != 1 or u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -375,13 +375,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  u.status_id!=1 and u.role_id=${role_id} ORDER BY u.created_at desc`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc`
         );
       }
 
@@ -401,12 +401,12 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  u.status_id!=1 and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -1220,7 +1220,6 @@ GROUP BY ll.id`
       const lastTwoTime = data[option] - 2;
       const lastTime = data[option] - 1;
       const thisTime = data[option];
-
       let result = await pool.query(
         `SELECT
         COALESCE(sum(CASE WHEN ${option}(rs.created_at) = ${lastTwoTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_last_two_month,

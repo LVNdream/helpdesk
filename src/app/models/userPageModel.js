@@ -418,7 +418,7 @@ LEFT JOIN
           title_request="${data.title_request}",
           content_request= "${data.content_request}",
           maintenance_id= "${data.maintenance_id}"
-          where id="${request_id}";`
+          where id="${request_id}" and petitioner_id="${data.petitioner_id}";`
       );
 
       return result.affectedRows > 0 ? result : false;

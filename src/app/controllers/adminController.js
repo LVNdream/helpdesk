@@ -239,7 +239,7 @@ class adminController {
       } else {
         page = req.query.page;
       }
-      
+
       const result = await adminService.listCompanyBySearchToWatch(
         req.query.option,
         req.query.text,
@@ -537,10 +537,8 @@ class adminController {
   }
   async getInforReportMonth(req, res) {
     try {
-      
       const result = await adminService.getInforReportMonthly(req.query);
       res.status(200).json(result);
-
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");

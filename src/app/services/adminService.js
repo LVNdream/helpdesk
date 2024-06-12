@@ -1868,12 +1868,18 @@ class adminPageService {
 
         const weekNumber = getDateWeek(currentDate);
 
-        console.log("Week number of " + " is : " + weekNumber);
+        // console.log("Week number of " + " is : " + weekNumber);
 
         data.week = weekNumber - 1;
         data.year = currentDate.getFullYear();
 
         // ////.
+      }
+      else {
+        
+        data.week = parseInt(data.week)-1;
+        data.year = parseInt(data.year);
+      
       }
 
       let month =
@@ -2018,7 +2024,10 @@ class adminPageService {
         const currentTime = new Date(Date.now());
         data.month = currentTime.getMonth() + 1;
         data.year = currentTime.getFullYear();
-        console.log(data);
+        // console.log(data);
+      } else {
+        data.month = parseInt(data.month);
+        data.year = parseInt(data.year);
       }
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);

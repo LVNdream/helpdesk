@@ -57,7 +57,6 @@ class userController {
         req.body,
         req.user.id,
         req.user.role_id
-
       );
       res.status(200).json(resutl);
     } catch (error) {
@@ -99,6 +98,7 @@ class userController {
   async updateRegisterRequest(req, res) {
     try {
       const data = {
+        petitioner_id: req.user.id,
         title_request: req.body.title_request,
         content_request: req.body.content_request,
         maintenance_id: req.body.maintenance_id,
@@ -137,7 +137,10 @@ class userController {
   }
   async getUserInfor(req, res) {
     try {
-      const result = await userPageService.getUserInfor(req.user.id,req.user.role_id);
+      const result = await userPageService.getUserInfor(
+        req.user.id,
+        req.user.role_id
+      );
 
       return res.status(200).json(result);
     } catch (error) {
