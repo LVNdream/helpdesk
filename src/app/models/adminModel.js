@@ -533,7 +533,7 @@ WHERE
 
       WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
-      //   console.log(result);
+      // console.log(result);
       return result;
     } catch (error) {
       console.log("error model all helper :", error);
@@ -1321,9 +1321,9 @@ GROUP BY ll.id`
            left join account_status us on u.status_id=us.id
            left join roles r on r.id = u.role_id
            left join company c on u.company_id=c.id
-      WHERE   u.status_id=2 and u.id=${user_id} `
+      WHERE    u.id=${user_id} `
       );
-
+      // console.log(result)
       return result[0];
     } catch (error) {
       console.log("error model getNewHelper :", error);

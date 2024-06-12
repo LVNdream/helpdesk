@@ -423,7 +423,7 @@ class adminPageService {
   async getAllHelper(page) {
     try {
       let resutl = await adminModel.getAllHelper(page);
-
+      // console.log(resutl);
       const userCount = await adminModel.getHelperCount();
 
       // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
@@ -851,6 +851,7 @@ class adminPageService {
       const resutl = await adminModel.updateHelperInfor(user_id, data);
       if (resutl) {
         const inforUpdate = await adminModel.getNewHelper(user_id);
+        // console.log(inforUpdate)
         return {
           data: inforUpdate,
           message: "Update helper infor success",
@@ -926,6 +927,11 @@ class adminPageService {
 
   async listCompanyBySearchToWatch(option, text, page) {
     try {
+      // if (!text || !option || !page) {
+      //   console.log("rong", { text, type:typeof option, page });
+      // } else {
+      //   console.log("tontai", { text, type: typeof option, page });
+      // }
       let resutl = await adminModel.listCompanyBySearchTextToWatch(
         option,
         text,
@@ -1330,7 +1336,7 @@ class adminPageService {
           return mc_group.group_m == item.group_m;
         })),
           (mainClassFilter = mainClassFilter.map((item) => {
-            // delete item.group_m;
+            delete item.group_m;
             return item;
           }));
         return {
@@ -1339,10 +1345,17 @@ class adminPageService {
               ? mc_group.group_m == 1
                 ? "H/W"
                 : "S/W"
-              : mc_group.group_m == 2
+              : mc_group.group_m == 1
               ? "전산부분"
               : "일반부분",
-
+          group_m:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? 1
+                : 2
+              : mc_group.group_m == 1
+              ? 1
+              : 2,
           data: mainClassFilter,
         };
       });
@@ -1851,10 +1864,11 @@ class adminPageService {
             : 1;
         }
         const currentDate = new Date(Date.now());
+        // const currentDate = new Date("2024-01-07");
 
         const weekNumber = getDateWeek(currentDate);
 
-        // console.log("Week number of " + " is : " + weekNumber);
+        console.log("Week number of " + " is : " + weekNumber);
 
         data.week = weekNumber - 1;
         data.year = currentDate.getFullYear();
@@ -1862,7 +1876,9 @@ class adminPageService {
         // ////.
       }
 
-      let month = new Date(Date.now()).getMonth() + 1;
+      let month =
+        new Date(1000 * 60 * 60 * 24 * 7 * data.week + 1).getMonth() + 1;
+      // console.log(month);
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("week", data.week);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1997,11 +2013,12 @@ class adminPageService {
   }
   async getInforReportMonthly(data) {
     try {
+      // console.log(data);
       if (!data.month && !data.year) {
         const currentTime = new Date(Date.now());
-        data.month = currentTime.getMonth();
+        data.month = currentTime.getMonth() + 1;
         data.year = currentTime.getFullYear();
-        // console.log(data);
+        console.log(data);
       }
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);

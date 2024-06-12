@@ -239,6 +239,7 @@ class adminController {
       } else {
         page = req.query.page;
       }
+      
       const result = await adminService.listCompanyBySearchToWatch(
         req.query.option,
         req.query.text,
