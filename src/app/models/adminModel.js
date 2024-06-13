@@ -45,7 +45,9 @@ WHERE
     page
   ) => {
     try {
-      const numberPage = (page - 1) * 10;
+      const startNumber = (page - 1) * 10;
+      const endNumber = page * 10;
+
       let resutlSearch;
       let resultNoLimit;
       // init
@@ -64,7 +66,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id ORDER BY rs.created_at desc  ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
@@ -97,7 +99,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.created_at desc  ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -130,7 +132,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}") ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}") ORDER BY rs.created_at desc ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
@@ -166,7 +168,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage}  ;`
+                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -211,7 +213,7 @@ WHERE
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
+                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -257,7 +259,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
+                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -305,10 +307,16 @@ WHERE
           );
         });
       }
-      // console.log(565656565656565,requestToCount)
-
+      let listPagination = [];
+      for (let i = startNumber; i < endNumber; i++) {
+        const item = resultByRoleById[i];
+        if (item) {
+          listPagination.push(item);
+        }
+      }
+      // console.log(startNumber,endNumber)
       return {
-        listFilter: resultByRoleById,
+        listFilter: listPagination,
         requestCount: requestToCount.length,
       };
     } catch (error) {

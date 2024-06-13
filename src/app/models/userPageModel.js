@@ -288,7 +288,7 @@ LEFT JOIN
         `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
         u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
         mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.affiliated_department AS r_affiliated_department,
-        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u.email AS r_email
+        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email
         FROM  request_storage rs
          JOIN
     method mth ON rs.method_id = mth.id

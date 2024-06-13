@@ -616,7 +616,16 @@ class helperPageService {
           };
         }
       }
+      const inforUpdate = await userPageModel.getNewRequest(request_id);
+      if (!inforUpdate) {
+        return {
+          message: "Error get getNewRequest model",
+          status: false,
+          error: 500,
+        };
+      }
       return {
+        data: inforUpdate,
         message: "Verify Completed success",
         status: true,
       };
