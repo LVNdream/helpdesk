@@ -2294,8 +2294,10 @@ class adminPageService {
         };
       }
       const resultUpdate = await adminModel.updateAdminInfor(user_id, data);
+      delete data.password;
       return resultUpdate
         ? {
+            resutlInfor: { name: data.name },
             message: "Update Admin infor success",
             status: true,
           }
