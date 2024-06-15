@@ -661,15 +661,28 @@ class userPageService {
       if (role_id == 1 || role_id == 2 || role_id == 5) {
         resutl = await helperModel.getHelpdeskInfor(user_id);
         let main_type = await helperModel.getMaintenanceType();
-        main_type = main_type.map((item) => {
-          let checked = false;
-          item.id == role_id ? (checked = true) : (checked = false);
-          delete item.id;
-          return {
-            ...item,
-            checked,
-          };
-        });
+        if (role_id == 5) {
+          main_type = main_type.map((item) => {
+            let checked = true;
+
+            delete item.id;
+            return {
+              ...item,
+              checked,
+            };
+          });
+        } else {
+          main_type = main_type.map((item) => {
+            let checked = false;
+            item.id == role_id ? (checked = true) : (checked = false);
+            delete item.id;
+            return {
+              ...item,
+              checked,
+            };
+          });
+        }
+
         resutl = { ...resutl, main_type };
       }
       return resutl
