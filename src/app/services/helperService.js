@@ -734,7 +734,14 @@ class helperPageService {
           inforRequest.maintenance_id
         );
       } else {
-        main_type = await midService.getMaintenanceType_checked(role_id);
+        if (role_id == 5) {
+          main_type = await midService.getMaintenanceType_checked();
+          main_type = main_type.map((item) => {
+            return { ...item, checked: true };
+          });
+        } else {
+          main_type = await midService.getMaintenanceType_checked(role_id);
+        }
       }
 
       if (!main_type) {
@@ -997,7 +1004,11 @@ class helperPageService {
       const dataRequest = {
         title_request: data.title_request,
         content_request: data.content_request,
-        maintenance_id: infor_user.role_id,
+        //
+
+        maintenance_id: data.maintenance_id,
+
+        //
         petitioner_id: data.petitioner_id,
         recipient_id: infor_user.id,
         solution_id: data.solution_id,

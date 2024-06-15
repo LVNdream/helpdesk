@@ -511,14 +511,21 @@ class adminController {
 
   async getInforReportDaily(req, res) {
     try {
-      const dateCurrent = new Date(Date.now());
-      const data = {
-        day: dateCurrent.getDate(),
-
-        month: dateCurrent.getMonth() + 1,
-        year: dateCurrent.getFullYear(),
-      };
-
+      let data;
+      if (!req.query.year || !req.query.month || !req.query.day) {
+        const dateCurrent = new Date(Date.now());
+        data = {
+          day: dateCurrent.getDate(),
+          month: dateCurrent.getMonth() + 1,
+          year: dateCurrent.getFullYear(),
+        };
+      } else {
+        data = {
+          day: req.query.day,
+          month: req.query.month,
+          year: req.query.year,
+        };
+      }
       const result = await adminService.getInforReportDaily(data);
       res.status(200).json(result);
     } catch (error) {
@@ -528,6 +535,7 @@ class adminController {
   }
   async getInforReportWeek(req, res) {
     try {
+      // console.log(req.query);
       const result = await adminService.getInforReportWeek(req.query);
       res.status(200).json(result);
     } catch (error) {
@@ -544,7 +552,15 @@ class adminController {
       res.status(500).json("Server error");
     }
   }
-
+  async adminGetInfor(req, res) {
+    try {
+      const result = await adminService.getAdminInfor(req.user.id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   async updateAdminInfor(req, res) {
     try {
       const result = await adminService.updateAdminInfor(req.user.id, req.body);

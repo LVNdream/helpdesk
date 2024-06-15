@@ -106,7 +106,7 @@ class userController {
       const request_id = req.body.request_id;
       const files = req.files;
       const arrayDelete = req.body.arrayDelete;
-
+      // console.log(request_id, data, files, arrayDelete);
       const result = await userPageService.updateRequest(
         request_id,
         data,

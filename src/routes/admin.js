@@ -237,5 +237,10 @@ router.post(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.updateAdminInfor
 );
+router.get(
+  "/infor",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.adminGetInfor
+);
 
 module.exports = router;

@@ -323,8 +323,8 @@ class adminPageService {
             })
           : listStatusCheck;
 
-        delete user.status_id;
-        delete user.status_name;
+        // delete user.status_id;
+        // delete user.status_name;
         return {
           ...user,
           listStatusCheck,
@@ -392,8 +392,8 @@ class adminPageService {
             })
           : listStatusCheck;
 
-        delete user.status_id;
-        delete user.status_name;
+        // delete user.status_id;
+        // delete user.status_name;
         return {
           ...user,
           listStatusCheck,
@@ -772,7 +772,7 @@ class adminPageService {
             ...data,
             password: password_hash,
             status_id: 2,
-            role_id: data.role_id,
+            role_id: data.role_id.length > 1 ? 5 : data.role_id[0],
           };
           // console.relog(dataRegister);
           const resultRegister = await adminModel.registerHelper(dataRegister);
@@ -821,10 +821,18 @@ class adminPageService {
           checked,
         };
       });
-      const listRole = await midService.getMaintenanceType_checked(
-        resutl.role_id
-      );
-
+      let listRole;
+      if (resutl.role_id == 5) {
+        listRole = await midService.getMaintenanceType_checked();
+        listRole = listRole.map((item) => {
+          return {
+            ...item,
+            checked: true,
+          };
+        });
+      } else {
+        listRole = await midService.getMaintenanceType_checked(resutl.role_id);
+      }
       return resutl
         ? {
             ...resutl,
@@ -848,6 +856,11 @@ class adminPageService {
 
   async updateHelperInfor(user_id, data) {
     try {
+      if (data.role_id.length > 1) {
+        data.role_id = 5;
+      } else {
+        data.role_id = data.role_id[0];
+      }
       const resutl = await adminModel.updateHelperInfor(user_id, data);
       if (resutl) {
         const inforUpdate = await adminModel.getNewHelper(user_id);
@@ -903,7 +916,6 @@ class adminPageService {
         return {
           ...item,
           amountHelper: parseInt(item.amountHelper),
-          owner: "Admin",
         };
       });
       const companyCount = await adminModel.getCompanyCountToWatch();
@@ -942,7 +954,6 @@ class adminPageService {
         return {
           ...item,
           amountHelper: parseInt(item.amountHelper),
-          owner: "Admin",
         };
       });
 
@@ -1537,6 +1548,13 @@ class adminPageService {
         await adminModel.amountRequestProcessing("year", data.year);
       let amountRequestCompletedPercentYear =
         await adminModel.amountPerRequestCompleted("year", data.year);
+      amountRequestCompletedPercentYear = amountRequestCompletedPercentYear.map(
+        (item) => {
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        }
+      );
+
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1547,6 +1565,12 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
+
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
       let mainType = await userPageModel.getMaintenanceType();
       const mainTypeChart = await Promise.all(
         mainType.map(async (itemMT) => {
@@ -1615,6 +1639,7 @@ class adminPageService {
       const solutionOrderCompany = solutionCount.filter((item) => {
         return item.type == 2;
       });
+
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
@@ -1645,7 +1670,9 @@ class adminPageService {
             data: amountRequestCompletedPercentYear,
             count: amountRequestCompletedPercentYear.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -1679,7 +1706,9 @@ class adminPageService {
             data: amountRequestCompletedPercentMonth,
             count: amountRequestCompletedPercentMonth.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -1719,7 +1748,12 @@ class adminPageService {
         await adminModel.amountRequestProcessing("date", datetime);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("date", datetime);
-
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          // console.log(item.countRequest);
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
       //
       let mainType = await userPageModel.getMaintenanceType();
       const mainTypeChart = await Promise.all(
@@ -1816,7 +1850,9 @@ class adminPageService {
             data: amountRequestCompletedPercentMonth,
             count: amountRequestCompletedPercentMonth.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -1874,12 +1910,9 @@ class adminPageService {
         data.year = currentDate.getFullYear();
 
         // ////.
-      }
-      else {
-        
-        data.week = parseInt(data.week)-1;
+      } else {
+        data.week = parseInt(data.week) - 1;
         data.year = parseInt(data.year);
-      
       }
 
       let month =
@@ -1895,6 +1928,11 @@ class adminPageService {
         await adminModel.amountRequestProcessing("week", data.week);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("week", data.week);
+      amountRequestCompletedPercentMonth.map((item) => {
+        // console.log(item.countRequest);
+        item.countRequest = item.countRequest + "%";
+        return { ...item };
+      });
 
       //
       let mainType = await userPageModel.getMaintenanceType();
@@ -1992,7 +2030,9 @@ class adminPageService {
             data: amountRequestCompletedPercentMonth,
             count: amountRequestCompletedPercentMonth.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -2039,6 +2079,11 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
+      amountRequestCompletedPercentMonth.map((item) => {
+        // console.log(item.countRequest);
+        item.countRequest = item.countRequest + "%";
+        return { ...item };
+      });
       //
 
       let accumulationRegisterYear =
@@ -2151,7 +2196,9 @@ class adminPageService {
             data: amountRequestCompletedPercentYear,
             count: amountRequestCompletedPercentYear.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -2184,7 +2231,9 @@ class adminPageService {
             data: amountRequestCompletedPercentMonth,
             count: amountRequestCompletedPercentMonth.reduce(
               (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
+                return (
+                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
+                );
               },
               0
             ),
@@ -2214,6 +2263,26 @@ class adminPageService {
       };
     }
   }
+  async getAdminInfor(user_id) {
+    try {
+      const resutl = await adminModel.getAdminInfor(user_id);
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getAdminInfor",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getAdminInfor By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
   async updateAdminInfor(user_id, data) {
     try {
       const userInfor = await userPageModel.getUserInfor(user_id);
@@ -2229,7 +2298,6 @@ class adminPageService {
         ? {
             message: "Update Admin infor success",
             status: true,
-            error: 500,
           }
         : {
             message: "Error upadte Admin infor model",

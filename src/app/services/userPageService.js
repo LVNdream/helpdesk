@@ -323,7 +323,7 @@ class userPageService {
             error: 500,
           };
         }
-      } else if (role_id == 1 || role_id == 2) {
+      } else if (role_id == 1 || role_id == 2 || role_id == 5) {
         const resutl = await helperModel.updateHelpdeskInfor(data, user_id);
 
         if (!resutl) {
@@ -424,7 +424,7 @@ class userPageService {
   // updateRequest
   async updateRequest(request_id, data, files, arrayDelete) {
     try {
-      // console.log(files, arrayDelete);
+      console.log(files, arrayDelete);
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
       if (!status_id) {
         return {
@@ -449,6 +449,27 @@ class userPageService {
           error: 500,
         };
       }
+      if (!Array.isArray(arrayDelete) && arrayDelete) {
+        const resutlDB = await userPageModel.deleteFile(arrayDelete);
+        if (!resutlDB) {
+          return {
+            message: "Server error Delete File Model",
+            status: false,
+            error: 500,
+          };
+        }
+        const resultDeleleSever = await midService.deleteFile(
+          arrayDelete,
+          "files"
+        );
+        if (!resultDeleleSever) {
+          return {
+            message: "Server error Delete one File midService",
+            status: false,
+            error: 500,
+          };
+        }
+      }
       const listDelete = arrayDelete ? arrayDelete.length : 0;
       if (listDelete > 0) {
         for (let i = 0; i < listDelete; i++) {
@@ -472,6 +493,7 @@ class userPageService {
           }
         }
       }
+      // console.log(files, arrayDelete);
       const fileLength = files.length;
       if (fileLength > 0) {
         for (let i = 0; i < fileLength; i++) {
@@ -636,7 +658,7 @@ class userPageService {
       if (role_id == 4) {
         resutl = await userPageModel.getUserInfor(user_id);
       }
-      if (role_id == 1 || role_id == 2) {
+      if (role_id == 1 || role_id == 2 || role_id == 5) {
         resutl = await helperModel.getHelpdeskInfor(user_id);
         let main_type = await helperModel.getMaintenanceType();
         main_type = main_type.map((item) => {

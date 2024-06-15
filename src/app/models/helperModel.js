@@ -4,10 +4,38 @@ const bcrypt = require("bcryptjs");
 module.exports = {
   getRequestListByHelper: async (role_id, recipient_id, page) => {
     try {
-      const numberPage = (page - 1) * 10;
-      const result = await pool.query(
+      const startNumber = (page - 1) * 10;
+      const endNumber = page * 10;
+
+      //       const result = await pool.query(
+      //         `SELECT DISTINCT
+      //     rs.id,
+      //     rs.title_request,
+      //     mt.type_name,
+      //     rs.status_id,
+      //     users.name AS petitioner,
+      //     users2.name AS recipient,
+      //     rs.created_at,
+      //     rs.completion_date ,mth.method_name
+      // FROM
+      //     request_storage rs
+      // JOIN
+      //     maintenance_type mt ON rs.maintenance_id = mt.id
+      // JOIN
+      //     request_status rstt ON rs.status_id = rstt.id
+      // JOIN
+      //     users ON rs.petitioner_id = users.id
+      // LEFT JOIN
+      //     users AS users2 ON rs.recipient_id = users2.id, method mth
+      // WHERE
+      //     rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+      //       );
+
+      //  sua lai la co the chon ca 2
+      let result = await pool.query(
         `SELECT DISTINCT 
     rs.id,
+    rs.maintenance_id,
     rs.title_request,
     mt.type_name,
     rs.status_id,
@@ -26,10 +54,25 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-    rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
       );
+      if (role_id != 5) {
+        result = result.filter((item) => {
+          return item.maintenance_id == role_id;
+        });
+      }
 
-      return result;
+      let listPagination = [];
+      // console.log(resultByRoleById)
+      for (let i = startNumber; i < endNumber; i++) {
+        const item = result[i];
+        // console.log(item)
+        if (item) {
+          listPagination.push(item);
+        }
+      }
+
+      return listPagination;
     } catch (error) {
       console.log("error model getRequestListByHelper :", error);
       return false;
@@ -255,7 +298,7 @@ WHERE
   },
 
   //
-  
+
   // xao mot van de
   deleteProblem: async (problem_id) => {
     try {
@@ -330,7 +373,9 @@ WHERE
   },
   getMethod: async () => {
     try {
-      result = await pool.query(`select id,method_name as name from method`);
+      result = await pool.query(
+        `select id,method_name as name from method where id!=1`
+      );
       return result;
     } catch (error) {
       console.log("error model get method:", error);
@@ -469,14 +514,44 @@ WHERE
 
   getHelperRequestCount: async (recipient_id, role_id) => {
     try {
-      const result = await pool.query(
-        `SELECT count(rs.id) as requestCount
-      FROM
-          request_storage rs
-      WHERE
-          rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id});`
+      // const result = await pool.query(
+      //   `SELECT count(rs.id) as requestCount
+      // FROM
+      //     request_storage rs
+      // WHERE
+      //     rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id});`
+      // );
+      let result = await pool.query(
+        `SELECT DISTINCT 
+    rs.id,
+    rs.maintenance_id,
+    rs.title_request,
+    mt.type_name,
+    rs.status_id,
+    users.name AS petitioner,
+    users2.name AS recipient,
+    rs.created_at,
+    rs.completion_date ,mth.method_name
+FROM 
+    request_storage rs
+JOIN 
+    maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    request_status rstt ON rs.status_id = rstt.id
+JOIN 
+    users ON rs.petitioner_id = users.id
+LEFT JOIN 
+    users AS users2 ON rs.recipient_id = users2.id, method mth
+WHERE 
+      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
       );
-      return result[0].requestCount;
+      if (role_id != 5) {
+        result = result.filter((item) => {
+          return item.maintenance_id == role_id;
+        });
+      }
+
+      return result ? result.length : false;
     } catch (error) {
       console.log("error model get  count request :", error);
       return false;

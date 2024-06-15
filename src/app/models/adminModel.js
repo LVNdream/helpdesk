@@ -280,7 +280,7 @@ WHERE
         );
       }
 
-      // console.log(1231231231231233123,resultNoLimit)
+      // console.log(1231231231231233123,resutlSearch)
       let resultByRoleById;
       let requestToCount;
       if (role_id == 3) {
@@ -295,6 +295,7 @@ WHERE
         });
       } else if (role_id == 1 || role_id == 2) {
         resultByRoleById = resutlSearch.filter((data) => {
+          // console.log()
           return (
             data.maintenance_id == role_id &&
             (data.status_id == 1 || data.recipient_id == user_id)
@@ -306,15 +307,33 @@ WHERE
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
+      } else if (role_id == 5) {
+        resultByRoleById = resutlSearch.filter((data) => {
+          // console.log()
+          return (
+            (data.maintenance_id == 1 || data.maintenance_id == 2) &&
+            (data.status_id == 1 || data.recipient_id == user_id)
+          );
+        });
+        requestToCount = resultNoLimit.filter((data) => {
+          return (
+            (data.maintenance_id == 1 || data.maintenance_id == 2) &&
+            (data.status_id == 1 || data.recipient_id == user_id)
+          );
+        });
       }
       let listPagination = [];
+      // console.log(resultByRoleById)
       for (let i = startNumber; i < endNumber; i++) {
         const item = resultByRoleById[i];
+        // console.log(item)
         if (item) {
           listPagination.push(item);
         }
       }
-      // console.log(startNumber,endNumber)
+      // console.log(startNumber, endNumber)
+      // console.log(listPagination);
+
       return {
         listFilter: listPagination,
         requestCount: requestToCount.length,
@@ -539,7 +558,7 @@ WHERE
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
 
-      WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       // console.log(result);
       return result;
@@ -555,7 +574,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2) and u.status_id=2
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id=2
            `
       );
       //   console.log(result);
@@ -579,13 +598,13 @@ WHERE
             left join account_status us on u.status_id=us.id
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
-      WHERE  u.status_id=2  and (u.role_id=1 or u.role_id=2)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id=2  and (u.role_id=1 or u.role_id=2 or u.role_id=5)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2)  and u.status_id=2`
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5)  and u.status_id=2`
         );
       }
 
@@ -593,10 +612,12 @@ WHERE
       else if (text) {
         let nameCondition = "u.name";
         if (option == 1) {
-          nameCondition = "u.name";
+          nameCondition = "u.account";
         } else if (option == 2) {
-          nameCondition = "c.name_company";
+          nameCondition = "u.name";
         } else if (option == 3) {
+          nameCondition = "c.name_company";
+        } else if (option == 4) {
           nameCondition = "us.status_name";
         }
 
@@ -606,17 +627,19 @@ WHERE
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE  u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id=2 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2) and ${nameCondition} like "%${text}%"`
+      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
         );
+        // console.log(nameCondition);
       }
 
+      // console.log(resutlSearch)
       return {
         listFilter: resutlSearch,
         requestCount: resultCount.length,
@@ -1253,7 +1276,8 @@ GROUP BY ll.id`
   getCountAllMethod: async (option, datetime) => {
     try {
       let result = await pool.query(
-        `select mt.id,mt.method_name, CAST(COUNT(rs.id) as CHAR) AS count from method mt left join request_storage rs on rs.method_id=mt.id  and ${option}(rs.created_at)="${datetime}" group by mt.id`
+        `select mt.id,mt.method_name, CAST(COUNT(rs.id) as CHAR) AS count 
+        from method mt left join request_storage rs on rs.method_id=mt.id  and ${option}(rs.created_at)="${datetime}" group by mt.id`
       );
 
       return result;
@@ -1266,9 +1290,10 @@ GROUP BY ll.id`
   getCountAllSolution: async (option, datetime) => {
     try {
       let result = await pool.query(
-        `select s.id,s.solution_name, s.type, cast(count(rs.id) as char) as count from solution s left join request_storage rs on s.id=rs.solution_id  and ${option}(rs.created_at)="${datetime}"  group by s.id `
+        `select s.id,s.solution_name, s.type, cast(count(rs.id) as char) as count 
+        from solution s left join request_storage rs on s.id=rs.solution_id  and ${option}(rs.created_at)="${datetime}"  group by s.id `
       );
-
+      // console.log(result)
       return result;
     } catch (error) {
       console.log("error model getAllSolution :", error);
@@ -1287,7 +1312,21 @@ GROUP BY ll.id`
       return false;
     }
   },
-
+  getAdminInfor: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `SELECT u.id, u.name, u.phone_number, u.tel_number, u.email
+      FROM
+           users u
+      WHERE  u.id=${user_id} `
+      );
+      // console.log(result)
+      return result[0];
+    } catch (error) {
+      console.log("error model getAdminInfor :", error);
+      return false;
+    }
+  },
   updateAdminInfor: async (user_id, data) => {
     try {
       let result;

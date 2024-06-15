@@ -130,7 +130,12 @@ const middlewareAuth = {
         .status(200)
         .json({ message: "Id not valid", status: false, error: "404_id" });
     }
-    if (user.role_id == 1 || user.role_id == 2 || user.role_id == 4) {
+    if (
+      user.role_id == 1 ||
+      user.role_id == 2 ||
+      user.role_id == 4 ||
+      user.role_id == 5
+    ) {
       return next();
     } else {
       res.status(200).json({
@@ -143,7 +148,11 @@ const middlewareAuth = {
   verifyToKenHelperAuth: (req, res, next) => {
     middlewareAuth.verifyAuthentication(req, res, () => {
       // console.log(req.user)
-      if (req.user.role_id == 1 || req.user.role_id == 2) {
+      if (
+        req.user.role_id == 1 ||
+        req.user.role_id == 2 ||
+        req.user.role_id == 5
+      ) {
         next();
       } else {
         return res.status(200).json({
