@@ -424,7 +424,7 @@ class userPageService {
   // updateRequest
   async updateRequest(request_id, data, files, arrayDelete) {
     try {
-      console.log(files, arrayDelete);
+      // console.log(files, arrayDelete);
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
       if (!status_id) {
         return {

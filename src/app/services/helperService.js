@@ -873,7 +873,7 @@ class helperPageService {
       if (filesLength > 0) {
         for (let i = 0; i < filesLength; i++) {
           const file = files[i];
-          console.log(file);
+          // console.log(file);
           const resutlDB = await userPageModel.deleteFile(file);
           if (!resutlDB) {
             return {
