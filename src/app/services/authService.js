@@ -225,11 +225,13 @@ class authService {
       };
 
       const accessToken = jwtService.generateAccessToken(dataToken);
+      const refreshToken = jwtService.generateRefreshToken(dataToken);
 
       return {
         name: user.name,
         role_id: user.role_id,
         accessToken,
+        refreshToken,
         status: true,
       };
     } catch (error) {

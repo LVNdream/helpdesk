@@ -6,17 +6,17 @@ const middlewareAuth = {
       // console.log(req.headers.cookies)
       const token = req.headers.authorization.slice(7);
       if (!token) {
-        return res.status(401).json({
+        return res.status(403).json({
           message: "You are not authenticated",
           status: false,
-          error: 401,
+          error: 403,
         });
       }
       jwt.verify(token, process.env.JWT_ACCESS_KEY, (error, user) => {
         if (error) {
           console.log("error Token", error);
           if (error.name === "TokenExpiredError") {
-            return res.status(403).json({
+            return res.status(401).json({
               message: "Your token expried",
               status: false,
               error: "exp_token",
@@ -44,10 +44,10 @@ const middlewareAuth = {
     try {
       const refreshToken = req.body.refreshToken;
       if (!refreshToken) {
-        return res.status(401).json({
+        return res.status(403).json({
           message: "You dont't have refreshToken",
           status: false,
-          error: 401,
+          error: 403,
         });
       }
       jwt.verify(
@@ -56,13 +56,6 @@ const middlewareAuth = {
         (error, user) => {
           if (error) {
             console.log("error refreshToken", error);
-            if (error.name === "TokenExpiredError") {
-              return res.status(403).json({
-                message: "Your refreshToken expried",
-                status: false,
-                error: "exp_retoken",
-              });
-            }
             return res.status(403).json({
               message: "Your refreshToken not valid",
               status: false,

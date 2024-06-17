@@ -617,6 +617,19 @@ class adminPageService {
           error: 500,
         };
       }
+      if (status_id == 5) {
+        const resutlResetCountLogin = await authModel.updateCountLogin(
+          user.id,
+          0
+        );
+        if (!resutlResetCountLogin) {
+          return {
+            message: "Server error upadteCountLogin Model",
+            status: false,
+            error: 500,
+          };
+        }
+      }
       return {
         data: {
           user_id: updateInfor.id,
