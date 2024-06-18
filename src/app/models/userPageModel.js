@@ -159,6 +159,8 @@ module.exports = {
     rs.id,
     rs.title_request,
     mt.type_name,
+    mth.method_name,
+
     rs.status_id,
     users.name AS petitioner,
     users2.name AS recipient,
@@ -172,6 +174,8 @@ JOIN
     request_status rstt ON rs.status_id = rstt.id
 JOIN 
     users ON rs.petitioner_id = users.id
+JOIN 
+    method mth ON rs.method_id = mth.id
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id
 WHERE 
