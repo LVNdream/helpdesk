@@ -127,7 +127,8 @@ class userController {
     try {
       const result = await userPageService.deleteRequest(
         req.user.id,
-        req.params.request_id
+        req.params.request_id,
+        req.params.page
       );
       return res.status(200).json(result);
     } catch (error) {

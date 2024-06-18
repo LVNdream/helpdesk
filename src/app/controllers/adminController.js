@@ -513,12 +513,13 @@ class adminController {
     try {
       let data;
       if (!req.query.year || !req.query.month || !req.query.day) {
-        const dateCurrent = new Date(Date.now());
+        const dateCurrent = new Date(Date.now() - 1000 * 3600 * 24);
         data = {
           day: dateCurrent.getDate(),
           month: dateCurrent.getMonth() + 1,
           year: dateCurrent.getFullYear(),
         };
+        // console.log(data);
       } else {
         data = {
           day: req.query.day,

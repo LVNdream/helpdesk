@@ -58,7 +58,7 @@ router.post(
   userController.updateRegisterRequest
 );
 router.delete(
-  "/request/:request_id",
+  "/request/:page/:request_id",
   middlewareAuth.verifyAuthentication,
   userController.deleteRequest
 );

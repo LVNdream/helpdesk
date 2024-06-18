@@ -102,6 +102,7 @@ class helperPageService {
             data: {
               infor_petitioner: {
                 user_id: resultInfor.user_id,
+                account: resultInfor.account,
                 name: resultInfor.name,
                 affiliated_department: resultInfor.affiliated_department,
                 phone_number: resultInfor.phone_number,
@@ -126,6 +127,8 @@ class helperPageService {
           data: {
             infor_petitioner: {
               user_id: resultInfor.user_id,
+              account: resultInfor.account,
+
               name: resultInfor.name,
               affiliated_department: resultInfor.affiliated_department,
               phone_number: resultInfor.phone_number,
@@ -267,6 +270,8 @@ class helperPageService {
             infor_petitioner: {
               user_id: resultInfor.petitioner_id,
               name: resultInfor.p_name,
+              account: resultInfor.p_account,
+
               affiliated_department: resultInfor.p_affiliated_department,
               phone_number: resultInfor.p_phone_number,
               position: resultInfor.p_position,
@@ -275,6 +280,7 @@ class helperPageService {
             infor_recipient: {
               user_id: resultInfor.r_id,
               name: resultInfor.r_name,
+              account: resultInfor.r_account,
               affiliated_department: resultInfor.r_affiliated_department,
               phone_number: resultInfor.r_phone_number,
               position: resultInfor.r_position,
@@ -452,11 +458,14 @@ class helperPageService {
           };
         }
       }
+      let data;
+
       if (resultRQ.status_id == 2) {
         const resultUpdateStatus = await helperModel.updateStatus_id(
-          resultRQ.request_id,
+          request_id,
           3
         );
+        // console.log(resultUpdateStatus)
         if (!resultUpdateStatus) {
           return {
             message: "Error update request status model",
@@ -464,8 +473,10 @@ class helperPageService {
             error: 500,
           };
         }
+        data = { request_id, status_id: 3 };
       }
       return {
+        data,
         message: "Add problem success",
         status: true,
       };
@@ -542,6 +553,8 @@ class helperPageService {
           error: 500,
         };
       }
+      let data;
+
       if (listProblem.length == 0) {
         const resutlUpdateStatus = await helperModel.updateStatus_id(
           request_id,
@@ -554,10 +567,17 @@ class helperPageService {
             error: 500,
           };
         }
+        data = {
+          request_id,
+          status_id: 2,
+        };
       }
       return {
+        data,
+
         message: "Delete problem success",
         status: true,
+        problem_id,
       };
     } catch (error) {
       console.log(error);
@@ -908,11 +928,28 @@ class helperPageService {
           };
         }
       }
+      // ///
+
+      let data;
+      data = await userPageModel.requestToOrther(user_id, page);
+      if (!data) {
+        return {
+          messsage: "Error model requestToOrther",
+          status: false,
+          error: 500,
+        };
+      }
+
       // xoa request
       const resutl = await helperModel.deleteRequest(user_id, request_id);
 
       return resutl
-        ? { messsage: "Deleted Success!", status: true, request_id }
+        ? {
+            messsage: "Deleted Success!",
+            status: true,
+            request_id,
+            data: data[0],
+          }
         : {
             messsage: "Delete Fail!, Error model delete",
             status: false,

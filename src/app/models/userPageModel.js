@@ -263,7 +263,7 @@ WHERE
   getRequestConfirm_Register: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
+        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.account,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
         FROM      request_storage rs
 JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
@@ -290,8 +290,8 @@ LEFT JOIN
     try {
       const result = await pool.query(
         `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
-        u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
-        mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.affiliated_department AS r_affiliated_department,
+        u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,u.account as p_account,rs.created_at, rs.processing_content_problem,
+        mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.account as r_account,u2.affiliated_department AS r_affiliated_department,
         u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email
         FROM  request_storage rs
          JOIN
@@ -437,6 +437,7 @@ LEFT JOIN
         "DELETE FROM request_file WHERE file_address= ?",
         [filename]
       );
+      // console.log(result);
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Deletefile in Request:", error);
@@ -470,7 +471,7 @@ LEFT JOIN
   getUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,position,phone_number,tel_number FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
+        `SELECT users.id,users.account,users.name,affiliated_department,email,"일반사용자" as leveluser,position,phone_number,tel_number FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
       );
       return result[0];
     } catch (error) {
@@ -535,6 +536,43 @@ LEFT JOIN
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model DeleteListProblem :", error);
+      return false;
+    }
+  },
+  requestToOrther: async (petitioner_id, page) => {
+    try {
+      const numberPage = page * 10;
+      const result = await pool.query(
+        `SELECT DISTINCT
+
+          rs.id,
+          rs.title_request,
+          mt.type_name,
+          rs.status_id,
+          users.name AS petitioner,
+          users2.name AS recipient,
+          rs.created_at,
+          rs.completion_date,
+          mth.method_name
+
+      FROM
+          request_storage rs
+      JOIN
+          maintenance_type mt ON rs.maintenance_id = mt.id
+      JOIN
+          request_status rstt ON rs.status_id = rstt.id
+      JOIN
+          users ON rs.petitioner_id = users.id
+      LEFT JOIN
+          users AS users2 ON rs.recipient_id = users2.id,
+          method mth
+      WHERE
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 1 OFFSET ${numberPage};`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model requestToOrther:", error);
       return false;
     }
   },

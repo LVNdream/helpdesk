@@ -111,6 +111,8 @@ class adminPageService {
               created_at: resutlConfirm_Register.created_at,
               infor_petitioner: {
                 user_id: resutlConfirm_Register.user_id,
+                account: resutlConfirm_Register.account,
+
                 name: resutlConfirm_Register.name,
                 affiliated_department:
                   resutlConfirm_Register.affiliated_department,
@@ -249,6 +251,8 @@ class adminPageService {
               infor_petitioner: {
                 user_id: resutlComplete_AddProblem.petitioner_id,
                 name: resutlComplete_AddProblem.p_name,
+                account: resutlComplete_AddProblem.p_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.p_affiliated_department,
                 phone_number: resutlComplete_AddProblem.p_phone_number,
@@ -258,6 +262,8 @@ class adminPageService {
               infor_recipient: {
                 user_id: resutlComplete_AddProblem.r_id,
                 name: resutlComplete_AddProblem.r_name,
+                account: resutlComplete_AddProblem.r_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
                 phone_number: resutlComplete_AddProblem.r_phone_number,
@@ -1585,40 +1591,40 @@ class adminPageService {
           return { ...item };
         });
       let mainType = await userPageModel.getMaintenanceType();
-      // const mainTypeChart = await Promise.all(
-      //   mainType.map(async (itemMT) => {
-      //     let group = await userPageModel.getMainclassGroupById(itemMT.id);
-      //     group = await Promise.all(
-      //       group.map(async (itemG) => {
-      //         const chart = await adminModel.getInforChartByOption(
-      //           itemMT.id,
-      //           itemG.group_m,
-      //           "month",
-      //           data
-      //         );
-      //         let group_name = "";
-      //         if (itemMT.id == 1 && itemG.group_m == 1) {
-      //           group_name = "H/W";
-      //         } else if (itemMT.id == 1 && itemG.group_m == 2) {
-      //           group_name = "S/W";
-      //         } else if (itemMT.id == 2 && itemG.group_m == 1) {
-      //           group_name = "전산부분";
-      //         } else if (itemMT.id == 2 && itemG.group_m == 2) {
-      //           group_name = "일반부분";
-      //         }
-      //         return {
-      //           group_name,
-      //           group_m: itemG.group_m,
-      //           chart,
-      //         };
-      //       })
-      //     );
-      //     return {
-      //       ...itemMT,
-      //       group,
-      //     };
-      //   })
-      // );
+      const mainTypeChart = await Promise.all(
+        mainType.map(async (itemMT) => {
+          let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          group = await Promise.all(
+            group.map(async (itemG) => {
+              const chart = await adminModel.getInforChartByOption(
+                itemMT.id,
+                itemG.group_m,
+                "month",
+                data
+              );
+              let group_name = "";
+              if (itemMT.id == 1 && itemG.group_m == 1) {
+                group_name = "H/W";
+              } else if (itemMT.id == 1 && itemG.group_m == 2) {
+                group_name = "S/W";
+              } else if (itemMT.id == 2 && itemG.group_m == 1) {
+                group_name = "전산부분";
+              } else if (itemMT.id == 2 && itemG.group_m == 2) {
+                group_name = "일반부분";
+              }
+              return {
+                group_name,
+                group_m: itemG.group_m,
+                chart,
+              };
+            })
+          );
+          return {
+            ...itemMT,
+            group,
+          };
+        })
+      );
 
       // ////////////
       const mainTypeRequestNotComplete = await Promise.all(
@@ -1727,237 +1733,237 @@ class adminPageService {
             ),
           },
         ],
-        // mainTypeChart,
-        mainTypeChart: [
-          {
-            id: 1,
-            type_name: " PC유지보수",
-            group: [
-              {
-                group_name: "H/W",
-                group_m: 1,
-                chart: [
-                  {
-                    list_label_id: 1,
-                    name: "CPU",
-                    count_lastTime: "20",
-                    count_thisTime: "48",
-                  },
-                  {
-                    list_label_id: 3,
-                    name: "plate",
-                    count_lastTime: "23",
-                    count_thisTime: "13",
-                  },
-                  {
-                    list_label_id: 5,
-                    name: "other",
-                    count_lastTime: "42",
-                    count_thisTime: "63",
-                  },
-                  {
-                    list_label_id: 8,
-                    name: "networkelectricity supply",
-                    count_lastTime: "12",
-                    count_thisTime: "55",
-                  },
-                  {
-                    list_label_id: 40,
-                    name: "keyboard",
-                    count_lastTime: "15",
-                    count_thisTime: "88",
-                  },
-                  {
-                    list_label_id: 41,
-                    name: "RAM",
-                    count_lastTime: "78",
-                    count_thisTime: "34",
-                  },
-                  {
-                    list_label_id: 42,
-                    name: "Main",
-                    count_lastTime: "23",
-                    count_thisTime: "21",
-                  },
-                  {
-                    list_label_id: 43,
-                    name: "xe đạp",
-                    count_lastTime: "32",
-                    count_thisTime: "23",
-                  },
-                ],
-              },
-              {
-                group_name: "S/W",
-                group_m: 2,
-                chart: [
-                  {
-                    list_label_id: 17,
-                    name: "backup",
-                    count_lastTime: "56",
-                    count_thisTime: "11",
-                  },
-                  {
-                    list_label_id: 18,
-                    name: "data recovery",
-                    count_lastTime: "56",
-                    count_thisTime: "98",
-                  },
-                  {
-                    list_label_id: 19,
-                    name: "server check",
-                    count_lastTime: "23",
-                    count_thisTime: "54",
-                  },
-                  {
-                    list_label_id: 20,
-                    name: "move position",
-                    count_lastTime: "98",
-                    count_thisTime: "23",
-                  },
-                  {
-                    list_label_id: 21,
-                    name: "other",
-                    count_lastTime: "12",
-                    count_thisTime: "67",
-                  },
-                  {
-                    list_label_id: 22,
-                    name: "other 2",
-                    count_lastTime: "56",
-                    count_thisTime: "69",
-                  },
-                  {
-                    list_label_id: 23,
-                    name: "other 3",
-                    count_lastTime: "22",
-                    count_thisTime: "81",
-                  },
-                  {
-                    list_label_id: 24,
-                    name: "other 4",
-                    count_lastTime: "23",
-                    count_thisTime: "12",
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            id: 2,
-            type_name: "일반유지보수",
-            group: [
-              {
-                group_name: "전산부분",
-                group_m: 1,
-                chart: [
-                  {
-                    list_label_id: 9,
-                    name: "patch",
-                    count_lastTime: "24",
-                    count_thisTime: "45",
-                  },
-                  {
-                    list_label_id: 10,
-                    name: "OS",
-                    count_lastTime: "35",
-                    count_thisTime: "84",
-                  },
-                  {
-                    list_label_id: 11,
-                    name: "Setting s/w",
-                    count_lastTime: "20",
-                    count_thisTime: "41",
-                  },
-                  {
-                    list_label_id: 12,
-                    name: "network",
-                    count_lastTime: "20",
-                    count_thisTime: "28",
-                  },
-                  {
-                    list_label_id: 13,
-                    name: "other",
-                    count_lastTime: "77",
-                    count_thisTime: "78",
-                  },
-                  {
-                    list_label_id: 14,
-                    name: "other 2",
-                    count_lastTime: "98",
-                    count_thisTime: "23",
-                  },
-                  {
-                    list_label_id: 15,
-                    name: "other 3",
-                    count_lastTime: "12",
-                    count_thisTime: "29",
-                  },
-                  {
-                    list_label_id: 16,
-                    name: "other 4",
-                    count_lastTime: "50",
-                    count_thisTime: "23",
-                  },
-                ],
-              },
-              {
-                group_name: "일반부분",
-                group_m: 2,
-                chart: [
-                  {
-                    list_label_id: 25,
-                    name: "printer",
-                    count_lastTime: "34",
-                    count_thisTime: "23",
-                  },
-                  {
-                    list_label_id: 26,
-                    name: "cable",
-                    count_lastTime: "36",
-                    count_thisTime: "23",
-                  },
-                  {
-                    list_label_id: 27,
-                    name: "policy settings",
-                    count_lastTime: "20",
-                    count_thisTime: "89",
-                  },
-                  {
-                    list_label_id: 28,
-                    name: "monitor",
-                    count_lastTime: "66",
-                    count_thisTime: "22",
-                  },
-                  {
-                    list_label_id: 29,
-                    name: "education",
-                    count_lastTime: "44",
-                    count_thisTime: "12",
-                  },
-                  {
-                    list_label_id: 30,
-                    name: "other",
-                    count_lastTime: "10",
-                    count_thisTime: "43",
-                  },
-                  {
-                    list_label_id: 31,
-                    name: "other 2",
-                    count_lastTime: "23",
-                    count_thisTime: "34",
-                  },
-                  {
-                    list_label_id: 32,
-                    name: "other 3",
-                    count_lastTime: "35",
-                    count_thisTime: "93",
-                  },
-                ],
-              },
-            ],
-          },
-        ],
+        mainTypeChart,
+        // mainTypeChart: [
+        //   {
+        //     id: 1,
+        //     type_name: " PC유지보수",
+        //     group: [
+        //       {
+        //         group_name: "H/W",
+        //         group_m: 1,
+        //         chart: [
+        //           {
+        //             list_label_id: 1,
+        //             name: "CPU",
+        //             count_lastTime: "20",
+        //             count_thisTime: "48",
+        //           },
+        //           {
+        //             list_label_id: 3,
+        //             name: "plate",
+        //             count_lastTime: "23",
+        //             count_thisTime: "13",
+        //           },
+        //           {
+        //             list_label_id: 5,
+        //             name: "other",
+        //             count_lastTime: "42",
+        //             count_thisTime: "63",
+        //           },
+        //           {
+        //             list_label_id: 8,
+        //             name: "networkelectricity supply",
+        //             count_lastTime: "12",
+        //             count_thisTime: "55",
+        //           },
+        //           {
+        //             list_label_id: 40,
+        //             name: "keyboard",
+        //             count_lastTime: "15",
+        //             count_thisTime: "88",
+        //           },
+        //           {
+        //             list_label_id: 41,
+        //             name: "RAM",
+        //             count_lastTime: "78",
+        //             count_thisTime: "34",
+        //           },
+        //           {
+        //             list_label_id: 42,
+        //             name: "Main",
+        //             count_lastTime: "23",
+        //             count_thisTime: "21",
+        //           },
+        //           {
+        //             list_label_id: 43,
+        //             name: "xe đạp",
+        //             count_lastTime: "32",
+        //             count_thisTime: "23",
+        //           },
+        //         ],
+        //       },
+        //       {
+        //         group_name: "S/W",
+        //         group_m: 2,
+        //         chart: [
+        //           {
+        //             list_label_id: 17,
+        //             name: "backup",
+        //             count_lastTime: "56",
+        //             count_thisTime: "11",
+        //           },
+        //           {
+        //             list_label_id: 18,
+        //             name: "data recovery",
+        //             count_lastTime: "56",
+        //             count_thisTime: "98",
+        //           },
+        //           {
+        //             list_label_id: 19,
+        //             name: "server check",
+        //             count_lastTime: "23",
+        //             count_thisTime: "54",
+        //           },
+        //           {
+        //             list_label_id: 20,
+        //             name: "move position",
+        //             count_lastTime: "98",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 21,
+        //             name: "other",
+        //             count_lastTime: "12",
+        //             count_thisTime: "67",
+        //           },
+        //           {
+        //             list_label_id: 22,
+        //             name: "other 2",
+        //             count_lastTime: "56",
+        //             count_thisTime: "69",
+        //           },
+        //           {
+        //             list_label_id: 23,
+        //             name: "other 3",
+        //             count_lastTime: "22",
+        //             count_thisTime: "81",
+        //           },
+        //           {
+        //             list_label_id: 24,
+        //             name: "other 4",
+        //             count_lastTime: "23",
+        //             count_thisTime: "12",
+        //           },
+        //         ],
+        //       },
+        //     ],
+        //   },
+        //   {
+        //     id: 2,
+        //     type_name: "일반유지보수",
+        //     group: [
+        //       {
+        //         group_name: "전산부분",
+        //         group_m: 1,
+        //         chart: [
+        //           {
+        //             list_label_id: 9,
+        //             name: "patch",
+        //             count_lastTime: "24",
+        //             count_thisTime: "45",
+        //           },
+        //           {
+        //             list_label_id: 10,
+        //             name: "OS",
+        //             count_lastTime: "35",
+        //             count_thisTime: "84",
+        //           },
+        //           {
+        //             list_label_id: 11,
+        //             name: "Setting s/w",
+        //             count_lastTime: "20",
+        //             count_thisTime: "41",
+        //           },
+        //           {
+        //             list_label_id: 12,
+        //             name: "network",
+        //             count_lastTime: "20",
+        //             count_thisTime: "28",
+        //           },
+        //           {
+        //             list_label_id: 13,
+        //             name: "other",
+        //             count_lastTime: "77",
+        //             count_thisTime: "78",
+        //           },
+        //           {
+        //             list_label_id: 14,
+        //             name: "other 2",
+        //             count_lastTime: "98",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 15,
+        //             name: "other 3",
+        //             count_lastTime: "12",
+        //             count_thisTime: "29",
+        //           },
+        //           {
+        //             list_label_id: 16,
+        //             name: "other 4",
+        //             count_lastTime: "50",
+        //             count_thisTime: "23",
+        //           },
+        //         ],
+        //       },
+        //       {
+        //         group_name: "일반부분",
+        //         group_m: 2,
+        //         chart: [
+        //           {
+        //             list_label_id: 25,
+        //             name: "printer",
+        //             count_lastTime: "34",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 26,
+        //             name: "cable",
+        //             count_lastTime: "36",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 27,
+        //             name: "policy settings",
+        //             count_lastTime: "20",
+        //             count_thisTime: "89",
+        //           },
+        //           {
+        //             list_label_id: 28,
+        //             name: "monitor",
+        //             count_lastTime: "66",
+        //             count_thisTime: "22",
+        //           },
+        //           {
+        //             list_label_id: 29,
+        //             name: "education",
+        //             count_lastTime: "44",
+        //             count_thisTime: "12",
+        //           },
+        //           {
+        //             list_label_id: 30,
+        //             name: "other",
+        //             count_lastTime: "10",
+        //             count_thisTime: "43",
+        //           },
+        //           {
+        //             list_label_id: 31,
+        //             name: "other 2",
+        //             count_lastTime: "23",
+        //             count_thisTime: "34",
+        //           },
+        //           {
+        //             list_label_id: 32,
+        //             name: "other 3",
+        //             count_lastTime: "35",
+        //             count_thisTime: "93",
+        //           },
+        //         ],
+        //       },
+        //     ],
+        //   },
+        // ],
         mainTypeRequestNotComplete,
         methodCount,
         solutionCount: {
@@ -2149,7 +2155,7 @@ class adminPageService {
 
         // console.log("Week number of " + " is : " + weekNumber);
 
-        data.week = weekNumber - 1;
+        data.week = weekNumber - 2;
         data.year = currentDate.getFullYear();
 
         // ////.
@@ -2305,7 +2311,7 @@ class adminPageService {
       // console.log(data);
       if (!data.month && !data.year) {
         const currentTime = new Date(Date.now());
-        data.month = currentTime.getMonth() + 1;
+        data.month = currentTime.getMonth();
         data.year = currentTime.getFullYear();
         // console.log(data);
       } else {

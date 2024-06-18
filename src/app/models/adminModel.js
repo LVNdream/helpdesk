@@ -363,7 +363,7 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,r.name as leveluser
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,"일반사용자" as leveluser
       FROM
            users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
       WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
@@ -480,7 +480,7 @@ WHERE
   adminGetUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.name,u.affiliated_department,u.email,r.name as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name
+        `SELECT u.id,u.name,u.affiliated_department,u.email,"일반사용자" as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name
          FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id;`
       );
       return result[0];
@@ -493,7 +493,7 @@ WHERE
   adminGetHelperInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,company.name_company as company_name,company.id as company_id,email,roles.name as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
+        `SELECT users.id,users.name,company.name_company as company_name,company.id as company_id,email,"헬프데스크 담당자" as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
         FROM users,roles,company  WHERE company.id=users.company_id and users.id=${user_id} and users.role_id= roles.id;`
       );
       return result[0];
@@ -551,7 +551,7 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
       FROM
            users u
             left join account_status us on u.status_id=us.id
@@ -592,7 +592,7 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
+          `SELECT u.id,u.account, u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
       FROM
            users u
             left join account_status us on u.status_id=us.id
@@ -622,7 +622,7 @@ WHERE
         }
 
         resutlSearch = await pool.query(
-          `SELECT u.id, u.account,u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
+          `SELECT u.id, u.account,u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
            FROM users u
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
@@ -1214,7 +1214,7 @@ LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id
 LEFT JOIN processing_details pd ON pd.label_id = ll.id 
 LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
 where  mc.maintenance_id = ${maintenance_id} AND  mc.group_m = ${group_m}  
-GROUP BY ll.id`
+GROUP BY mc.id`
       );
 
       return result;
@@ -1237,7 +1237,7 @@ GROUP BY ll.id`
           LEFT JOIN processing_details pd ON pd.label_id = ll.id 
           LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
           where  mc.group_m = ${maintenance_id} AND mc.maintenance_id = ${group_m} 
-          GROUP BY ll.id`
+          GROUP BY mc.id`
       );
 
       return result;
@@ -1361,7 +1361,7 @@ GROUP BY ll.id`
   getNewHelper: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, c.name_company,r.name as main_type,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
       FROM
            users u
            left join account_status us on u.status_id=us.id
@@ -1379,7 +1379,7 @@ GROUP BY ll.id`
   getNewUser: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,tel_number,phone_number,email, r.name as leveluser
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,tel_number,phone_number,email, "헬프데스크 담당자" as leveluser
       FROM
            users u left join  account_status us on us.id=u.status_id left join roles r on r.id=u.role_id
       WHERE u.status_id=us.id and  u.id=${user_id} `

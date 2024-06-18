@@ -97,6 +97,7 @@ class userPageService {
               created_at: resutlConfirm_Register.created_at,
               infor_petitioner: {
                 user_id: resutlConfirm_Register.user_id,
+                account: resutlConfirm_Register.account,
                 name: resutlConfirm_Register.name,
                 affiliated_department:
                   resutlConfirm_Register.affiliated_department,
@@ -236,6 +237,8 @@ class userPageService {
               infor_petitioner: {
                 user_id: resutlComplete_AddProblem.petitioner_id,
                 name: resutlComplete_AddProblem.p_name,
+                account: resutlComplete_AddProblem.p_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.p_affiliated_department,
                 phone_number: resutlComplete_AddProblem.p_phone_number,
@@ -245,6 +248,8 @@ class userPageService {
               infor_recipient: {
                 user_id: resutlComplete_AddProblem.r_id,
                 name: resutlComplete_AddProblem.r_name,
+                account: resutlComplete_AddProblem.r_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
                 phone_number: resutlComplete_AddProblem.r_phone_number,
@@ -293,6 +298,7 @@ class userPageService {
 
       return {
         id: inforUser.id,
+        account: inforUser.account,
         name: inforUser.name,
         affiliated_department: inforUser.affiliated_department,
         phone_number: inforUser.phone_number,
@@ -469,30 +475,35 @@ class userPageService {
             error: 500,
           };
         }
-      }
-      const listDelete = arrayDelete ? arrayDelete.length : 0;
-      if (listDelete > 0) {
-        for (let i = 0; i < listDelete; i++) {
-          const file = arrayDelete[i];
-          // console.log(file);
-          const resutlDB = await userPageModel.deleteFile(file);
-          if (!resutlDB) {
-            return {
-              message: "Server error Delete File Model",
-              status: false,
-              error: 500,
-            };
-          }
-          const resultDeleleSever = await midService.deleteFile(file, "files");
-          if (!resultDeleleSever) {
-            return {
-              message: "Server error Delete one File midService",
-              status: false,
-              error: 500,
-            };
+      } else {
+        const listDelete = arrayDelete ? arrayDelete.length : 0;
+        if (listDelete > 0) {
+          for (let i = 0; i < listDelete; i++) {
+            const file = arrayDelete[i];
+            // console.log(file);
+            const resutlDB = await userPageModel.deleteFile(file);
+            if (!resutlDB) {
+              return {
+                message: "Server error Delete File Model",
+                status: false,
+                error: 500,
+              };
+            }
+            const resultDeleleSever = await midService.deleteFile(
+              file,
+              "files"
+            );
+            if (!resultDeleleSever) {
+              return {
+                message: "Server error Delete one File midService",
+                status: false,
+                error: 500,
+              };
+            }
           }
         }
       }
+
       // console.log(files, arrayDelete);
       const fileLength = files.length;
       if (fileLength > 0) {
@@ -532,11 +543,19 @@ class userPageService {
           error: 500,
         };
       }
+      const newFiles = await userPageModel.getAllFileByRequest(request_id);
+      if (!newFiles) {
+        return {
+          message: "get files update fail",
+          status: false,
+          error: 500,
+        };
+      }
       return {
         message: "Update request successfully",
         status: true,
         error: 200,
-        data: dataUpdate,
+        data: { ...dataUpdate, files: newFiles },
       };
     } catch (error) {
       console.log(error);
@@ -548,7 +567,7 @@ class userPageService {
     }
   }
 
-  async deleteRequest(user_id, request_id) {
+  async deleteRequest(user_id, request_id, page) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
 
@@ -632,17 +651,32 @@ class userPageService {
           };
         }
       }
-
+      // lay data
+      let data;
+      data = await userPageModel.requestToOrther(user_id, page);
+      if (!data) {
+        return {
+          messsage: "Error model requestToOrther",
+          status: false,
+          error: 500,
+        };
+      }
       // xoa request
       const resutl = await userPageModel.deleteRequest(user_id, request_id);
-
-      return resutl
-        ? { messsage: "Deleted Success!", status: true, request_id }
-        : {
-            messsage: "Delete Fail!, Error model delete",
-            status: false,
-            error: 500,
-          };
+      if (resutl) {
+        return {
+          data: data[0],
+          messsage: "Deleted Success!",
+          status: true,
+          request_id,
+        };
+      } else {
+        return {
+          messsage: "Delete Fail!, Error model delete",
+          status: false,
+          error: 500,
+        };
+      }
     } catch (error) {
       console.log(error);
       return {

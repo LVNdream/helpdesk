@@ -198,6 +198,10 @@ WHERE
           status_id="${status_id}"
           where id="${request_id}";`
       );
+      // console.log(request_id, status_id);
+      // console.log(result);
+
+
 
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
@@ -224,7 +228,7 @@ WHERE
   getHelpdeskInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,company.name_company,email,roles.name as leveluser,users.position,users.phone_number,users.tel_number FROM users left join roles on users.role_id= roles.id left join company on users.company_id= company.id  WHERE users.id=${user_id};`
+        `SELECT users.id,users.account,users.name,company.name_company,email,"일반사용자" as leveluser,users.position,users.phone_number,users.tel_number FROM users left join roles on users.role_id= roles.id left join company on users.company_id= company.id  WHERE users.id=${user_id};`
       );
       return result[0];
     } catch (error) {
@@ -409,7 +413,7 @@ WHERE
       const numberPage = (page - 1) * 10;
 
       result = await pool.query(
-        `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
+        `select id,account,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
       );
       return result;
     } catch (error) {
@@ -466,7 +470,7 @@ WHERE
   getUserCount: async () => {
     try {
       result = await pool.query(
-        `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc`
+        `select id,name,account,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc`
       );
       return result ? result.length : 0;
     } catch (error) {
