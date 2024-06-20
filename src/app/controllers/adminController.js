@@ -131,7 +131,10 @@ class adminController {
   }
   async deleteUser(req, res) {
     try {
-      const result = await adminService.deleteUser(req.params.user_id);
+      const result = await adminService.deleteUser(
+        req.params.user_id,
+        req.params.page
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

@@ -432,6 +432,12 @@ class adminPageService {
       // console.log(resutl);
       const userCount = await adminModel.getHelperCount();
 
+      resutl = resutl.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "사용가능";
+        }
+        return { ...item };
+      });
       // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
@@ -457,7 +463,12 @@ class adminPageService {
         text,
         page
       );
-
+      resutl.listFilter = resutl.listFilter.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "사용가능";
+        }
+        return { ...item };
+      });
       // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? {
@@ -716,9 +727,10 @@ class adminPageService {
       };
     }
   }
-  async deleteUser(user_id) {
+
+  async deleteUser(user_id, page) {
     try {
-      const getUser = await userPageModel.getUserInfor(user_id);
+      const getUser = await authModel.findInforById(user_id);
 
       if (!getUser) {
         return {
@@ -727,10 +739,22 @@ class adminPageService {
           error: "u_404",
         };
       }
+      let data;
+      // console.log(getUser);
+      if (
+        getUser.role_id == 1 ||
+        getUser.role_id == 2 ||
+        getUser.role_id == 5
+      ) {
+        data = await adminModel.helpdeskToOrther(page);
+      } else if (getUser.role_id == 4) {
+        data = await adminModel.userToOrther(page);
+      }
       const resutl = await adminModel.deleteUser(user_id);
-
-      return resutl
+      // console.log(data);
+      return true
         ? {
+            data,
             deleteId: user_id,
             message: "delete user success",
             status: true,
@@ -875,11 +899,11 @@ class adminPageService {
 
   async updateHelperInfor(user_id, data) {
     try {
-      if (data.role_id.length > 1) {
-        data.role_id = 5;
-      } else {
-        data.role_id = data.role_id[0];
-      }
+      // if (data.role_id.length > 1) {
+      //   data.role_id = 5;
+      // } else {
+      //   data.role_id = data.role_id[0];
+      // }
       const resutl = await adminModel.updateHelperInfor(user_id, data);
       if (resutl) {
         const inforUpdate = await adminModel.getNewHelper(user_id);
@@ -1121,7 +1145,12 @@ class adminPageService {
       let resutl = await adminModel.getAllUserWaitAccept(role_id, page);
 
       const userCount = await adminModel.getUserCountWaitAccept(role_id);
-
+      resutl = resutl.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "승인";
+        }
+        return { ...item };
+      });
       // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
 
       // resutl = resutl.map((user) => {
@@ -1162,6 +1191,12 @@ class adminPageService {
         text,
         page
       );
+      resutl.listFilter = resutl.listFilter.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "승인";
+        }
+        return { ...item };
+      });
       // console.log(resutl)
       // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
 
@@ -1612,7 +1647,20 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              let maxValue = 0;
+              chart.forEach((itemLabel) => {
+                // console.log(itemLabel);
+
+                parseInt(itemLabel.count_lastTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_lastTime))
+                  : "";
+                parseInt(itemLabel.count_thisTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_thisTime))
+                  : "";
+              });
+
               return {
+                maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2026,7 +2074,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              let maxValue = 0;
+              chart.forEach((itemLabel) => {
+                // console.log(itemLabel);
+
+                parseInt(itemLabel.count_lastTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_lastTime))
+                  : "";
+                parseInt(itemLabel.count_thisTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_thisTime))
+                  : "";
+              });
               return {
+                maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2206,7 +2266,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              let maxValue = 0;
+              chart.forEach((itemLabel) => {
+                // console.log(itemLabel);
+
+                parseInt(itemLabel.count_lastTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_lastTime))
+                  : "";
+                parseInt(itemLabel.count_thisTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_thisTime))
+                  : "";
+              });
               return {
+                maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2369,7 +2441,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              let maxValue = 0;
+              chart.forEach((itemLabel) => {
+                // console.log(itemLabel);
+
+                parseInt(itemLabel.count_lastTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_lastTime))
+                  : "";
+                parseInt(itemLabel.count_thisTime) > maxValue
+                  ? (maxValue = parseInt(itemLabel.count_thisTime))
+                  : "";
+              });
               return {
+                maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,

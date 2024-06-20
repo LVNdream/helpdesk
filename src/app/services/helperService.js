@@ -490,7 +490,13 @@ class helperPageService {
     }
   }
 
-  async updateProblem(request_id, recipient_id, problem_id, problem) {
+  async updateProblem(
+    request_id,
+    recipient_id,
+    problem_id,
+    problem,
+    updated_at
+  ) {
     try {
       const resultRQ = await userPageModel.getRequestById(request_id);
       if (resultRQ.recipient_id != recipient_id) {
@@ -501,7 +507,11 @@ class helperPageService {
         };
       }
 
-      const resultUpdate = await helperModel.updateProblem(problem_id, problem);
+      const resultUpdate = await helperModel.updateProblem(
+        problem_id,
+        problem,
+        updated_at
+      );
       if (!resultUpdate) {
         return {
           message: "Error update request problem model",
@@ -511,6 +521,12 @@ class helperPageService {
       }
 
       return {
+        data: {
+          request_id,
+          problem_id,
+          problem,
+          updated_at,
+        },
         message: "update problem success",
         status: true,
       };
@@ -948,7 +964,7 @@ class helperPageService {
             messsage: "Deleted Success!",
             status: true,
             request_id,
-            data: data[0],
+            data: data,
           }
         : {
             messsage: "Delete Fail!, Error model delete",
@@ -1037,7 +1053,7 @@ class helperPageService {
   }
   async addRequestCompleted(infor_user, data, files) {
     try {
-      // console.log(recipient_id, data, files);
+      // console.log( data);
       const dataRequest = {
         title_request: data.title_request,
         content_request: data.content_request,

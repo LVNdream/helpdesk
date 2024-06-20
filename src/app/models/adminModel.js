@@ -28,7 +28,7 @@ LEFT JOIN
 WHERE 
      mth.id=rs.method_id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
       );
-
+      // console.log(result);
       return result;
     } catch (error) {
       console.log("error model getRequestList By Admin :", error);
@@ -382,7 +382,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and u.status_id!=1
+      WHERE u.role_id=${role_id} and (u.status_id != 1 and u.status_id != 3)
            `
       );
       //   console.log(result);
@@ -618,6 +618,7 @@ WHERE
         } else if (option == 3) {
           nameCondition = "c.name_company";
         } else if (option == 4) {
+          "사용가능".includes(text) ? (text = "정상") : "";
           nameCondition = "us.status_name";
         }
 
@@ -763,12 +764,12 @@ WHERE
 
   updateHelperInfor: async (user_id, data) => {
     try {
+      // role_id="${data.role_id}",
       const result = await pool.query(
         `update users set 
-          company_id="${data.company_id}",
           email="${data.email}",
-          role_id="${data.role_id}",
           status_id="${data.status_id}",
+          company_id="${data.company_id}",
           position="${data.position}",
           phone_number="${data.phone_number}",
           tel_number="${data.tel_number}"
@@ -947,7 +948,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -963,7 +964,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3)
+      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3 or u.status_id = 2)
            `
       );
       //   console.log(result);
@@ -984,13 +985,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} ORDER BY u.created_at desc `
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc `
         );
       }
 
@@ -1004,18 +1005,19 @@ WHERE
         } else if (option == 3) {
           nameCondition = "u.affiliated_department";
         } else if (option == 4) {
+          "승인".includes(text) ? (text = "정상") : "";
           nameCondition = "us.status_name";
         }
 
         resutlSearch = await pool.query(
           `SELECT u.id, u.name,u.account, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -1417,6 +1419,43 @@ GROUP BY mc.id`
       return result[0];
     } catch (error) {
       console.log("error model getClassLabel :", error);
+      return false;
+    }
+  },
+
+  helpdeskToOrther: async (page) => {
+    try {
+      const numberPage = page * 10;
+      const result = await pool.query(
+        `SELECT u.id,u.account, u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
+      FROM
+           users u
+            left join account_status us on u.status_id=us.id
+            left join roles r on u.role_id= r.id
+            left join company c on u.company_id= c.id
+
+      WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 1 OFFSET ${numberPage}`
+      );
+      // console.log(result);
+      return result[0];
+    } catch (error) {
+      console.log("error model requestToOrther:", error);
+      return false;
+    }
+  },
+  userToOrther: async (page) => {
+    try {
+      const numberPage = page * 10;
+      const result = await pool.query(
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,"일반사용자" as leveluser
+      FROM
+           users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
+      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=4   ORDER BY u.created_at desc LIMIT 1 OFFSET ${numberPage}`
+      );
+      //   console.log(result);
+      return result[0];
+    } catch (error) {
+      console.log("error model requestToOrther:", error);
       return false;
     }
   },

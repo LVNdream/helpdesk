@@ -201,8 +201,6 @@ WHERE
       // console.log(request_id, status_id);
       // console.log(result);
 
-
-
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Update request Status_id:", error);
@@ -285,13 +283,15 @@ WHERE
     }
   },
   //upadte problem
-  updateProblem: async (problem_id, problem) => {
+  updateProblem: async (problem_id, problem, updated_at) => {
     try {
+      const timeUpdate = new Date(parseInt(updated_at));
       result = await pool.query(
         `update list_problem set
           problem="${problem}",
-          updated_at=now()
-          where id="${problem_id}";`
+          updated_at=?
+          where id="${problem_id}";`,
+        [timeUpdate]
       );
 
       return result.affectedRows > 0 ? result : false;
@@ -413,7 +413,7 @@ WHERE
       const numberPage = (page - 1) * 10;
 
       result = await pool.query(
-        `select id,account,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
+        `select id,account,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc limit 10 offset ${numberPage} `
       );
       return result;
     } catch (error) {
@@ -446,11 +446,13 @@ WHERE
         } else if (option == 3) {
           nameCondition = "u.affiliated_department";
         } else if (option == 4) {
-          nameCondition = "u_s.status_name";
+          nameCondition = "u.email";
+        } else if (option == 5) {
+          nameCondition = "u.phone_number";
         }
 
         resutlSearch = await pool.query(
-          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
+          `select u.id,u.name,u.account,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
           where role_id=4 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(

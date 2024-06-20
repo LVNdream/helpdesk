@@ -71,7 +71,7 @@ router.post(
   adminController.AdminUpdateUserInfor
 );
 router.delete(
-  "/deleteuser/:user_id",
+  "/deleteuser/:page/:user_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteUser
 );

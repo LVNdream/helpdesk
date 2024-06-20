@@ -665,7 +665,7 @@ class userPageService {
       const resutl = await userPageModel.deleteRequest(user_id, request_id);
       if (resutl) {
         return {
-          data: data[0],
+          data: data,
           messsage: "Deleted Success!",
           status: true,
           request_id,

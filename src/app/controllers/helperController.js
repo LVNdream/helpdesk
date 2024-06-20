@@ -105,7 +105,8 @@ class helperController {
         req.body.request_id,
         req.user.id,
         req.body.problem_id,
-        req.body.problem
+        req.body.problem,
+        req.body.updated_at
       );
       res.status(200).json(result);
     } catch (error) {

@@ -570,7 +570,7 @@ LEFT JOIN
           rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 1 OFFSET ${numberPage};`
       );
 
-      return result;
+      return result[0];
     } catch (error) {
       console.log("error model requestToOrther:", error);
       return false;
