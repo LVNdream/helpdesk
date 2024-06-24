@@ -1592,6 +1592,7 @@ class adminPageService {
 
   async getInforReport(data) {
     try {
+      // console.log(123123)
       let accumulationRegisterYear =
         await adminModel.amountAccumulationRegister("year", data.year);
       let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
@@ -1602,6 +1603,13 @@ class adminPageService {
         await adminModel.amountRequestProcessing("year", data.year);
       let amountRequestCompletedPercentYear =
         await adminModel.amountPerRequestCompleted("year", data.year);
+
+      const countPerYear = amountRequestCompletedPercentYear.reduce(
+        (accumulator, item) => {
+          return parseFloat(accumulator) + parseFloat(item.countRequest);
+        },
+        0
+      );
       amountRequestCompletedPercentYear = amountRequestCompletedPercentYear.map(
         (item) => {
           item.countRequest = item.countRequest + "%";
@@ -1620,11 +1628,23 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
 
+      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
+        (accumulator, item) => {
+          return parseFloat(accumulator) + parseFloat(item.countRequest);
+        },
+        0
+      );
+
+      // console.log(countPerMonth);
+
       amountRequestCompletedPercentMonth =
         amountRequestCompletedPercentMonth.map((item) => {
           item.countRequest = item.countRequest + "%";
           return { ...item };
         });
+      // console.log(123123,amountRequestCompletedPercentYear);
+
+      // console.log(123123123,amountRequestCompletedPercentMonth);
       let mainType = await userPageModel.getMaintenanceType();
       const mainTypeChart = await Promise.all(
         mainType.map(async (itemMT) => {
@@ -1647,20 +1667,20 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
-              let maxValue = 0;
-              chart.forEach((itemLabel) => {
-                // console.log(itemLabel);
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
 
-                parseInt(itemLabel.count_lastTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_lastTime))
-                  : "";
-                parseInt(itemLabel.count_thisTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_thisTime))
-                  : "";
-              });
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
 
               return {
-                maxValue,
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -1735,14 +1755,7 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentYear,
-            count: amountRequestCompletedPercentYear.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
+            count: parseFloat(countPerYear).toFixed(2) + "%",
           },
         ],
 
@@ -1771,14 +1784,8 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
+
+            count: parseFloat(countPerMonth).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -1794,13 +1801,13 @@ class adminPageService {
         //           {
         //             list_label_id: 1,
         //             name: "CPU",
-        //             count_lastTime: "20",
+        //             count_lastTime: "1004",
         //             count_thisTime: "48",
         //           },
         //           {
         //             list_label_id: 3,
         //             name: "plate",
-        //             count_lastTime: "23",
+        //             count_lastTime: "551",
         //             count_thisTime: "13",
         //           },
         //           {
@@ -1812,7 +1819,7 @@ class adminPageService {
         //           {
         //             list_label_id: 8,
         //             name: "networkelectricity supply",
-        //             count_lastTime: "12",
+        //             count_lastTime: "200",
         //             count_thisTime: "55",
         //           },
         //           {
@@ -1824,14 +1831,14 @@ class adminPageService {
         //           {
         //             list_label_id: 41,
         //             name: "RAM",
-        //             count_lastTime: "78",
+        //             count_lastTime: "448",
         //             count_thisTime: "34",
         //           },
         //           {
         //             list_label_id: 42,
         //             name: "Main",
         //             count_lastTime: "23",
-        //             count_thisTime: "21",
+        //             count_thisTime: "241",
         //           },
         //           {
         //             list_label_id: 43,
@@ -1840,6 +1847,7 @@ class adminPageService {
         //             count_thisTime: "23",
         //           },
         //         ],
+        //         // maxValue: 1004,
         //       },
         //       {
         //         group_name: "S/W",
@@ -1848,7 +1856,7 @@ class adminPageService {
         //           {
         //             list_label_id: 17,
         //             name: "backup",
-        //             count_lastTime: "56",
+        //             count_lastTime: "243",
         //             count_thisTime: "11",
         //           },
         //           {
@@ -1866,7 +1874,7 @@ class adminPageService {
         //           {
         //             list_label_id: 20,
         //             name: "move position",
-        //             count_lastTime: "98",
+        //             count_lastTime: "454",
         //             count_thisTime: "23",
         //           },
         //           {
@@ -1879,7 +1887,7 @@ class adminPageService {
         //             list_label_id: 22,
         //             name: "other 2",
         //             count_lastTime: "56",
-        //             count_thisTime: "69",
+        //             count_thisTime: "359",
         //           },
         //           {
         //             list_label_id: 23,
@@ -1894,6 +1902,7 @@ class adminPageService {
         //             count_thisTime: "12",
         //           },
         //         ],
+        //         maxValue: 94,
         //       },
         //     ],
         //   },
@@ -1908,13 +1917,13 @@ class adminPageService {
         //           {
         //             list_label_id: 9,
         //             name: "patch",
-        //             count_lastTime: "24",
+        //             count_lastTime: "224",
         //             count_thisTime: "45",
         //           },
         //           {
         //             list_label_id: 10,
         //             name: "OS",
-        //             count_lastTime: "35",
+        //             count_lastTime: "345",
         //             count_thisTime: "84",
         //           },
         //           {
@@ -1927,7 +1936,7 @@ class adminPageService {
         //             list_label_id: 12,
         //             name: "network",
         //             count_lastTime: "20",
-        //             count_thisTime: "28",
+        //             count_thisTime: "328",
         //           },
         //           {
         //             list_label_id: 13,
@@ -1954,27 +1963,28 @@ class adminPageService {
         //             count_thisTime: "23",
         //           },
         //         ],
+        //         maxValue: 98,
         //       },
         //       {
         //         group_name: "일반부분",
         //         group_m: 2,
         //         chart: [
         //           {
-        //             list_label_id: 25,
+        //             list_label_id: 784,
         //             name: "printer",
-        //             count_lastTime: "34",
+        //             count_lastTime: "334",
         //             count_thisTime: "23",
         //           },
         //           {
         //             list_label_id: 26,
         //             name: "cable",
-        //             count_lastTime: "36",
+        //             count_lastTime: "326",
         //             count_thisTime: "23",
         //           },
         //           {
         //             list_label_id: 27,
         //             name: "policy settings",
-        //             count_lastTime: "20",
+        //             count_lastTime: "420",
         //             count_thisTime: "89",
         //           },
         //           {
@@ -1986,7 +1996,7 @@ class adminPageService {
         //           {
         //             list_label_id: 29,
         //             name: "education",
-        //             count_lastTime: "44",
+        //             count_lastTime: "544",
         //             count_thisTime: "12",
         //           },
         //           {
@@ -2008,11 +2018,32 @@ class adminPageService {
         //             count_thisTime: "93",
         //           },
         //         ],
+        //         maxValue: 784,
         //       },
         //     ],
         //   },
         // ],
         mainTypeRequestNotComplete,
+        // mainTypeRequestNotComplete: [
+        //   {
+        //     id: 1,
+        //     type_name: " PC유지보수",
+        //     listRequest: {
+        //       count_last_two_month: "431",
+        //       count_last_month: "76",
+        //       count_this_month: "56",
+        //     },
+        //   },
+        //   {
+        //     id: 2,
+        //     type_name: "일반유지보수",
+        //     listRequest: {
+        //       count_last_two_month: "234",
+        //       count_last_month: "35",
+        //       count_this_month: "90",
+        //     },
+        //   },
+        // ],
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
@@ -2045,6 +2076,13 @@ class adminPageService {
         await adminModel.amountRequestProcessing("date", datetime);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("date", datetime);
+
+      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
+        (accumulator, item) => {
+          return parseFloat(accumulator) + parseFloat(item.countRequest);
+        },
+        0
+      );
       amountRequestCompletedPercentMonth =
         amountRequestCompletedPercentMonth.map((item) => {
           // console.log(item.countRequest);
@@ -2074,19 +2112,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
-              let maxValue = 0;
-              chart.forEach((itemLabel) => {
-                // console.log(itemLabel);
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
 
-                parseInt(itemLabel.count_lastTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_lastTime))
-                  : "";
-                parseInt(itemLabel.count_thisTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_thisTime))
-                  : "";
-              });
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
-                maxValue,
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2157,14 +2195,7 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
+            count: parseFloat(countPerMonth).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -2237,11 +2268,13 @@ class adminPageService {
         await adminModel.amountRequestProcessing("week", data.week);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("week", data.week);
-      amountRequestCompletedPercentMonth.map((item) => {
-        // console.log(item.countRequest);
-        item.countRequest = item.countRequest + "%";
-        return { ...item };
-      });
+
+      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
+        (accumulator, item) => {
+          return parseFloat(accumulator) + parseFloat(item.countRequest);
+        },
+        0
+      );
 
       //
       let mainType = await userPageModel.getMaintenanceType();
@@ -2266,19 +2299,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
-              let maxValue = 0;
-              chart.forEach((itemLabel) => {
-                // console.log(itemLabel);
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
 
-                parseInt(itemLabel.count_lastTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_lastTime))
-                  : "";
-                parseInt(itemLabel.count_thisTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_thisTime))
-                  : "";
-              });
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
-                maxValue,
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2349,14 +2382,7 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
+            count: parseFloat(countPerMonth).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -2400,6 +2426,14 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
+
+      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
+        (accumulator, item) => {
+          return parseFloat(accumulator) + parseFloat(item.countRequest);
+        },
+        0
+      );
+
       amountRequestCompletedPercentMonth.map((item) => {
         // console.log(item.countRequest);
         item.countRequest = item.countRequest + "%";
@@ -2407,16 +2441,22 @@ class adminPageService {
       });
       //
 
-      let accumulationRegisterYear =
-        await adminModel.amountAccumulationRegister("year", data.year);
-      let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
-        "year",
-        data.year
-      );
-      let amountRequestProcessingYear =
-        await adminModel.amountRequestProcessing("year", data.year);
-      let amountRequestCompletedPercentYear =
-        await adminModel.amountPerRequestCompleted("year", data.year);
+      // let accumulationRegisterYear =
+      //   await adminModel.amountAccumulationRegister("year", data.year);
+      // let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
+      //   "year",
+      //   data.year
+      // );
+      // let amountRequestProcessingYear =
+      //   await adminModel.amountRequestProcessing("year", data.year);
+      // let amountRequestCompletedPercentYear =
+      //   await adminModel.amountPerRequestCompleted("year", data.year);
+      // const countPerYear = amountRequestCompletedPercentMonth.reduce(
+      //   (accumulator, item) => {
+      //     return parseFloat(accumulator) + parseFloat(item.countRequest);
+      //   },
+      //   0
+      // );
 
       //
       let mainType = await userPageModel.getMaintenanceType();
@@ -2441,19 +2481,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
-              let maxValue = 0;
-              chart.forEach((itemLabel) => {
-                // console.log(itemLabel);
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
 
-                parseInt(itemLabel.count_lastTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_lastTime))
-                  : "";
-                parseInt(itemLabel.count_thisTime) > maxValue
-                  ? (maxValue = parseInt(itemLabel.count_thisTime))
-                  : "";
-              });
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
-                maxValue,
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -2502,41 +2542,34 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleYear: [
-          {
-            title: "누적 등록건수",
-            data: accumulationRegisterYear,
-            count: accumulationRegisterYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "누적 처리완료",
-            data: amountRequestCompletedYear,
-            count: amountRequestCompletedYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "누적 진행중",
-            data: amountRequestProcessingYear,
-            count: amountRequestProcessingYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "처리율",
-            data: amountRequestCompletedPercentYear,
-            count: amountRequestCompletedPercentYear.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
-          },
-        ],
+        // titleYear: [
+        //   {
+        //     title: "누적 등록건수",
+        //     data: accumulationRegisterYear,
+        //     count: accumulationRegisterYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "누적 처리완료",
+        //     data: amountRequestCompletedYear,
+        //     count: amountRequestCompletedYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "누적 진행중",
+        //     data: amountRequestProcessingYear,
+        //     count: amountRequestProcessingYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "처리율",
+        //     data: amountRequestCompletedPercentYear,
+        //     count: parseFloat(countPerYear).toFixed(2),
+        //   },
+        // ],
         titleMonth: [
           {
             title: "등록건수",
@@ -2562,14 +2595,7 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return (
-                  parseFloat(accumulator) + parseFloat(item.countRequest) + "%"
-                );
-              },
-              0
-            ),
+            count: parseFloat(countPerMonth).toFixed(2) + "%",
           },
         ],
 
