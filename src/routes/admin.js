@@ -147,7 +147,7 @@ router.post(
 );
 
 router.delete(
-  "/deletecompany/:company_id",
+  "/deletecompany/:page/:company_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteCompany
 );

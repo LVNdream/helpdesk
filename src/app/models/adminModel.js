@@ -493,7 +493,7 @@ WHERE
   adminGetHelperInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,company.name_company as company_name,company.id as company_id,email,"헬프데스크 담당자" as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
+        `SELECT users.id,users.name,users.account,company.name_company as company_name,company.id as company_id,email,"헬프데스크 담당자" as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
         FROM users,roles,company  WHERE company.id=users.company_id and users.id=${user_id} and users.role_id= roles.id;`
       );
       return result[0];
@@ -1363,7 +1363,7 @@ GROUP BY mc.id`
   getNewHelper: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, c.name_company,"헬프데스크 담당자" as main_type,u.status_id,us.status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company, "헬프데스크 담당자" as main_type,u.status_id,"사용가능" as status_name,u.created_at
       FROM
            users u
            left join account_status us on u.status_id=us.id
@@ -1381,7 +1381,7 @@ GROUP BY mc.id`
   getNewUser: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,tel_number,phone_number,email, "헬프데스크 담당자" as leveluser
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,tel_number,phone_number,email, "일반사용자" as leveluser
       FROM
            users u left join  account_status us on us.id=u.status_id left join roles r on r.id=u.role_id
       WHERE u.status_id=us.id and  u.id=${user_id} `
@@ -1456,6 +1456,21 @@ GROUP BY mc.id`
       return result[0];
     } catch (error) {
       console.log("error model requestToOrther:", error);
+      return false;
+    }
+  },
+  companyToOrther: async ( page) => {
+    try {
+      const numberPage = page * 10;
+      // console.log(numberPage)
+      const result = await pool.query(
+        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
+         FROM company c left JOIN users u ON c.id=u.company_id  GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 1 OFFSET ${numberPage}`
+      );
+      // console.log(result);
+      return result[0];
+    } catch (error) {
+      console.log("error model companyToOrther:", error);
       return false;
     }
   },

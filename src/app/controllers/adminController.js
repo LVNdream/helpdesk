@@ -336,7 +336,10 @@ class adminController {
 
   async deleteCompany(req, res) {
     try {
-      const result = await adminService.deleteCompany(req.params.company_id);
+      const result = await adminService.deleteCompany(
+        req.params.company_id,
+        req.params.page
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

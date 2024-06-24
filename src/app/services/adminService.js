@@ -1115,8 +1115,16 @@ class adminPageService {
     }
   }
 
-  async deleteCompany(company_id) {
+  async deleteCompany(company_id, page) {
     try {
+      // console.log(company_id,page)
+      let dataReplace = await adminModel.companyToOrther(page);
+      if (dataReplacelpo) {
+        dataReplace = {
+          ...dataReplace,
+          amountHelper: parseInt(dataReplace.amountHelper),
+        };
+      }
       const resutl = await adminModel.deleteCompany(company_id);
 
       return resutl
@@ -1124,6 +1132,7 @@ class adminPageService {
             deleteId: company_id,
             message: "delete company success",
             status: true,
+            data: dataReplace,
           }
         : {
             message: "Error model delete company  By Admin",

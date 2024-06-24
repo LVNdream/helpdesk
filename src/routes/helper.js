@@ -13,7 +13,10 @@ var storage = multer.diskStorage({
   filename: (req, file, res) => {
     res(
       null,
-      Date.now() + Math.floor(Math.random() * 10000) + "-" + file.originalname
+      Date.now() +
+        Math.floor(Math.random() * 10000) +
+        "-" +
+        decodeURIComponent(file.originalname)
     );
   },
 });
