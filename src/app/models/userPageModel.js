@@ -540,6 +540,7 @@ LEFT JOIN
     }
   },
   requestToOrther: async (petitioner_id, page) => {
+    // console.log(petitioner_id, page);
     try {
       const numberPage = page * 10;
       const result = await pool.query(
@@ -569,8 +570,8 @@ LEFT JOIN
       WHERE
           rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 1 OFFSET ${numberPage};`
       );
-
-      return result[0];
+      // console.log(result);
+      return result;
     } catch (error) {
       console.log("error model requestToOrther:", error);
       return false;

@@ -132,7 +132,9 @@ class helperController {
     try {
       const result = await helperService.deleteRequest(
         req.user.id,
-        req.params.request_id
+        req.user.role_id,
+        req.params.request_id,
+        req.params.page
       );
       return res.status(200).json(result);
     } catch (error) {

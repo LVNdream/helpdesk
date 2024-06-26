@@ -574,4 +574,54 @@ WHERE
       return false;
     }
   },
+  requestToOrther: async (recipient_id, role_id, page) => {
+    try {
+      const startNumber = page * 10;
+      const endNumber = (page + 1) * 10;
+      let result = await pool.query(
+        `SELECT DISTINCT 
+    rs.id,
+    rs.maintenance_id,
+    rs.title_request,
+    mt.type_name,
+    rs.status_id,
+    users.name AS petitioner,
+    users2.name AS recipient,
+    rs.created_at,
+    rs.completion_date ,mth.method_name
+FROM 
+    request_storage rs
+JOIN 
+    maintenance_type mt ON rs.maintenance_id = mt.id
+JOIN 
+    request_status rstt ON rs.status_id = rstt.id
+JOIN 
+    users ON rs.petitioner_id = users.id
+LEFT JOIN 
+    users AS users2 ON rs.recipient_id = users2.id, method mth
+WHERE 
+      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
+      );
+      if (role_id != 5) {
+        result = result.filter((item) => {
+          return item.maintenance_id == role_id;
+        });
+      }
+
+      let listPagination = [];
+      // console.log(resultByRoleById)
+      for (let i = startNumber; i < endNumber; i++) {
+        const item = result[i];
+        // console.log(item)
+        if (item) {
+          listPagination.push(item);
+        }
+      }
+
+      return listPagination;
+    } catch (error) {
+      console.log("error model requestToOrther:", error);
+      return false;
+    }
+  },
 };

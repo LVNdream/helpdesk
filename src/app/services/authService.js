@@ -109,7 +109,7 @@ class authService {
         };
       }
 
-      if (user.count_login >= 5) {
+      if (user.count_login >= 10) {
         return {
           message: "User policy violation",
           status: false,
@@ -123,7 +123,7 @@ class authService {
 
       if (!validPass) {
         const countLogin = user.count_login + 1;
-        if (countLogin >= 5) {
+        if (countLogin >= 10) {
           const resultUpdateStatus = await adminModel.updateUserStatus(
             user.id,
             5

@@ -861,7 +861,7 @@ class helperPageService {
     }
   }
 
-  async deleteRequest(user_id, request_id) {
+  async deleteRequest(user_id, role_id, request_id, page) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
 
@@ -947,7 +947,8 @@ class helperPageService {
       // ///
 
       let data;
-      data = await userPageModel.requestToOrther(user_id, page);
+      data = await helperModel.requestToOrther(user_id, role_id, page);
+      // console.log(data);
       if (!data) {
         return {
           messsage: "Error model requestToOrther",
@@ -960,11 +961,12 @@ class helperPageService {
       const resutl = await helperModel.deleteRequest(user_id, request_id);
 
       return resutl
-        ? {
+        ? // return true
+          {
             messsage: "Deleted Success!",
             status: true,
             request_id,
-            data: data,
+            data: data[0],
           }
         : {
             messsage: "Delete Fail!, Error model delete",

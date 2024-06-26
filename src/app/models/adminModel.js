@@ -1070,7 +1070,7 @@ WHERE
       FROM
            list_label
       where maintenance_id="${maintenance_id}"
-        ORDER BY created_at desc LIMIT 12`
+        ORDER BY created_at desc`
       );
       //   console.log(result);
       return result;

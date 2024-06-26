@@ -40,7 +40,7 @@ router.get(
 //
 
 router.delete(
-  "/request/:request_id",
+  "/request/:page/:request_id",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.deleteRequest
 );
