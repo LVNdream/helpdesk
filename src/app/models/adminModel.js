@@ -1,5 +1,6 @@
 const { pool } = require("../../config/db");
 const bcrypt = require("bcryptjs");
+const helperModel = require("./helperModel");
 
 module.exports = {
   getRequestListByAdmin: async (page) => {
@@ -1205,20 +1206,47 @@ WHERE
   },
   amountPerRequestCompleted: async (nameCondition, dateime) => {
     try {
-      let result = await pool.query(
-        `SELECT mt.type_name, CASE
-    WHEN rs2.countRequest=0 THEN 0
-    
-    ELSE  ROUND(((COUNT(rs.id)/rs2.countRequest)*100),2)
-END AS  countRequest
-        FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id and rs.maintenance_id = mt.id AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
-        (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2
-         group BY mt.type_name;`
-      );
+      const main_type = await helperModel.getMaintenanceType();
+      const main_type_length = main_type.length;
+
+      let result = [];
+      for (let i = 0; i < main_type_length; i++) {
+        const item = main_type[i];
+        let resultTemp = await pool.query(
+          `SELECT mt.type_name, CASE
+          WHEN rs2.countRequest=0 THEN 0
+          ELSE  ROUND(((COUNT(rs.id)/rs2.countRequest)*100),2)
+          END AS  countRequest
+          FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id AND mt.id=${item.id} AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
+          (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id and mt.id=${item.id}  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2;`
+        );
+
+        result.push(resultTemp[0]);
+      }
 
       return result;
     } catch (error) {
       console.log("error model get  amountPerRequestCompleted :", error);
+      return false;
+    }
+  },
+  amountPerAllRequestCompleted: async (nameCondition, dateime) => {
+    try {
+
+      // console.log(nameCondition, dateime)
+      let result = await pool.query(
+        `SELECT CASE
+          WHEN rs2.countRequest=0 THEN 0
+          ELSE  ROUND(((COUNT(rs.id)/rs2.countRequest)*100),2)
+          END AS  countRequest
+          FROM   request_storage rs,
+          (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2
+           WHERE (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}";`
+      );
+      // console.log(result[0]);
+      return result[0];
+    } catch (error) {
+      console.log("error model get  amountPerAllRequestCompleted :", error);
       return false;
     }
   },
@@ -1265,7 +1293,12 @@ GROUP BY mc.id`
       return false;
     }
   },
-  getCountRequestNotCompleteOption: async (maintenance_id, month, week,year) => {
+  getCountRequestNotCompleteOption: async (
+    maintenance_id,
+    month,
+    week,
+    year
+  ) => {
     try {
       const lastTwoTime = month - 2;
       const lastTime = month - 1;
@@ -1284,7 +1317,7 @@ GROUP BY mc.id`
         //  FROM request_storage rs
         //  where  rs.status_id IN (1,2,3) and maintenance_id=1`
       );
-
+      // console.log(result[0]);
       return result[0];
     } catch (error) {
       console.log("error model getCountRequestNotCompleteCurrent :", error);

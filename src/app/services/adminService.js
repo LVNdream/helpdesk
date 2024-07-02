@@ -1617,12 +1617,11 @@ class adminPageService {
       let amountRequestCompletedPercentYear =
         await adminModel.amountPerRequestCompleted("year", data.year);
 
-      const countPerYear = amountRequestCompletedPercentYear.reduce(
-        (accumulator, item) => {
-          return parseFloat(accumulator) + parseFloat(item.countRequest);
-        },
-        0
+      const countPerYear = await adminModel.amountPerAllRequestCompleted(
+        "year",
+        data.year
       );
+      // console.log(countPerYear);
       amountRequestCompletedPercentYear = amountRequestCompletedPercentYear.map(
         (item) => {
           item.countRequest = item.countRequest + "%";
@@ -1641,11 +1640,9 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
 
-      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
-        (accumulator, item) => {
-          return parseFloat(accumulator) + parseFloat(item.countRequest);
-        },
-        0
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "month",
+        data.month
       );
 
       // console.log(countPerMonth);
@@ -1716,7 +1713,14 @@ class adminPageService {
             data.week - 1,
             data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,
@@ -1766,7 +1770,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentYear,
-            count: parseFloat(countPerYear).toFixed(2) + "%",
+            count:
+              parseFloat(
+                countPerYear.countRequest ? countPerYear.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
 
@@ -1796,7 +1803,10 @@ class adminPageService {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
 
-            count: parseFloat(countPerMonth).toFixed(2) + "%",
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -2088,12 +2098,11 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("date", datetime);
 
-      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
-        (accumulator, item) => {
-          return parseFloat(accumulator) + parseFloat(item.countRequest);
-        },
-        0
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "date",
+        datetime
       );
+      // console.log(countPerMonth);
       amountRequestCompletedPercentMonth =
         amountRequestCompletedPercentMonth.map((item) => {
           // console.log(item.countRequest);
@@ -2154,8 +2163,8 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            data.week - 1,
             data.month,
+            data.week - 1,
             data.year
           );
 
@@ -2207,7 +2216,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: parseFloat(countPerMonth).toFixed(2) + "%",
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -2280,12 +2292,15 @@ class adminPageService {
         await adminModel.amountRequestProcessing("week", data.week);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("week", data.week);
-
-      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
-        (accumulator, item) => {
-          return parseFloat(accumulator) + parseFloat(item.countRequest);
-        },
-        0
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          // console.log(item.countRequest);
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "week",
+        data.week
       );
 
       //
@@ -2396,7 +2411,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: parseFloat(countPerMonth).toFixed(2) + "%",
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -2445,11 +2463,9 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
 
-      const countPerMonth = amountRequestCompletedPercentMonth.reduce(
-        (accumulator, item) => {
-          return parseFloat(accumulator) + parseFloat(item.countRequest);
-        },
-        0
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "month",
+        data.month
       );
 
       amountRequestCompletedPercentMonth.map((item) => {
@@ -2614,7 +2630,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: parseFloat(countPerMonth).toFixed(2) + "%",
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
 
