@@ -80,7 +80,7 @@ module.exports = {
   findId: async (data) => {
     try {
       const result = await pool.query(
-        `select account from users where 
+        `select id,account from users where 
         phone_number="${data.phone_number}" and
         name="${data.name}" and
         position="${data.position}" and  
@@ -159,5 +159,19 @@ module.exports = {
     }
   },
 
-  
+  updateResetPass: async (user_id, reset_password) => {
+    try {
+      let result;
+      result = await pool.query(
+        `update users set
+          reset_password="${reset_password}"
+          where id="${user_id}";`
+      );
+
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model updateResetPass:", error);
+      return false;
+    }
+  },
 };

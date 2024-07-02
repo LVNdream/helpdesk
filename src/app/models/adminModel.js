@@ -480,7 +480,7 @@ WHERE
   adminGetUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.name,u.affiliated_department,u.email,"일반사용자" as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name
+        `SELECT u.id,u.name,u.account,u.affiliated_department,u.email,"일반사용자" as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name,u.reset_password
          FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id;`
       );
       return result[0];
@@ -519,8 +519,11 @@ WHERE
   },
   AdminUpdateUserInfor: async (data) => {
     try {
-      result = await pool.query(
-        `update users set 
+      // reset password
+      let result;
+      if (!data.password) {
+        result = await pool.query(
+          `update users set 
           status_id="${data.status_id}",
           email="${data.email}",
           tel_number="${data.tel_number}",
@@ -528,7 +531,21 @@ WHERE
           position="${data.position}",
           affiliated_department="${data.affiliated_department}"
           where id="${data.user_id}";`
-      );
+        );
+      } else {
+        const password_hash = bcrypt.hashSync(data.password, 8);
+        result = await pool.query(
+          `update users set 
+          status_id="${data.status_id}",
+          email="${data.email}",
+          tel_number="${data.tel_number}",
+          phone_number="${data.phone_number}",
+          position="${data.position}",
+          affiliated_department="${data.affiliated_department}",
+          password="${password_hash}"
+          where id="${data.user_id}";`
+        );
+      }
 
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
@@ -1248,16 +1265,16 @@ GROUP BY mc.id`
       return false;
     }
   },
-  getCountRequestNotCompleteOption: async (maintenance_id, option, data) => {
+  getCountRequestNotCompleteOption: async (maintenance_id, month, week,year) => {
     try {
-      const lastTwoTime = data[option] - 2;
-      const lastTime = data[option] - 1;
-      const thisTime = data[option];
+      const lastTwoTime = month - 2;
+      const lastTime = month - 1;
+      const thisTime = week - 1;
       let result = await pool.query(
         `SELECT
-        COALESCE(sum(CASE WHEN ${option}(rs.created_at) = ${lastTwoTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_last_two_month,
-        COALESCE(sum(CASE WHEN ${option}(rs.created_at) =${lastTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_last_month,
-        COALESCE(sum(CASE WHEN ${option}(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = ${data.year} THEN 1 ELSE 0 END), 0) AS count_this_month
+        COALESCE(sum(CASE WHEN month(rs.created_at) = ${lastTwoTime} AND YEAR(rs.created_at) = ${year} THEN 1 ELSE 0 END), 0) AS count_last_two_month,
+        COALESCE(sum(CASE WHEN month(rs.created_at) =${lastTime} AND YEAR(rs.created_at) = ${year} THEN 1 ELSE 0 END), 0) AS count_last_month,
+        COALESCE(sum(CASE WHEN week(rs.created_at) = ${thisTime} AND YEAR(rs.created_at) = ${year} THEN 1 ELSE 0 END), 0) AS count_this_month
         FROM request_storage rs
         where  rs.status_id IN (1,2,3) and maintenance_id=${maintenance_id}`
         //         `SELECT
@@ -1459,7 +1476,7 @@ GROUP BY mc.id`
       return false;
     }
   },
-  companyToOrther: async ( page) => {
+  companyToOrther: async (page) => {
     try {
       const numberPage = page * 10;
       // console.log(numberPage)

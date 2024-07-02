@@ -1,4 +1,5 @@
 const adminService = require("../services/adminService");
+const midService = require("../services/midService");
 
 class adminController {
   async getRequestListAdmin(req, res) {
@@ -502,10 +503,13 @@ class adminController {
   async getInforReportCurrent(req, res) {
     try {
       const currentDateTime = new Date(Date.now());
+      const week = midService.getWeek(currentDateTime);
       const data = {
+        week: week - 1,
         month: currentDateTime.getMonth() + 1,
         year: currentDateTime.getFullYear(),
       };
+      // console.log(data);
 
       const result = await adminService.getInforReport(data);
       res.status(200).json(result);
@@ -520,19 +524,28 @@ class adminController {
       let data;
       if (!req.query.year || !req.query.month || !req.query.day) {
         const dateCurrent = new Date(Date.now() - 1000 * 3600 * 24);
+        const week = midService.getWeek(dateCurrent);
         data = {
+          week:week-1,
           day: dateCurrent.getDate(),
           month: dateCurrent.getMonth() + 1,
           year: dateCurrent.getFullYear(),
         };
         // console.log(data);
       } else {
+        const dateTime = new Date(
+          `${req.query.year}-${req.query.month}-${req.query.day}`
+        );
+        const week = midService.getWeek(dateTime);
+
         data = {
+          week:week-1,
           day: req.query.day,
           month: req.query.month,
           year: req.query.year,
         };
       }
+      // console.log(data)
       const result = await adminService.getInforReportDaily(data);
       res.status(200).json(result);
     } catch (error) {

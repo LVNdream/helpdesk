@@ -546,7 +546,7 @@ class adminPageService {
   async getAdminUserById(user_id) {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
-      // console.log(re)
+      // reset password
       let listStatus = await adminModel.adminGetAccountStatus();
 
       let listStatusCheck = listStatus.map((item) => {
@@ -668,6 +668,7 @@ class adminPageService {
   async AdminUpdateUserInfor(data) {
     try {
       const resutl = await adminModel.AdminUpdateUserInfor(data);
+
       let updateInfor;
       if (!resutl) {
         return {
@@ -678,43 +679,46 @@ class adminPageService {
       }
       updateInfor = await adminModel.getNewUser(data.user_id);
       // console.log(updateInfor);
-      let listStatus = await adminModel.adminGetAccountStatus();
-      if (!listStatus) {
-        return {
-          message: "Error model  get listStatus",
-          status: false,
-          error: 500,
-        };
-      }
-      let listStatusCheck = listStatus.map((item) => {
-        let checked = false;
-        item.id == updateInfor.status_id ? (checked = true) : (checked = false);
-        return { ...item, checked };
-      });
-      const listStatusLength = listStatusCheck.length;
-      let isExisted = false;
-      for (let i = 0; i < listStatusLength; i++) {
-        const item = listStatusCheck[i];
-        // console.log(item)
-        if (item.checked) {
-          isExisted = true;
-          break;
-        }
-      }
+      // let listStatus = await adminModel.adminGetAccountStatus();
+      // if (!listStatus) {
+      //   return {
+      //     message: "Error model  get listStatus",
+      //     status: false,
+      //     error: 500,
+      //   };
+      // }
+      // let listStatusCheck = listStatus.map((item) => {
+      //   let checked = false;
+      //   item.id == updateInfor.status_id ? (checked = true) : (checked = false);
+      //   return { ...item, checked };
+      // });
+      // const listStatusLength = listStatusCheck.length;
+      // let isExisted = false;
+      // for (let i = 0; i < listStatusLength; i++) {
+      //   const item = listStatusCheck[i];
+      //   // console.log(item)
+      //   if (item.checked) {
+      //     isExisted = true;
+      //     break;
+      //   }
+      // }
 
-      !isExisted
-        ? listStatusCheck.push({
-            id: updateInfor.status_id,
-            status_name: updateInfor.status_name,
-            checked: true,
-          })
-        : listStatusCheck;
+      // !isExisted
+      //   ? listStatusCheck.push({
+      //       id: updateInfor.status_id,
+      //       status_name: updateInfor.status_name,
+      //       checked: true,
+      //     })
+      //   : listStatusCheck;
 
-      delete updateInfor.status_id;
-      delete updateInfor.status_name;
+      // delete updateInfor.status_id;
+      // delete updateInfor.status_name;
+      updateInfor.status_id == 2
+        ? (updateInfor.status_name = "정상")
+        : updateInfor.status_name;
 
       return {
-        data: { ...updateInfor, listStatusCheck },
+        data: updateInfor,
         message: " AdminUpdateUserInfor success",
         status: true,
       };
@@ -860,7 +864,7 @@ class adminPageService {
         }
         return {
           id: item.id,
-          name: item.status_name,
+          name: item.id == 2 ? "사용가능" : item.status_name,
           checked,
         };
       });
@@ -1708,8 +1712,9 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.month,
+            data.week - 1,
+            data.year
           );
 
           return {
@@ -1719,13 +1724,10 @@ class adminPageService {
         })
       );
 
-      const methodCount = await adminModel.getCountAllMethod(
-        "month",
-        data.month
-      );
+      const methodCount = await adminModel.getCountAllMethod("year", data.year);
       const solutionCount = await adminModel.getCountAllSolution(
-        "month",
-        data.month
+        "year",
+        data.year
       );
 
       const solutionOnsite = solutionCount.filter((item) => {
@@ -2152,8 +2154,9 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.week - 1,
+            data.month,
+            data.year
           );
 
           return {
@@ -2257,13 +2260,13 @@ class adminPageService {
 
         data.week = weekNumber - 2;
         data.year = currentDate.getFullYear();
-
+        asdasdasd;
         // ////.
       } else {
         data.week = parseInt(data.week) - 1;
         data.year = parseInt(data.year);
       }
-
+      // console.log(data)
       let month =
         new Date(1000 * 60 * 60 * 24 * 7 * data.week + 1).getMonth() + 1;
       // console.log(month);
@@ -2335,12 +2338,14 @@ class adminPageService {
       );
 
       // ////////////
+      // console.log(data);
       const mainTypeRequestNotComplete = await Promise.all(
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            { month, year: data.year }
+            month,
+            data.week - 1,
+            data.year
           );
 
           return {
@@ -2424,7 +2429,11 @@ class adminPageService {
       } else {
         data.month = parseInt(data.month);
         data.year = parseInt(data.year);
+        const lastDay = new Date(data.year, data.month, 0);
+        const week = midService.getWeek(lastDay) - 1;
+        data.week = week;
       }
+      // console.log(data);
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -2521,8 +2530,9 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.month,
+            data.week,
+            data.year
           );
 
           return {

@@ -154,6 +154,18 @@ class authService {
         };
       }
 
+      // reset password
+
+      // 0 la khong yeu cau cap lai mat khau
+      const result_update = await authModel.updateResetPass(user.id, 0);
+      if (!result_update) {
+        return {
+          message: "Server error updateResetPass",
+          status: false,
+          error: 500,
+        };
+      }
+
       const resutlResetCountLogin = await authModel.updateCountLogin(
         user.id,
         0
@@ -359,6 +371,20 @@ class authService {
           error: 404,
         };
       } else {
+        // reset password
+        // 1 la yeu cau cap lai mat khau
+        const result_update = await authModel.updateResetPass(
+          resutl.data.id,
+          1
+        );
+        if (!result_update) {
+          return {
+            message: "Server error updateResetPass",
+            status: false,
+            error: 500,
+          };
+        }
+        delete resutl.data.id;
         return { ...resutl.data, status: true };
       }
     } catch (error) {
