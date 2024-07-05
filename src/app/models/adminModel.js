@@ -782,7 +782,6 @@ WHERE
 
   updateHelperInfor: async (user_id, data) => {
     try {
-      // role_id="${data.role_id}",
       const result = await pool.query(
         `update users set 
           email="${data.email}",
@@ -790,6 +789,8 @@ WHERE
           company_id="${data.company_id}",
           position="${data.position}",
           phone_number="${data.phone_number}",
+          role_id="${data.role_id}",
+
           tel_number="${data.tel_number}"
           where id="${user_id}";`
       );
@@ -821,8 +822,11 @@ WHERE
     try {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
-        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 10 OFFSET ${numberPage}`
+        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at, u2.name as creator
+         FROM company c
+         left JOIN users u ON c.id=u.company_id
+         left join users u2 on c.creator_id=u2.id
+          GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 10 OFFSET ${numberPage}`
       );
 
       return result;
@@ -852,8 +856,11 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id GROUP BY c.id ORDER BY c.created_at DESC  LIMIT 10 OFFSET ${numberPage}`
+          `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at,u2.name as creator
+         FROM company c
+         left JOIN users u ON c.id=u.company_id
+        left join users u2 on c.creator_id=u2.id
+         GROUP BY c.id ORDER BY c.created_at DESC  LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
@@ -896,8 +903,14 @@ WHERE
   registerCompany: async (data) => {
     try {
       const result = await pool.query(
-        "insert into company (name_company,fax,phone_number,business_code) values (?,?,?,?)",
-        [data.name_company, data.fax, data.phone_number, data.business_code]
+        "insert into company (name_company,fax,phone_number,business_code,creator_id) values (?,?,?,?,?)",
+        [
+          data.name_company,
+          data.fax,
+          data.phone_number,
+          data.business_code,
+          data.creator_id,
+        ]
       );
 
       if (result) {
@@ -1232,7 +1245,6 @@ WHERE
   },
   amountPerAllRequestCompleted: async (nameCondition, dateime) => {
     try {
-
       // console.log(nameCondition, dateime)
       let result = await pool.query(
         `SELECT CASE
@@ -1270,6 +1282,7 @@ GROUP BY mc.id`
       return false;
     }
   },
+  // ham nay de lay bieu do theo thang
   getInforChartByOption: async (maintenance_id, group_m, option, data) => {
     try {
       const lastTime = data[option] - 1;
@@ -1283,7 +1296,7 @@ GROUP BY mc.id`
           LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
           LEFT JOIN processing_details pd ON pd.label_id = ll.id 
           LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
-          where  mc.group_m = ${maintenance_id} AND mc.maintenance_id = ${group_m} 
+          where  mc.group_m = ${group_m} AND mc.maintenance_id = ${maintenance_id} 
           GROUP BY mc.id`
       );
 
@@ -1293,6 +1306,29 @@ GROUP BY mc.id`
       return false;
     }
   },
+  // ham nay lay bieu do theo ngay va tuan
+  InforChartOneColumn: async (maintenance_id, group_m, option, data) => {
+    try {
+      const thisTime = data[option];
+      // console.log(thisTime)
+      let result = await pool.query(
+        `SELECT ll.id AS list_label_id, ll.label_name as name,
+          COALESCE(SUM(CASE WHEN ${option}(rs.created_at) = "${thisTime}" AND YEAR(rs.created_at) = "${data.year}" THEN 1 ELSE 0 END), 0) AS count_thisTime 
+          FROM list_label ll 
+          LEFT JOIN maintenance_class mc ON mc.list_label_id = ll.id 
+          LEFT JOIN processing_details pd ON pd.label_id = ll.id 
+          LEFT JOIN request_storage rs ON pd.request_id = rs.id AND rs.status_id IN (4,5) 
+          where  mc.group_m = ${group_m} AND mc.maintenance_id = ${maintenance_id} 
+          GROUP BY mc.id`
+      );
+
+      return result;
+    } catch (error) {
+      console.log("error model InforChartOneColumn :", error);
+      return false;
+    }
+  },
+  //
   getCountRequestNotCompleteOption: async (
     maintenance_id,
     month,
@@ -1355,7 +1391,7 @@ GROUP BY mc.id`
   getListNewRequest: async () => {
     try {
       let result = await pool.query(
-        `select rs.title_request,rs.content_request,u.name,rs.created_at from request_storage rs left join users u on rs.petitioner_id = u.id order by rs.created_at desc limit 5`
+        `select rs.id as request_id, rs.title_request,rs.content_request,u.name,rs.created_at from request_storage rs left join users u on rs.petitioner_id = u.id order by rs.created_at desc limit 5`
       );
 
       return result;
@@ -1447,8 +1483,10 @@ GROUP BY mc.id`
   getNewCompany: async (company_id) => {
     try {
       const result = await pool.query(
-        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id
+        `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at,u2.name as creator
+         FROM company c
+         left JOIN users u ON c.id=u.company_id
+         left JOIN users u2 ON c.creator_id=u2.id
          where c.id=${company_id}`
       );
 
@@ -1515,7 +1553,9 @@ GROUP BY mc.id`
       // console.log(numberPage)
       const result = await pool.query(
         `SELECT c.id,c.name_company,c.business_code, COUNT(u.id) as amountHelper,c.created_at
-         FROM company c left JOIN users u ON c.id=u.company_id  GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 1 OFFSET ${numberPage}`
+         FROM company c
+         left JOIN users u ON c.id=u.company_id
+        GROUP BY c.id ORDER BY  c.created_at DESC   LIMIT 1 OFFSET ${numberPage}`
       );
       // console.log(result);
       return result[0];

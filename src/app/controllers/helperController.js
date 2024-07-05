@@ -91,7 +91,7 @@ class helperController {
       const result = await helperService.addListProblem(
         req.body.request_id,
         req.user.id,
-        req.body.listProblem
+        req.body
       );
       res.status(200).json(result);
     } catch (error) {
@@ -114,6 +114,22 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  async updateRequest(req, res) {
+    try {
+      const result = await helperService.updateRequest({
+        title_request: req.body.title_request,
+        content_request: req.body.content_request,
+        request_id: req.body.request_id,
+        recipient_id: req.user.id,
+      });
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async deleteProblem(req, res) {
     try {
       const result = await helperService.deleteProblem(

@@ -69,6 +69,11 @@ router.post(
   helperController.updateProblem
 );
 router.post(
+  "/updaterequest",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.updateRequest
+);
+router.post(
   "/deleteproblem",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.deleteProblem

@@ -342,7 +342,8 @@ class helperPageService {
       };
     }
   }
-
+  // update request
+  // async
   // updateHelpdeskInfor
   async updateHelpdeskInfor(data, user_id) {
     try {
@@ -443,29 +444,46 @@ class helperPageService {
         };
       }
 
-      const lengthProblems = listProblem.length;
-      for (let i = 0; i < lengthProblems; i++) {
-        const problemData = listProblem[i];
-        const resultAdd = await helperModel.addListProblem(
-          request_id,
-          problemData
-        );
-        if (!resultAdd) {
-          return {
-            message: "Error add request problem model",
-            status: false,
-            error: 500,
-          };
-        }
+      // const lengthProblems = listProblem.length;
+      // for (let i = 0; i < lengthProblems; i++) {
+      //   const problemData = listProblem[i];
+      //   const resultAdd = await helperModel.addListProblem(
+      //     request_id,
+      //     problemData
+      //   );
+      //   if (!resultAdd) {
+      //     return {
+      //       message: "Error add request problem model",
+      //       status: false,
+      //       error: 500,
+      //     };
+      //   }
+      // }
+
+      const resultAdd = await helperModel.addListProblem(
+        request_id,
+        listProblem
+      );
+      if (!resultAdd) {
+        return {
+          message: "Error add request problem model",
+          status: false,
+          error: 500,
+        };
       }
-      let data;
+
+      let data = {
+        id: parseInt(resultAdd.insertId),
+        problem: listProblem.problem,
+        created_at: Date.now(),
+      };
 
       if (resultRQ.status_id == 2) {
         const resultUpdateStatus = await helperModel.updateStatus_id(
           request_id,
           3
         );
-        // console.log(resultUpdateStatus)
+
         if (!resultUpdateStatus) {
           return {
             message: "Error update request status model",
@@ -473,10 +491,10 @@ class helperPageService {
             error: 500,
           };
         }
-        data = { request_id, status_id: 3 };
       }
       return {
         data,
+        request_id,
         message: "Add problem success",
         status: true,
       };
@@ -539,6 +557,60 @@ class helperPageService {
       };
     }
   }
+  // helpdesk request
+
+  async updateRequest(data) {
+    try {
+      // console.log(files, arrayDelete);
+      const request = await userPageModel.getRequestById(data.request_id);
+      if (!request) {
+        return {
+          message: "Server error get request By Id",
+          status: false,
+          error: 500,
+        };
+      }
+      if (request.status_id > 3) {
+        return {
+          message: "Status not valid",
+          status: false,
+          error: 500,
+        };
+      }
+
+      if (request.recipient_id != data.recipient_id) {
+        return {
+          message: "Petitioner_id not valid",
+          status: false,
+          error: 500,
+        };
+      }
+      const resultUpdate = await helperModel.updateRequest(data);
+      if (!resultUpdate) {
+        return {
+          message: "Error updateRequest helpdeskmodel",
+          status: false,
+          error: 500,
+        };
+      }
+      delete data.recipient_id;
+      return {
+        message: "Update request successfully",
+        status: true,
+
+        data,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Update Request helpdeskSevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  //
 
   async deleteProblem(request_id, recipient_id, problem_id) {
     try {
@@ -1037,7 +1109,7 @@ class helperPageService {
       return resutl
         ? {
             data: resutl.listFilter,
-            requestCount: parseInt(resutl.requestCount),
+            userCount: parseInt(resutl.requestCount),
           }
         : {
             message: "Error model helperSearchUser",
@@ -1053,6 +1125,7 @@ class helperPageService {
       };
     }
   }
+
   async addRequestCompleted(infor_user, data, files) {
     try {
       // console.log( data);

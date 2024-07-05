@@ -234,8 +234,8 @@ WHERE
       JOIN
           users ON rs.petitioner_id = users.id
       LEFT JOIN
-          users AS users2 ON rs.recipient_id = users2.id,
-          method mth
+          users AS users2 ON rs.recipient_id = users2.id
+      LEFT JOIN method mth on rs.method_id = mth.id
       WHERE
           rs.id=${id}`
       );

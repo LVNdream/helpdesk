@@ -226,7 +226,7 @@ WHERE
   getHelpdeskInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.account,users.name,company.name_company,email,"일반사용자" as leveluser,users.position,users.phone_number,users.tel_number FROM users left join roles on users.role_id= roles.id left join company on users.company_id= company.id  WHERE users.id=${user_id};`
+        `SELECT users.id,users.account,users.name,company.name_company,email,"헬프데스크 담당자" as leveluser,users.position,users.phone_number,users.tel_number FROM users left join roles on users.role_id= roles.id left join company on users.company_id= company.id  WHERE users.id=${user_id};`
       );
       return result[0];
     } catch (error) {
@@ -270,7 +270,7 @@ WHERE
   addListProblem: async (request_id, data) => {
     try {
       // console.log(data);
-      let timeCreate = new Date(data.created_at);
+      let timeCreate = new Date(Date.now());
       // console.log(timeCreate)
       result = await pool.query(
         `insert into list_problem(request_id,problem,created_at,updated_at) values (?,?,?,?);`,
@@ -432,7 +432,7 @@ WHERE
           `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(
-          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc `
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc `
         );
       }
 
@@ -472,7 +472,7 @@ WHERE
   getUserCount: async () => {
     try {
       result = await pool.query(
-        `select id,name,account,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc`
+        `select id,name,account,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc`
       );
       return result ? result.length : 0;
     } catch (error) {
@@ -483,8 +483,13 @@ WHERE
 
   addRequestCompelted: async (data) => {
     try {
-      // console.log(data)
+      // let timeRequest;
+      // if (!data.timeRequest) {
+      //   timeRequest = new Date(Date.now());
+      // } else {
       const timeRequest = new Date(parseInt(data.timeRequest));
+      
+      // }
       result = await pool.query(
         `insert request_storage(
         title_request,
@@ -621,6 +626,21 @@ WHERE
       return listPagination;
     } catch (error) {
       console.log("error model requestToOrther:", error);
+      return false;
+    }
+  },
+
+  updateRequest: async (data) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+          title_request="${data.title_request}",
+          content_request= "${data.content_request}"
+          where id="${data.request_id}" and recipient_id="${data.recipient_id}";`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model heplpDesk UpdateRequest:", error);
       return false;
     }
   },

@@ -308,7 +308,11 @@ class adminController {
 
   async registerCompany(req, res) {
     try {
-      const result = await adminService.registerCompany(req.body);
+      const dataRegister = {
+        ...req.body,
+        creator_id: req.user.id,
+      };
+      const result = await adminService.registerCompany(dataRegister);
       res.status(200).json(result);
     } catch (error) {
       // console.log(error);
@@ -526,7 +530,7 @@ class adminController {
         const dateCurrent = new Date(Date.now() - 1000 * 3600 * 24);
         const week = midService.getWeek(dateCurrent);
         data = {
-          week:week-1,
+          week: week - 1,
           day: dateCurrent.getDate(),
           month: dateCurrent.getMonth() + 1,
           year: dateCurrent.getFullYear(),
@@ -539,7 +543,7 @@ class adminController {
         const week = midService.getWeek(dateTime);
 
         data = {
-          week:week-1,
+          week: week - 1,
           day: req.query.day,
           month: req.query.month,
           year: req.query.year,

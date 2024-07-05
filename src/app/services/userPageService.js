@@ -554,7 +554,6 @@ class userPageService {
       return {
         message: "Update request successfully",
         status: true,
-        error: 200,
         data: { ...dataUpdate, files: newFiles },
       };
     } catch (error) {

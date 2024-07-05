@@ -1049,7 +1049,6 @@ class adminPageService {
             data: {
               ...newCompany,
               amountHelper: parseInt(newCompany.amountHelper),
-              owner: "Admin",
             },
             message: "Register success",
             status: true,
@@ -1123,7 +1122,7 @@ class adminPageService {
     try {
       // console.log(company_id,page)
       let dataReplace = await adminModel.companyToOrther(page);
-      if (dataReplacelpo) {
+      if (dataReplace) {
         dataReplace = {
           ...dataReplace,
           amountHelper: parseInt(dataReplace.amountHelper),
@@ -1659,6 +1658,7 @@ class adminPageService {
       const mainTypeChart = await Promise.all(
         mainType.map(async (itemMT) => {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          // console.log(group);
           group = await Promise.all(
             group.map(async (itemG) => {
               const chart = await adminModel.getInforChartByOption(
@@ -2035,7 +2035,7 @@ class adminPageService {
         //           {
         //             list_label_id: 32,
         //             name: "other 3",
-        //             count_lastTime: "35",
+        //             count_lastTime: "333335",
         //             count_thisTime: "93",
         //           },
         //         ],
@@ -2084,6 +2084,7 @@ class adminPageService {
   }
 
   async getInforReportDaily(data) {
+    // console.log(data)
     try {
       const datetime = data.year + "-" + data.month + "-" + data.day;
       // console.log(datetime);
@@ -2102,7 +2103,7 @@ class adminPageService {
         "date",
         datetime
       );
-      // console.log(countPerMonth);
+      console.log(datetime);
       amountRequestCompletedPercentMonth =
         amountRequestCompletedPercentMonth.map((item) => {
           // console.log(item.countRequest);
@@ -2116,11 +2117,14 @@ class adminPageService {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
           group = await Promise.all(
             group.map(async (itemG) => {
-              const chart = await adminModel.getInforChartByOption(
+              const chart = await adminModel.InforChartOneColumn(
                 itemMT.id,
                 itemG.group_m,
-                "month",
-                data
+                "date",
+                {
+                  date: datetime,
+                  year: data.year,
+                }
               );
               let group_name = "";
               if (itemMT.id == 1 && itemG.group_m == 1) {
@@ -2310,11 +2314,11 @@ class adminPageService {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
           group = await Promise.all(
             group.map(async (itemG) => {
-              const chart = await adminModel.getInforChartByOption(
+              const chart = await adminModel.InforChartOneColumn(
                 itemMT.id,
                 itemG.group_m,
-                "month",
-                { month, year: data.year }
+                "week",
+                { week: data.week, year: data.year }
               );
               let group_name = "";
               if (itemMT.id == 1 && itemG.group_m == 1) {
