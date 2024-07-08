@@ -1152,6 +1152,39 @@ class adminPageService {
     }
   }
 
+  async deleteLabel(label_id) {
+    try {
+      const deleteProcess = await adminModel.deleteLabelProcess(label_id);
+      if (deleteProcess) {
+        return {
+          message: "Error model deleteLabelProcess By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+      const resutl = await adminModel.deleteLabel(label_id);
+
+      return resutl
+        ? {
+            deleteId: label_id,
+            message: "delete label success",
+            status: true,
+          }
+        : {
+            message: "Error model deleteLabel   By Admin",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete delete Label By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async getAllUserWaitAccept(role_id, page) {
     try {
       let resutl = await adminModel.getAllUserWaitAccept(role_id, page);
@@ -1366,15 +1399,15 @@ class adminPageService {
       };
     }
   }
-  async addNameLabel(name) {
+  async addNameLabel(data) {
     try {
-      const resultRegister = await adminModel.addNameLabel(name);
+      const resultRegister = await adminModel.addNameLabel(data);
 
       return resultRegister
         ? {
             data: {
               label_id: parseInt(resultRegister.insertId),
-              label_name: name,
+              label_name: data.label_name,
             },
 
             message: "Registered name label Successfully",
@@ -1393,17 +1426,27 @@ class adminPageService {
 
   async getListLabel(maintenance_id) {
     try {
-      const resutlLabel = await adminModel.getListLabel(maintenance_id);
+      let resutlLabel = await adminModel.getListLabel(maintenance_id);
 
       let resutlMainClass = await userPageModel.getMaintenanceClassId(
         maintenance_id
       );
+
+      // resutlLabel = resutlLabel.filter((item) => {
+      //   let check = true;
+      //   resutlMainClass.forEach((itemMC) => {
+      //     item.id == itemMC.label_id ? (check = false) : check;
+      //   });
+      //   return check;
+      // });
+
       resutlMainClass = resutlMainClass.map((item) => {
         return {
           mc_id: item.mc_id,
           group_m: item.group_m,
         };
       });
+
       let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
         maintenance_id
       );
@@ -1436,6 +1479,8 @@ class adminPageService {
           data: mainClassFilter,
         };
       });
+      // console.log(resutlMainClassGroup);
+
       return resutlLabel && resutlMainClass
         ? { listLabel: resutlLabel, mainClass: resutlMainClassGroup }
         : {
@@ -2103,7 +2148,7 @@ class adminPageService {
         "date",
         datetime
       );
-      console.log(datetime);
+      // console.log(datetime);
       amountRequestCompletedPercentMonth =
         amountRequestCompletedPercentMonth.map((item) => {
           // console.log(item.countRequest);
@@ -2171,7 +2216,14 @@ class adminPageService {
             data.week - 1,
             data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,
@@ -2366,7 +2418,14 @@ class adminPageService {
             data.week - 1,
             data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,

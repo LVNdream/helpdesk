@@ -401,6 +401,9 @@ class authService {
   async verifyPassword(data, password) {
     try {
       // console.log(data)
+      // console.log(password);
+
+
       const user = await authModel.findAccountCheckPass(data.id);
       if (!user) {
         return { message: "Error get account", status: false, error: 500 };

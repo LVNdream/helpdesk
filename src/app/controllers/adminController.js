@@ -352,6 +352,16 @@ class adminController {
     }
   }
 
+  async deleteLabel(req, res) {
+    try {
+      const result = await adminService.deleteLabel(req.params.label_id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async getAlluserWaitAccept(req, res) {
     try {
       let page;
@@ -434,7 +444,7 @@ class adminController {
   }
   async addNameLabel(req, res) {
     try {
-      const result = await adminService.addNameLabel(req.body.label_name);
+      const result = await adminService.addNameLabel(req.body);
       // console.log(result);
       res.status(200).json(result);
     } catch (error) {

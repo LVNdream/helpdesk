@@ -127,16 +127,21 @@ WHERE
         );
         resutlSearch = result;
       } else if (text && !Number(status_id)) {
-        let nameCondition = "rs.title_request";
-        if (option == 2) {
+        let nameCondition = "users.name";
+
+        if (option == 1) {
+          nameCondition = "rs.request_title";
+        } else if (option == 2) {
           nameCondition = "mt.type_name";
-        }
-        if (option == 3) {
+        } else if (option == 3) {
+          nameCondition = "users.name";
+        } else if (option == 4) {
+          nameCondition = "users2.name";
+        } else {
           nameCondition = "users.name";
         }
-        if (option == 4) {
-          nameCondition = "users2.name";
-        }
+        console.log(nameCondition);
+        // co
         const result = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
@@ -155,15 +160,17 @@ WHERE
         );
         resutlSearch = result;
       } else if (status_id && text) {
-        let nameCondition = "rs.title_request";
-        if (option == 2) {
+        let nameCondition = "users.name";
+        if (option == 1) {
+          nameCondition = "rs.request_title";
+        } else if (option == 2) {
           nameCondition = "mt.type_name";
-        }
-        if (option == 3) {
+        } else if (option == 3) {
           nameCondition = "users.name";
-        }
-        if (option == 4) {
+        } else if (option == 4) {
           nameCondition = "users2.name";
+        } else {
+          nameCondition = "users.name";
         }
         // console.log(nameCondition);
         const result = await pool.query(
@@ -438,7 +445,7 @@ WHERE
 
       // search
       else if (text) {
-        let nameCondition = "u.name";
+        let nameCondition = "u.account";
         if (option == 1) {
           nameCondition = "u.name";
         } else if (option == 2) {
@@ -449,8 +456,11 @@ WHERE
           nameCondition = "u.email";
         } else if (option == 5) {
           nameCondition = "u.phone_number";
+        } else if (option == 6) {
+          nameCondition = "u.account";
+        } else {
+          nameCondition = "u.account";
         }
-
         resutlSearch = await pool.query(
           `select u.id,u.name,u.account,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
           where role_id=4 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
@@ -488,7 +498,7 @@ WHERE
       //   timeRequest = new Date(Date.now());
       // } else {
       const timeRequest = new Date(parseInt(data.timeRequest));
-      
+
       // }
       result = await pool.query(
         `insert request_storage(

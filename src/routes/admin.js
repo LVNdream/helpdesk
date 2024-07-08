@@ -151,6 +151,11 @@ router.delete(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteCompany
 );
+router.delete(
+  "/deletelabel/:label_id",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.deleteLabel
+);
 
 router.get(
   "/getlistuser/waitaccept",

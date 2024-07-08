@@ -316,7 +316,9 @@ LEFT JOIN
   getMaintenanceClassId: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT mc.id as mc_id,lb.id as label_id,lb.label_name,group_m FROM maintenance_class mc ,list_label lb WHERE mc.maintenance_id=${id} and lb.id=mc.list_label_id;`
+        `SELECT mc.id as mc_id,lb.id as label_id,lb.label_name,group_m 
+        FROM maintenance_class mc left join list_label lb on lb.id=mc.list_label_id
+        WHERE mc.maintenance_id=${id};`
       );
 
       return result ? result : [];

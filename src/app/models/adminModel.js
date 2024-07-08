@@ -415,7 +415,7 @@ WHERE
 
       // search
       else if (text) {
-        let nameCondition = "u.name";
+        let nameCondition = "u.account";
         if (option == 1) {
           nameCondition = "u.name";
         } else if (option == 2) {
@@ -424,6 +424,10 @@ WHERE
           nameCondition = "u.affiliated_department";
         } else if (option == 4) {
           nameCondition = "us.status_name";
+        } else if (option == 6) {
+          nameCondition = "u.account";
+        } else {
+          nameCondition = "u.account";
         }
 
         resutlSearch = await pool.query(
@@ -576,7 +580,7 @@ WHERE
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
 
-      WHERE   u.status_id=2 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE   u.status_id!=1 and u.status_id!=3 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       // console.log(result);
       return result;
@@ -592,7 +596,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id=2
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id!=1 and u.status_id!=3
            `
       );
       //   console.log(result);
@@ -616,7 +620,7 @@ WHERE
             left join account_status us on u.status_id=us.id
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
-      WHERE  u.status_id=2  and (u.role_id=1 or u.role_id=2 or u.role_id=5)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3  and (u.role_id=1 or u.role_id=2 or u.role_id=5)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
@@ -628,7 +632,7 @@ WHERE
 
       // search
       else if (text) {
-        let nameCondition = "u.name";
+        let nameCondition = "u.account";
         if (option == 1) {
           nameCondition = "u.account";
         } else if (option == 2) {
@@ -638,6 +642,8 @@ WHERE
         } else if (option == 4) {
           "사용가능".includes(text) ? (text = "정상") : "";
           nameCondition = "us.status_name";
+        } else {
+          nameCondition = "u.account";
         }
 
         resutlSearch = await pool.query(
@@ -646,14 +652,14 @@ WHERE
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE  u.status_id=2 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE u.status_id=us.id and u.status_id=2 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
+      WHERE u.status_id=us.id and u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
         );
         // console.log(nameCondition);
       }
@@ -1028,7 +1034,7 @@ WHERE
 
       // search
       else if (text) {
-        let nameCondition = "u.name";
+        let nameCondition = "u.account";
         if (option == 1) {
           nameCondition = "u.name";
         } else if (option == 2) {
@@ -1038,6 +1044,10 @@ WHERE
         } else if (option == 4) {
           "승인".includes(text) ? (text = "정상") : "";
           nameCondition = "us.status_name";
+        } else if (option == 6) {
+          nameCondition = "u.account";
+        } else {
+          nameCondition = "u.account";
         }
 
         resutlSearch = await pool.query(
@@ -1077,11 +1087,11 @@ WHERE
     }
   },
 
-  addNameLabel: async (name) => {
+  addNameLabel: async (data) => {
     try {
       const result = await pool.query(
-        "insert into list_label (label_name) values (?)",
-        [name]
+        "insert into list_label (label_name,maintenance_id) values (?,?)",
+        [data.label_name, data.maintenance_id]
       );
       // console.log(result)
       if (result) {
@@ -1097,10 +1107,10 @@ WHERE
   getListLabel: async (maintenance_id) => {
     try {
       const result = await pool.query(
-        `SELECT id, label_name
+        `SELECT DISTINCT lb.id as id, lb.label_name as label_name
       FROM
-           list_label
-      where maintenance_id="${maintenance_id}"
+           list_label lb
+      where lb.maintenance_id="${maintenance_id}" and lb.id not in (select list_label_id from maintenance_class where maintenance_id="${maintenance_id}")
         ORDER BY created_at desc`
       );
       //   console.log(result);
@@ -1116,21 +1126,21 @@ WHERE
 
       if (!text) {
         resutlSearch = await pool.query(
-          `SELECT id, label_name
+          `SELECT DISTINCT lb.id as id, lb.label_name as label_name
       FROM
-           list_label
-          where maintenance_id="${maintenance_id}"
-        ORDER BY created_at desc LIMIT 12`
+           list_label lb
+          where lb.maintenance_id="${maintenance_id}" and lb.id not in (select list_label_id from maintenance_class where maintenance_id="${maintenance_id}")
+        ORDER BY created_at desc`
         );
       }
 
       // search
       else if (text) {
         resutlSearch = await pool.query(
-          `SELECT id, label_name
+          `SELECT  DISTINCT lb.id as id, lb.label_name as label_name
       FROM
-           list_label
-      WHERE label_name like "%${text}%" and maintenance_id="${maintenance_id}"  ORDER BY created_at asc LIMIT 12`
+          list_label lb
+      WHERE lb.label_name like "%${text}%" and lb.maintenance_id="${maintenance_id}" and lb.id not in (select list_label_id from maintenance_class where maintenance_id="${maintenance_id}")  ORDER BY created_at asc `
         );
       }
 
@@ -1403,7 +1413,7 @@ GROUP BY mc.id`
   getAdminInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id, u.name, u.phone_number, u.tel_number, u.email
+        `SELECT u.id,u.account, u.name, u.phone_number, u.tel_number, u.email, "Admin" as leveluser
       FROM
            users u
       WHERE  u.id=${user_id} `
@@ -1561,6 +1571,29 @@ GROUP BY mc.id`
       return result[0];
     } catch (error) {
       console.log("error model companyToOrther:", error);
+      return false;
+    }
+  },
+
+  deleteLabel: async (label_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM list_label WHERE id= "${label_id}"`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model delete label :", error);
+      return false;
+    }
+  },
+  deleteLabelProcess: async (label_id) => {
+    try {
+      result = await pool.query(
+        `DELETE FROM processing_details WHERE label_id= "${label_id}"`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model deleteLabelProcess :", error);
       return false;
     }
   },
