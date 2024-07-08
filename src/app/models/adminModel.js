@@ -499,7 +499,11 @@ WHERE
     try {
       const result = await pool.query(
         `SELECT users.id,users.name,users.account,company.name_company as company_name,company.id as company_id,email,"헬프데스크 담당자" as leveluser,roles.id as role_id,position,users.phone_number,users.tel_number, users.status_id 
-        FROM users,roles,company  WHERE company.id=users.company_id and users.id=${user_id} and users.role_id= roles.id;`
+        FROM
+        users
+        left join roles  on  users.role_id= roles.id
+        left join company  on company.id=users.company_id
+        WHERE  users.id=${user_id};`
       );
       return result[0];
     } catch (error) {
