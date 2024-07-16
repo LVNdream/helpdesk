@@ -563,6 +563,15 @@ class helperPageService {
     try {
       // console.log(files, arrayDelete);
       const request = await userPageModel.getRequestById(data.request_id);
+
+      //
+      if (data.maintenance_id && data.maintenance_id != data.role_id) {
+        data.updated_at = new Date(Date.now());
+      } else {
+        data.updated_at = request.updated_at;
+      }
+      // console.log(data.updated_at);
+      //
       if (!request) {
         return {
           message: "Server error get request By Id",
@@ -585,6 +594,26 @@ class helperPageService {
           error: 500,
         };
       }
+
+      let replaceData;
+      if (
+        data.maintenance_id != request.maintenance_id &&
+        data.maintenance_id != data.role_id
+      ) {
+        replaceData = await helperModel.requestToOrther(
+          data.recipient_id,
+          data.role_id,
+          data.page
+        );
+        if (!replaceData) {
+          return {
+            message: "Error get requestToOrther ",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+
       const resultUpdate = await helperModel.updateRequest(data);
       if (!resultUpdate) {
         return {
@@ -593,12 +622,60 @@ class helperPageService {
           error: 500,
         };
       }
+
+      let change_maintype = false;
+      if (
+        data.maintenance_id != request.maintenance_id &&
+        data.maintenance_id != data.role_id
+      ) {
+        // delete problem
+        const resetRequest = await helperModel.resetRequest(data);
+        if (!resetRequest) {
+          return {
+            message: "Error updateRequest resetRequest",
+            status: false,
+            error: 500,
+          };
+        }
+
+        if (request.status_id == 3) {
+          const deleteListProblem = await userPageModel.deleteListProblem(
+            data.request_id
+          );
+          if (!deleteListProblem) {
+            return {
+              message: "Error deleteListProblem",
+              status: false,
+              error: 500,
+            };
+          }
+        }
+
+        change_maintype = true;
+      }
+      delete data.page;
       delete data.recipient_id;
+      //
+      const type_name = await helperModel.type_name_ById(data.maintenance_id);
+
+      if (!type_name) {
+        return {
+          message: "Error model get type_name_ById",
+          status: false,
+          error: 500,
+        };
+      }
+      //
       return {
         message: "Update request successfully",
         status: true,
 
-        data,
+        data: {
+          ...data,
+          change_maintype,
+          replaceData: replaceData ? replaceData[0] : "",
+          type_name,
+        },
       };
     } catch (error) {
       console.log(error);

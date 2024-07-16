@@ -69,7 +69,7 @@ router.post(
   helperController.updateProblem
 );
 router.post(
-  "/updaterequest",
+  "/updaterequest/",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.updateRequest
 );

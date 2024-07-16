@@ -7,7 +7,6 @@ module.exports = {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
         `SELECT DISTINCT
-
           rs.id,
           rs.title_request,
           mt.type_name,
@@ -20,7 +19,7 @@ module.exports = {
 
       FROM
           request_storage rs
-      JOIN
+      left JOIN
           maintenance_type mt ON rs.maintenance_id = mt.id
       JOIN
           request_status rstt ON rs.status_id = rstt.id
@@ -30,7 +29,7 @@ module.exports = {
           users AS users2 ON rs.recipient_id = users2.id,
           method mth
       WHERE
-          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
       );
 
       return result;
@@ -53,7 +52,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -63,7 +62,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.updated_at desc  LIMIT 10 OFFSET ${numberPage};`
       );
 
       if (status_id && Number(status_id) && !text) {
@@ -72,7 +71,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -82,7 +81,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
+               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
       } else if (text && !Number(status_id)) {
@@ -101,7 +100,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -111,7 +110,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       } else if (status_id && text) {
@@ -131,7 +130,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+          left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -141,7 +140,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                 
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       }
@@ -168,7 +167,7 @@ module.exports = {
     rs.completion_date 
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
@@ -227,7 +226,7 @@ WHERE
 
       FROM
           request_storage rs
-      JOIN
+      left JOIN
           maintenance_type mt ON rs.maintenance_id = mt.id
       JOIN
           request_status rstt ON rs.status_id = rstt.id
@@ -265,7 +264,7 @@ WHERE
       const result = await pool.query(
         `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.account,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
         FROM      request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     method mth ON rs.method_id = mth.id
@@ -298,12 +297,13 @@ LEFT JOIN
     method mth ON rs.method_id = mth.id
      LEFT JOIN
     solution s ON s.id=rs.solution_id
+    left join maintenance_type mt on rs.maintenance_id=mt.id
     LEFT JOIN
     users u ON rs.petitioner_id =u.id
     left join
     users AS u2 on u2.id=rs.recipient_id,
-    maintenance_type mt, request_status rstt
-        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.status_id=rstt.id;`
+     request_status rstt
+        WHERE rs.id=${id} AND rs.status_id=rstt.id;`
       );
 
       return result[0] ? result[0] : {};
@@ -389,16 +389,24 @@ LEFT JOIN
   },
   registerRequest: async (data) => {
     try {
-      // console.log(data);
-      result = await pool.query(
-        `insert into request_storage(title_request,content_request,maintenance_id,petitioner_id) values (?,?,?,?);`,
-        [
-          data.title_request,
-          data.content_request,
-          data.maintenance_id,
-          data.petitioner_id,
-        ]
-      );
+      let result;
+      if (data.maintenance_id) {
+        result = await pool.query(
+          `insert into request_storage(title_request,content_request,maintenance_id,petitioner_id) values (?,?,?,?);`,
+          [
+            data.title_request,
+            data.content_request,
+            data.maintenance_id,
+            data.petitioner_id,
+          ]
+        );
+      } else {
+        result = await pool.query(
+          `insert into request_storage(title_request,content_request, petitioner_id) values (?,?,?);`,
+          [data.title_request, data.content_request, data.petitioner_id]
+        );
+      }
+
       return result;
     } catch (error) {
       console.log("error model registerRequest:", error);
@@ -419,11 +427,14 @@ LEFT JOIN
   },
   updateRequest: async (request_id, data) => {
     try {
+      // console.log(data);
+      !data.maintenance_id ? (data.maintenance_id = null) : data.maintenance_id;
+
       result = await pool.query(
         `update request_storage set
           title_request="${data.title_request}",
           content_request= "${data.content_request}",
-          maintenance_id= "${data.maintenance_id}"
+          maintenance_id= ${data.maintenance_id}
           where id="${request_id}" and petitioner_id="${data.petitioner_id}";`
       );
 
@@ -560,7 +571,7 @@ LEFT JOIN
 
       FROM
           request_storage rs
-      JOIN
+      left JOIN
           maintenance_type mt ON rs.maintenance_id = mt.id
       JOIN
           request_status rstt ON rs.status_id = rstt.id
@@ -570,7 +581,7 @@ LEFT JOIN
           users AS users2 ON rs.recipient_id = users2.id,
           method mth
       WHERE
-          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 1 OFFSET ${numberPage};`
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.updated_at desc LIMIT 1 OFFSET ${numberPage};`
       );
       // console.log(result);
       return result;

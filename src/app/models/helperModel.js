@@ -32,6 +32,7 @@ module.exports = {
       //       );
 
       //  sua lai la co the chon ca 2
+
       let result = await pool.query(
         `SELECT DISTINCT 
     rs.id,
@@ -45,7 +46,7 @@ module.exports = {
     rs.completion_date ,mth.method_name
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
@@ -54,13 +55,14 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
+      (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.updated_at desc;`
       );
-      if (role_id != 5) {
-        result = result.filter((item) => {
-          return item.maintenance_id == role_id;
-        });
-      }
+
+      // if (role_id != 5) {
+      //   result = result.filter((item) => {
+      //     return item.maintenance_id == role_id;
+      //   });
+      // }
 
       let listPagination = [];
       // console.log(resultByRoleById)
@@ -94,7 +96,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -104,7 +106,7 @@ WHERE
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id})  and mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+              (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id})  and mth.id=rs.method_id ORDER BY rs.updated_at desc  LIMIT 10 OFFSET ${numberPage};`
       );
 
       if (status_id && Number(status_id) && !text) {
@@ -113,7 +115,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -123,7 +125,7 @@ WHERE
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
+              (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
       } else if (text && !Number(status_id)) {
@@ -147,7 +149,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -156,7 +158,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+               (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       } else if (status_id && text) {
@@ -178,7 +180,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -187,7 +189,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-              rs.maintenance_id = ${role_id} and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%"  ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+               (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%"  ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       }
@@ -198,6 +200,7 @@ WHERE
       return false;
     }
   },
+
   updateStatus_id: async (request_id, status_id) => {
     try {
       result = await pool.query(
@@ -214,6 +217,7 @@ WHERE
       return false;
     }
   },
+
   updateRecipient_id: async (request_id, recipient_id) => {
     try {
       result = await pool.query(
@@ -322,6 +326,7 @@ WHERE
       return false;
     }
   },
+
   deleteListProcessByRequest: async (request_id) => {
     try {
       result = await pool.query(
@@ -333,6 +338,7 @@ WHERE
       return false;
     }
   },
+
   addProcessingDetail: async (request_id, label_id) => {
     try {
       // console.log(data);
@@ -346,6 +352,7 @@ WHERE
       return false;
     }
   },
+
   helperDeleteRequest: async (user_id, request_id) => {
     try {
       result = await pool.query(
@@ -357,6 +364,7 @@ WHERE
       return false;
     }
   },
+
   addDataTocompleted: async (request_id, data) => {
     try {
       result = await pool.query(
@@ -373,6 +381,7 @@ WHERE
       return false;
     }
   },
+
   getMaintenanceType: async () => {
     try {
       result = await pool.query(`select id,type_name from maintenance_type`);
@@ -382,6 +391,7 @@ WHERE
       return false;
     }
   },
+
   getMethod: async () => {
     try {
       result = await pool.query(
@@ -393,6 +403,7 @@ WHERE
       return false;
     }
   },
+
   getSolution: async () => {
     try {
       result = await pool.query(
@@ -404,6 +415,7 @@ WHERE
       return false;
     }
   },
+
   getStatus: async () => {
     try {
       result = await pool.query(
@@ -415,6 +427,7 @@ WHERE
       return false;
     }
   },
+
   getAllUser: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -479,6 +492,7 @@ WHERE
       return false;
     }
   },
+
   getUserCount: async () => {
     try {
       result = await pool.query(
@@ -555,7 +569,7 @@ WHERE
     rs.completion_date ,mth.method_name
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
@@ -564,7 +578,7 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
+      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.updated_at desc;`
       );
       if (role_id != 5) {
         result = result.filter((item) => {
@@ -578,6 +592,7 @@ WHERE
       return false;
     }
   },
+
   deleteRequest: async (user_id, request_id) => {
     try {
       result = await pool.query(
@@ -589,6 +604,7 @@ WHERE
       return false;
     }
   },
+
   requestToOrther: async (recipient_id, role_id, page) => {
     try {
       const startNumber = page * 10;
@@ -606,7 +622,7 @@ WHERE
     rs.completion_date ,mth.method_name
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
@@ -615,7 +631,7 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.created_at desc;`
+      (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.updated_at desc;`
       );
       if (role_id != 5) {
         result = result.filter((item) => {
@@ -642,15 +658,45 @@ WHERE
 
   updateRequest: async (data) => {
     try {
+      !data.maintenance_id ? (data.maintenance_id = null) : data.maintenance_id;
       result = await pool.query(
         `update request_storage set
           title_request="${data.title_request}",
-          content_request= "${data.content_request}"
-          where id="${data.request_id}" and recipient_id="${data.recipient_id}";`
+          content_request= "${data.content_request}",
+          maintenance_id= ${data.maintenance_id},
+          updated_at=?
+          where id="${data.request_id}" and recipient_id="${data.recipient_id}";`,
+        [data.updated_at]
       );
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model heplpDesk UpdateRequest:", error);
+      return false;
+    }
+  },
+  resetRequest: async (data) => {
+    try {
+      result = await pool.query(
+        `update request_storage set
+          status_id=1,
+          recipient_id = NULL
+          where id="${data.request_id}";`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model heplpDesk resetRequest:", error);
+      return false;
+    }
+  },
+  type_name_ById: async (maintenance_id) => {
+    try {
+      result = await pool.query(
+        `select type_name from maintenance_type where id=${maintenance_id}`
+      );
+      // console.log(result)
+      return result[0].type_name ? result[0].type_name : false;
+    } catch (error) {
+      console.log("error model type_name_ById:", error);
       return false;
     }
   },

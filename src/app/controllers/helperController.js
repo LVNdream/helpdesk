@@ -116,12 +116,17 @@ class helperController {
   }
 
   async updateRequest(req, res) {
+    
     try {
       const result = await helperService.updateRequest({
         title_request: req.body.title_request,
         content_request: req.body.content_request,
         request_id: req.body.request_id,
+        maintenance_id: req.body.maintenance_id,
+
         recipient_id: req.user.id,
+        role_id: req.user.role_id,
+        page: req.query.page,
       });
       res.status(200).json(result);
     } catch (error) {

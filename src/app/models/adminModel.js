@@ -18,7 +18,7 @@ module.exports = {
     rs.completion_date ,mth.method_name
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
@@ -27,7 +27,7 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-     mth.id=rs.method_id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+     mth.id=rs.method_id ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
       );
       // console.log(result);
       return result;
@@ -58,7 +58,7 @@ WHERE
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -67,14 +67,14 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id ORDER BY rs.created_at desc  ;`
+                mth.id=rs.method_id ORDER BY rs.updated_at desc  ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -91,7 +91,7 @@ WHERE
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -100,14 +100,14 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.created_at desc  ;`
+                mth.id=rs.method_id and rs.petitioner_id=${user_id} ORDER BY rs.updated_at desc  ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -124,7 +124,7 @@ WHERE
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -133,14 +133,14 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}") ORDER BY rs.created_at desc ;`
+                mth.id=rs.method_id and (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id = 1 or rs.recipient_id = "${user_id}") ORDER BY rs.updated_at desc ;`
         );
         resultNoLimit = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,rs.maintenance_id,
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -149,7 +149,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.maintenance_id = ${role_id} and (rs.status_id = 1 or rs.recipient_id = "${user_id}");`
+                mth.id=rs.method_id and (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id = 1 or rs.recipient_id = "${user_id}");`
         );
       }
 
@@ -160,7 +160,7 @@ WHERE
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -169,7 +169,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc ;`
+                mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.updated_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -177,7 +177,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -189,22 +189,26 @@ WHERE
                 mth.id=rs.method_id and  rs.status_id = ${status_id} ;`
         );
       } else if (text && !Number(status_id)) {
-        let nameCondition = "rs.title_request";
-        if (option == 2) {
+        let nameCondition =
+          role_id == 1 || role_id == 2 ? "users.name" : "rs.title_request";
+        if (option == 1) {
+          nameCondition = "rs.title_request";
+        } else if (option == 2) {
           nameCondition = "mt.type_name";
-        }
-        if (option == 3) {
+        } else if (option == 3) {
           nameCondition = "users.name";
-        }
-        if (option == 4) {
+        } else if (option == 4) {
           nameCondition = "users2.name";
+        } else {
+          nameCondition =
+            role_id == 1 || role_id == 2 ? "users.name" : "rs.title_request";
         }
         const result = await pool.query(
           `SELECT DISTINCT rs.id,rs.title_request,mt.type_name,rs.status_id, users.name AS petitioner,rs.petitioner_id,rs.recipient_id,
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -214,7 +218,7 @@ WHERE
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc ;`
+                mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%" ORDER BY rs.updated_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -222,7 +226,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -235,15 +239,19 @@ WHERE
                 mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%";`
         );
       } else if (status_id && text) {
-        let nameCondition = "rs.title_request";
-        if (option == 2) {
+        let nameCondition =
+          role_id == 1 || role_id == 2 ? "users.name" : "rs.title_request";
+        if (option == 1) {
+          nameCondition = "rs.title_request";
+        } else if (option == 2) {
           nameCondition = "mt.type_name";
-        }
-        if (option == 3) {
+        } else if (option == 3) {
           nameCondition = "users.name";
-        }
-        if (option == 4) {
+        } else if (option == 4) {
           nameCondition = "users2.name";
+        } else {
+          nameCondition =
+            role_id == 1 || role_id == 2 ? "users.name" : "rs.title_request";
         }
 
         const result = await pool.query(
@@ -251,7 +259,7 @@ WHERE
             users2.name AS recipient,rs.maintenance_id,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -260,7 +268,7 @@ WHERE
             LEFT JOIN 
                  users AS users2 ON rs.recipient_id = users2.id, method mth
             WHERE 
-                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc ;`
+                mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.updated_at desc ;`
         );
         resutlSearch = result;
         resultNoLimit = await pool.query(
@@ -268,7 +276,7 @@ WHERE
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -296,33 +304,33 @@ WHERE
         });
       } else if (role_id == 1 || role_id == 2) {
         resultByRoleById = resutlSearch.filter((data) => {
-          // console.log()
           return (
-            data.maintenance_id == role_id &&
+            (data.maintenance_id == role_id || data.maintenance_id === null) &&
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
         requestToCount = resultNoLimit.filter((data) => {
           return (
-            data.maintenance_id == role_id &&
-            (data.status_id == 1 || data.recipient_id == user_id)
-          );
-        });
-      } else if (role_id == 5) {
-        resultByRoleById = resutlSearch.filter((data) => {
-          // console.log()
-          return (
-            (data.maintenance_id == 1 || data.maintenance_id == 2) &&
-            (data.status_id == 1 || data.recipient_id == user_id)
-          );
-        });
-        requestToCount = resultNoLimit.filter((data) => {
-          return (
-            (data.maintenance_id == 1 || data.maintenance_id == 2) &&
+            (data.maintenance_id == role_id || data.maintenance_id === null) &&
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
       }
+      // else if (role_id == 5) {
+      //   resultByRoleById = resutlSearch.filter((data) => {
+      //     // console.log(data)
+      //     return (
+      //       (data.maintenance_id == 1 || data.maintenance_id == 2) &&
+      //       (data.status_id == 1 || data.recipient_id == user_id)
+      //     );
+      //   });
+      //   requestToCount = resultNoLimit.filter((data) => {
+      //     return (
+      //       (data.maintenance_id == 1 || data.maintenance_id == 2) &&
+      //       (data.status_id == 1 || data.recipient_id == user_id)
+      //     );
+      //   });
+      // }
       let listPagination = [];
       // console.log(resultByRoleById)
       for (let i = startNumber; i < endNumber; i++) {
@@ -1405,7 +1413,7 @@ GROUP BY mc.id`
   getListNewRequest: async () => {
     try {
       let result = await pool.query(
-        `select rs.id as request_id, rs.title_request,rs.content_request,u.name,rs.created_at from request_storage rs left join users u on rs.petitioner_id = u.id order by rs.created_at desc limit 5`
+        `select rs.id as request_id, rs.title_request,rs.content_request,u.name,rs.created_at from request_storage rs left join users u on rs.petitioner_id = u.id order by rs.updated_at desc limit 5`
       );
 
       return result;

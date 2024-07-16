@@ -431,21 +431,25 @@ class userPageService {
   async updateRequest(request_id, data, files, arrayDelete) {
     try {
       // console.log(files, arrayDelete);
-      const status_id = await userPageModel.getIdStatusByRequest(request_id);
-      if (!status_id) {
+      // const status_id = await userPageModel.getIdStatusByRequest(request_id);
+
+      const request = await userPageModel.getRequestById(request_id);
+
+      if (!request) {
         return {
-          message: "Server error get status ID Model",
+          message: "Server error get getRequestById Model",
           status: false,
           error: 500,
         };
       }
-      if (status_id > 2) {
+      if (request.status_id > 2) {
         return {
           message: "Status not valid",
           status: false,
           error: 500,
         };
       }
+      //  xet thoi gian cap nhat request
 
       const resultUpdate = await userPageModel.updateRequest(request_id, data);
       if (!resultUpdate) {
