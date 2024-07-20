@@ -315,22 +315,21 @@ WHERE
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
+      } else if (role_id == 5) {
+        resultByRoleById = resutlSearch.filter((data) => {
+          // console.log(data)
+          return (
+            (data.maintenance_id == 1 || data.maintenance_id == 2 || data.maintenance_id == null) &&
+            (data.status_id == 1 || data.recipient_id == user_id)
+          );
+        });
+        requestToCount = resultNoLimit.filter((data) => {
+          return (
+            (data.maintenance_id == 1 || data.maintenance_id == 2 || data.maintenance_id == null) &&
+            (data.status_id == 1 || data.recipient_id == user_id)
+          );
+        });
       }
-      // else if (role_id == 5) {
-      //   resultByRoleById = resutlSearch.filter((data) => {
-      //     // console.log(data)
-      //     return (
-      //       (data.maintenance_id == 1 || data.maintenance_id == 2) &&
-      //       (data.status_id == 1 || data.recipient_id == user_id)
-      //     );
-      //   });
-      //   requestToCount = resultNoLimit.filter((data) => {
-      //     return (
-      //       (data.maintenance_id == 1 || data.maintenance_id == 2) &&
-      //       (data.status_id == 1 || data.recipient_id == user_id)
-      //     );
-      //   });
-      // }
       let listPagination = [];
       // console.log(resultByRoleById)
       for (let i = startNumber; i < endNumber; i++) {
@@ -461,11 +460,13 @@ WHERE
   },
   adminGetAccountStatus: async () => {
     try {
+      // co sua thi mo len, chi lay 2 trang thai
+      // where id=2 or id=4
       const result = await pool.query(
         `SELECT id,status_name
       FROM
            account_status
-           where id=2 or id=4
+           
            `
       );
       return result;
@@ -1239,23 +1240,27 @@ WHERE
       return false;
     }
   },
-  amountPerRequestCompleted: async (nameCondition, dateime) => {
+  amountPerRequestCompleted: async (nameCondition, datetime) => {
     try {
       const main_type = await helperModel.getMaintenanceType();
       const main_type_length = main_type.length;
 
+      // console.log(main_type)
       let result = [];
       for (let i = 0; i < main_type_length; i++) {
         const item = main_type[i];
         let resultTemp = await pool.query(
-          `SELECT mt.type_name, CASE
+          ` SELECT "${item.type_name}" AS type_name, CASE
           WHEN rs2.countRequest=0 THEN 0
-          ELSE  ROUND(((COUNT(rs.id)/rs2.countRequest)*100),2)
+          ELSE  ROUND(((rs.countRequest/rs2.countRequest)*100),2)
           END AS  countRequest
-          FROM  maintenance_type mt left join request_storage rs on rs.maintenance_id=mt.id AND mt.id=${item.id} AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${dateime}",
-          (SELECT COUNT(rs.id) AS countRequest FROM maintenance_type mt left join request_storage rs on  rs.maintenance_id = mt.id and mt.id=${item.id}  WHERE ${nameCondition}(rs.created_at)="${dateime}") AS rs2;`
+          FROM   
+           (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs WHERE rs.maintenance_id=${item.id} AND (rs.status_id=4 OR rs.status_id=5) AND ${nameCondition}(rs.created_at)="${datetime}") AS rs
+			 ,
+          (SELECT COUNT(rs.id) AS countRequest FROM request_storage rs WHERE rs.maintenance_id=${item.id} and ${nameCondition}(rs.created_at)="${datetime}") AS rs2;`
         );
-
+        // console.log(item.id);
+        // console.log(resultTemp)
         result.push(resultTemp[0]);
       }
 
@@ -1309,6 +1314,7 @@ GROUP BY mc.id`
     try {
       const lastTime = data[option] - 1;
       const thisTime = data[option];
+      // console.log(lastTime, thisTime);
 
       let result = await pool.query(
         `SELECT ll.id AS list_label_id, ll.label_name as name,
@@ -1471,7 +1477,7 @@ GROUP BY mc.id`
   getNewHelper: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT u.id,u.account, u.name, c.name_company, "헬프데스크 담당자" as main_type,u.status_id,"사용가능" as status_name,u.created_at
+        `SELECT u.id,u.account, u.name, c.name_company, "헬프데스크 담당자" as main_type,u.status_id,us.status_name as status_name,u.created_at
       FROM
            users u
            left join account_status us on u.status_id=us.id
@@ -1486,6 +1492,25 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  //
+
+  resetAccount: async (user_id) => {
+    try {
+      const result = await pool.query(
+        `update users set 
+          count_login = 0,
+          last_login = now()
+          where id="${user_id}"; `
+      );
+      // console.log(result)
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model getNewHelper :", error);
+      return false;
+    }
+  },
+  //
   getNewUser: async (user_id) => {
     try {
       const result = await pool.query(

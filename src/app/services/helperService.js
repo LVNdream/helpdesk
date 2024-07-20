@@ -53,9 +53,10 @@ class helperPageService {
       }
 
       let MT_Register;
-      const listProblem_RQ = await userPageModel.getAllProblemByRequest_id(
+      let listProblem_RQ = await userPageModel.getAllProblemByRequest_id(
         request_id
       );
+      // listProblem_RQ
 
       if (status_id == 1 || status_id == 2 || status_id == 3) {
         MT_Register = await midService.getMaintenanceType_checked(
@@ -64,7 +65,7 @@ class helperPageService {
         const resultInfor = await userPageModel.getRequestConfirm_Register(
           request_id
         );
-
+        // console.log(resultInfor);
         if (
           (status_id == 2 || status_id == 3) &&
           resultInfor.recipient_id != recipient_id
@@ -109,6 +110,10 @@ class helperPageService {
                 position: resultInfor.position,
                 email: resultInfor.email,
               },
+              infor_recipient: {
+                user_id: resultInfor.r_id,
+                name: resultInfor.r_name,
+              },
               id: resultInfor.id,
               title_request: resultInfor.title_request,
               content_request: resultInfor.content_request,
@@ -119,6 +124,7 @@ class helperPageService {
               listProblem_RQ,
               MT_Register,
               status_id: status_id + 1,
+              status_name: resultInfor.status_name,
             },
             status: true,
           };
@@ -135,6 +141,10 @@ class helperPageService {
               position: resultInfor.position,
               email: resultInfor.email,
             },
+            infor_recipient: {
+              user_id: resultInfor.r_id,
+              name: resultInfor.r_name,
+            },
             id: resultInfor.id,
             title_request: resultInfor.title_request,
             content_request: resultInfor.content_request,
@@ -145,6 +155,7 @@ class helperPageService {
             listProblem_RQ,
             MT_Register,
             status_id: status_id,
+            status_name: resultInfor.status_name,
           },
           status: true,
         };
@@ -290,6 +301,7 @@ class helperPageService {
             listProblem_RQ,
             files,
             status_id,
+            status_name: resultInfor.status_name,
           },
           status: true,
         };
@@ -783,24 +795,32 @@ class helperPageService {
           error: 500,
         };
       }
-      const listProcessing = data.listProcessing;
+      // add processing detail
+      const resultAddprocess = await helperModel.addProcessingDetail(
+        request_id,
+        data.listProcessing
+      );
+      // const listProcessing = data.listProcessing;
 
-      const listProcessLength = listProcessing.length;
-      // add data
-      for (let i = 0; i < listProcessLength; i++) {
-        const label_id = listProcessing[i];
-        const resultAddprocess = await helperModel.addProcessingDetail(
-          request_id,
-          label_id
-        );
-        if (!resultAddprocess) {
-          return {
-            message: "Error add process detai;",
-            status: false,
-            error: 500,
-          };
-        }
+      // const listProcessLength = listProcessing.length;
+      // // add data
+      // for (let i = 0; i < listProcessLength; i++) {
+      //   const label_id = listProcessing[i];
+      //   const resultAddprocess = await helperModel.addProcessingDetail(
+      //     request_id,
+      //     label_id
+      //   );
+
+      if (!resultAddprocess) {
+        return {
+          message: "Error add process detai;",
+          status: false,
+          error: 500,
+        };
       }
+      // }
+      //
+
       const inforUpdate = await userPageModel.getNewRequest(request_id);
       if (!inforUpdate) {
         return {
@@ -905,7 +925,7 @@ class helperPageService {
       }
       if (request_id) {
         status = status.filter((item) => {
-          return item.id == 4 || item.id == 5;
+          return item.id == 4;
         });
       } else {
         status = status.filter((item) => {
@@ -1235,39 +1255,62 @@ class helperPageService {
       const request_id = resultAddRQ.insertId;
 
       //processing detail
-      const listProcessing = data.listProcessing;
-
-      const listProcessLength = listProcessing.length;
-      // add data
-      if (data.status_id == 4) {
-        for (let i = 0; i < listProcessLength; i++) {
-          const label_id = listProcessing[i];
-          const resultAddprocess = await helperModel.addProcessingDetail(
-            request_id,
-            label_id
-          );
-
-          if (!resultAddprocess) {
-            console.log(infor_user.id, request_id);
-            const deleteRequest = await helperModel.helperDeleteRequest(
-              infor_user.id,
-              request_id
-            );
-            if (!deleteRequest) {
-              return {
-                message: "Error deleteRequest;",
-                status: false,
-                error: 500,
-              };
-            }
-            return {
-              message: "Error add process detai11;",
-              status: false,
-              error: 500,
-            };
-          }
+      // console.log(data)
+      const resultAddprocess = await helperModel.addProcessingDetail(
+        request_id,
+        data.listProcessing
+      );
+      if (!resultAddprocess) {
+        const deleteRequest = await helperModel.helperDeleteRequest(
+          infor_user.id,
+          request_id
+        );
+        if (!deleteRequest) {
+          return {
+            message: "Error deleteRequest;",
+            status: false,
+            error: 500,
+          };
         }
+        return {
+          message: "Error add process detai11;",
+          status: false,
+          error: 500,
+        };
       }
+      // const listProcessing = data.listProcessing;
+
+      // const listProcessLength = listProcessing.length;
+      // // add data
+      // if (data.status_id == 4) {
+      //   for (let i = 0; i < listProcessLength; i++) {
+      //     const label_id = listProcessing[i];
+      //     const resultAddprocess = await helperModel.addProcessingDetail(
+      //       request_id,
+      //       label_id
+      //     );
+
+      //     if (!resultAddprocess) {
+      //       // console.log(infor_user.id, request_id);
+      //       const deleteRequest = await helperModel.helperDeleteRequest(
+      //         infor_user.id,
+      //         request_id
+      //       );
+      //       if (!deleteRequest) {
+      //         return {
+      //           message: "Error deleteRequest;",
+      //           status: false,
+      //           error: 500,
+      //         };
+      //       }
+      //       return {
+      //         message: "Error add process detai11;",
+      //         status: false,
+      //         error: 500,
+      //       };
+      //     }
+      //   }
+      // }
 
       // add file
 

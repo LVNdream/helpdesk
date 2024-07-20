@@ -105,6 +105,10 @@ class userPageService {
                 position: resutlConfirm_Register.position,
                 email: resutlConfirm_Register.email,
               },
+              infor_recipient: {
+                user_id: resutlConfirm_Register.r_id,
+                name: resutlConfirm_Register.r_name,
+              },
 
               MT_Register,
               status_id,

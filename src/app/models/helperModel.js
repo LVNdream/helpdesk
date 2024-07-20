@@ -55,14 +55,14 @@ JOIN
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id, method mth
 WHERE 
-      (rs.maintenance_id = ${role_id} or rs.maintenance_id is null ) and (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.updated_at desc;`
+       (rs.status_id=1 or rs.recipient_id=${recipient_id}) and mth.id=rs.method_id ORDER BY rs.updated_at desc;`
       );
-
-      // if (role_id != 5) {
-      //   result = result.filter((item) => {
-      //     return item.maintenance_id == role_id;
-      //   });
-      // }
+      // (rs.maintenance_id = ${role_id} or rs.maintenance_id is null )
+      if (role_id != 5) {
+        result = result.filter((item) => {
+          return item.maintenance_id == role_id || item.maintenance_id == null;
+        });
+      }
 
       let listPagination = [];
       // console.log(resultByRoleById)

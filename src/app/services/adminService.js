@@ -434,7 +434,7 @@ class adminPageService {
 
       resutl = resutl.map((item) => {
         if (item.status_id == 2) {
-          item.status_name = "사용가능";
+          item.status_name = "정상";
         }
         return { ...item };
       });
@@ -547,6 +547,7 @@ class adminPageService {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
       // reset password
+
       let listStatus = await adminModel.adminGetAccountStatus();
 
       let listStatusCheck = listStatus.map((item) => {
@@ -554,24 +555,28 @@ class adminPageService {
         item.id == resutl.status_id ? (checked = true) : (checked = false);
         return { ...item, checked };
       });
-      const listStatusLength = listStatusCheck.length;
-      let isExisted = false;
-      for (let i = 0; i < listStatusLength; i++) {
-        const item = listStatusCheck[i];
-        // console.log(item)
-        if (item.checked) {
-          isExisted = true;
-          break;
-        }
-      }
+      // console.log(listStatusCheck);
+      listStatusCheck = listStatusCheck.filter((item) => {
+        return item.id == 2 || item.id == 4 || item.checked == true;
+      });
+      // const listStatusLength = listStatusCheck.length;
+      // let isExisted = false;
+      // for (let i = 0; i < listStatusLength; i++) {
+      //   const item = listStatusCheck[i];
+      //   // console.log(item)
+      //   if (item.checked) {
+      //     isExisted = true;
+      //     break;
+      //   }
+      // }
 
-      !isExisted
-        ? listStatusCheck.push({
-            id: resutl.status_id,
-            status_name: resutl.status_name,
-            checked: true,
-          })
-        : listStatusCheck;
+      // !isExisted
+      //   ? listStatusCheck.push({
+      //       id: resutl.status_id,
+      //       status_name: resutl.status_name,
+      //       checked: true,
+      //     })
+      //   : listStatusCheck;
 
       delete resutl.status_id;
       delete resutl.status_name;
@@ -667,7 +672,19 @@ class adminPageService {
   }
   async AdminUpdateUserInfor(data) {
     try {
+      const inforUser = await adminModel.adminGetUserInfor(data.user_id);
       const resutl = await adminModel.AdminUpdateUserInfor(data);
+
+      if (data.status_id != inforUser.status_id && data.status_id == 2) {
+        const resetAccount = await adminModel.resetAccount(data.user_id);
+        if (!resetAccount) {
+          return {
+            message: "Error model resetAccount",
+            status: false,
+            error: 500,
+          };
+        }
+      }
 
       let updateInfor;
       if (!resutl) {
@@ -864,9 +881,12 @@ class adminPageService {
         }
         return {
           id: item.id,
-          name: item.id == 2 ? "사용가능" : item.status_name,
+          name: item.id == 2 ? "정상" : item.status_name,
           checked,
         };
+      });
+      listStatus = listStatus.filter((item) => {
+        return item.id == 2 || item.checked == true || item.id == 4;
       });
       let listRole;
       if (resutl.role_id == 5) {
@@ -903,15 +923,28 @@ class adminPageService {
 
   async updateHelperInfor(user_id, data) {
     try {
-      // if (data.role_id.length > 1) {
-      //   data.role_id = 5;
-      // } else {
-      //   data.role_id = data.role_id[0];
-      // }
+      if (data.role_id.length > 1) {
+        data.role_id = 5;
+      } else {
+        data.role_id = data.role_id[0];
+      }
+      const inforHelper = await adminModel.adminGetHelperInfor(user_id);
       const resutl = await adminModel.updateHelperInfor(user_id, data);
       if (resutl) {
         const inforUpdate = await adminModel.getNewHelper(user_id);
-        // console.log(inforUpdate)
+
+        // reset account
+
+        if (data.status_id != inforHelper.status_id && data.status_id == 2) {
+          const resetAccount = await adminModel.resetAccount(user_id);
+          if (!resetAccount) {
+            return {
+              message: "Error model resetAccount",
+              status: false,
+              error: 500,
+            };
+          }
+        }
         return {
           data: inforUpdate,
           message: "Update helper infor success",
@@ -2144,6 +2177,8 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("date", datetime);
 
+      // console.log(amountRequestCompletedPercentMonth);
+
       const countPerMonth = await adminModel.amountPerAllRequestCompleted(
         "date",
         datetime
@@ -2525,7 +2560,7 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
-
+      // console.log(amountRequestCompletedPercentMonth);
       const countPerMonth = await adminModel.amountPerAllRequestCompleted(
         "month",
         data.month

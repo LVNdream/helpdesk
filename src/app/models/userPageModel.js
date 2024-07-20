@@ -262,7 +262,9 @@ WHERE
   getRequestConfirm_Register: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.account,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
+        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id, u.name as name,u.account,u2.id AS r_id,u2.name AS r_name,
+
+        u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at,rstt.status_name as status_name
         FROM      request_storage rs
 left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
@@ -270,8 +272,10 @@ JOIN
     method mth ON rs.method_id = mth.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
-JOIN 
+left JOIN 
     users u ON rs.petitioner_id = u.id
+    left JOIN 
+    users u2 ON rs.recipient_id = u2.id
 LEFT JOIN 
     solution s ON s.id=rs.solution_id
         WHERE rs.id=${id};
@@ -288,7 +292,7 @@ LEFT JOIN
   getRequestCompleted: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
+        `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name as status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
         u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,u.account as p_account,rs.created_at, rs.processing_content_problem,
         mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.account as r_account,u2.affiliated_department AS r_affiliated_department,
         u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email
