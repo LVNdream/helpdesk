@@ -7,7 +7,6 @@ module.exports = {
       const numberPage = (page - 1) * 10;
       const result = await pool.query(
         `SELECT DISTINCT
-
           rs.id,
           rs.title_request,
           mt.type_name,
@@ -20,7 +19,7 @@ module.exports = {
 
       FROM
           request_storage rs
-      JOIN
+      left JOIN
           maintenance_type mt ON rs.maintenance_id = mt.id
       JOIN
           request_status rstt ON rs.status_id = rstt.id
@@ -30,7 +29,7 @@ module.exports = {
           users AS users2 ON rs.recipient_id = users2.id,
           method mth
       WHERE
-          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
       );
 
       return result;
@@ -53,7 +52,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+            left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -63,7 +62,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.created_at desc  LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id}  and mth.id=rs.method_id ORDER BY rs.updated_at desc  LIMIT 10 OFFSET ${numberPage};`
       );
 
       if (status_id && Number(status_id) && !text) {
@@ -72,7 +71,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -82,7 +81,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage} ;`
+               rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  rs.status_id = ${status_id} ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage} ;`
         );
         resutlSearch = result;
       } else if (text && !Number(status_id)) {
@@ -101,7 +100,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+           left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -111,7 +110,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                  
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and  ${nameCondition} LIKE "%${text}%"  ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       } else if (status_id && text) {
@@ -131,7 +130,7 @@ module.exports = {
             users2.name AS recipient,rs.created_at,rs.completion_date ,mth.method_name
             FROM 
                 request_storage rs
-            JOIN 
+          left JOIN 
                 maintenance_type mt ON rs.maintenance_id = mt.id
             JOIN 
                 request_status rstt ON rs.status_id = rstt.id
@@ -141,7 +140,7 @@ module.exports = {
                  users AS users2 ON rs.recipient_id = users2.id, method mth
                 
             WHERE 
-              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.created_at desc LIMIT 10 OFFSET ${numberPage};`
+              rs.petitioner_id=${petitioner_id} and mth.id=rs.method_id and rs.status_id=${status_id} and ${nameCondition} LIKE "%${text}%" ORDER BY rs.updated_at desc LIMIT 10 OFFSET ${numberPage};`
         );
         resutlSearch = result;
       }
@@ -159,6 +158,8 @@ module.exports = {
     rs.id,
     rs.title_request,
     mt.type_name,
+    mth.method_name,
+
     rs.status_id,
     users.name AS petitioner,
     users2.name AS recipient,
@@ -166,12 +167,14 @@ module.exports = {
     rs.completion_date 
 FROM 
     request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
 JOIN 
     users ON rs.petitioner_id = users.id
+JOIN 
+    method mth ON rs.method_id = mth.id
 LEFT JOIN 
     users AS users2 ON rs.recipient_id = users2.id
 WHERE 
@@ -206,6 +209,41 @@ WHERE
       return false;
     }
   },
+  getNewRequest: async (id) => {
+    try {
+      const result = await pool.query(
+        `SELECT DISTINCT
+
+          rs.id,
+          rs.title_request,
+          mt.type_name,
+          rs.status_id,
+          users.name AS petitioner,
+          users2.name AS recipient,
+          rs.created_at,
+          rs.completion_date,
+          mth.method_name
+
+      FROM
+          request_storage rs
+      left JOIN
+          maintenance_type mt ON rs.maintenance_id = mt.id
+      JOIN
+          request_status rstt ON rs.status_id = rstt.id
+      JOIN
+          users ON rs.petitioner_id = users.id
+      LEFT JOIN
+          users AS users2 ON rs.recipient_id = users2.id
+      LEFT JOIN method mth on rs.method_id = mth.id
+      WHERE
+          rs.id=${id}`
+      );
+      return result[0] ? result[0] : {};
+    } catch (error) {
+      console.log("error model get request by ID:", error);
+      return false;
+    }
+  },
   // status_Register
 
   getMaintenanceType: async () => {
@@ -224,16 +262,20 @@ WHERE
   getRequestConfirm_Register: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id,u.name,u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at
+        `SELECT rs.recipient_id,rs.id, rs.title_request,rs.content_request,mt.id AS maintenance_id,u.id AS user_id, u.name as name,u.account,u2.id AS r_id,u2.name AS r_name,
+
+        u.affiliated_department,u.phone_number,mth.method_name,u.position,u.email,s.solution_name,rs.created_at,rstt.status_name as status_name
         FROM      request_storage rs
-JOIN 
+left JOIN 
     maintenance_type mt ON rs.maintenance_id = mt.id
 JOIN 
     method mth ON rs.method_id = mth.id
 JOIN 
     request_status rstt ON rs.status_id = rstt.id
-JOIN 
+left JOIN 
     users u ON rs.petitioner_id = u.id
+    left JOIN 
+    users u2 ON rs.recipient_id = u2.id
 LEFT JOIN 
     solution s ON s.id=rs.solution_id
         WHERE rs.id=${id};
@@ -250,21 +292,27 @@ LEFT JOIN
   getRequestCompleted: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
-        u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,rs.created_at, rs.processing_content_problem,
-        mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.affiliated_department AS r_affiliated_department,
-        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u.email AS r_email
+        `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name as status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
+        u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,u.account as p_account,rs.created_at, rs.processing_content_problem,
+        mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.account as r_account,u2.affiliated_department AS r_affiliated_department,
+        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email
         FROM  request_storage rs
          JOIN
     method mth ON rs.method_id = mth.id
      LEFT JOIN
-    solution s ON s.id=rs.solution_id,maintenance_type mt, users u,request_status rstt,  users AS u2
-        WHERE rs.id=${id} AND rs.maintenance_id=mt.id AND rs.petitioner_id =u.id AND rs.status_id=rstt.id AND u2.id=rs.recipient_id;`
+    solution s ON s.id=rs.solution_id
+    left join maintenance_type mt on rs.maintenance_id=mt.id
+    LEFT JOIN
+    users u ON rs.petitioner_id =u.id
+    left join
+    users AS u2 on u2.id=rs.recipient_id,
+     request_status rstt
+        WHERE rs.id=${id} AND rs.status_id=rstt.id;`
       );
 
       return result[0] ? result[0] : {};
     } catch (error) {
-      console.log("error model getRequestProcessing:", error);
+      console.log("error model getRequestCompleted:", error);
       return false;
     }
   },
@@ -272,7 +320,9 @@ LEFT JOIN
   getMaintenanceClassId: async (id) => {
     try {
       const result = await pool.query(
-        `SELECT mc.id as mc_id,lb.id as label_id,lb.label_name,group_m FROM maintenance_class mc ,list_label lb WHERE mc.maintenance_id=${id} and lb.id=mc.list_label_id;`
+        `SELECT mc.id as mc_id,lb.id as label_id,lb.label_name,group_m 
+        FROM maintenance_class mc left join list_label lb on lb.id=mc.list_label_id
+        WHERE mc.maintenance_id=${id};`
       );
 
       return result ? result : [];
@@ -301,7 +351,6 @@ LEFT JOIN
       if (!data.password) {
         result = await pool.query(
           `update users set 
-          name="${data.name}",
           affiliated_department= "${data.affiliated_department}",
           position= "${data.position}",
           phone_number= "${data.phone_number}",
@@ -315,7 +364,6 @@ LEFT JOIN
         result = await pool.query(
           `update users set
           password="${password_hash}",
-          name="${data.name}",
           affiliated_department= "${data.affiliated_department}",
           position= "${data.position}",
           phone_number= "${data.phone_number}",
@@ -324,7 +372,7 @@ LEFT JOIN
           where id="${user_id}";`
         );
       }
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateUserInfor:", error);
       return false;
@@ -334,8 +382,8 @@ LEFT JOIN
   getAllProblemByRequest_id: async (request_id) => {
     try {
       result = await pool.query(
-        `select id, problem, created_at from list_problem
-          where request_id="${request_id}";`
+        `select id, problem, updated_at as created_at from list_problem
+          where request_id="${request_id}" order by created_at desc;`
       );
       return result;
     } catch (error) {
@@ -345,16 +393,24 @@ LEFT JOIN
   },
   registerRequest: async (data) => {
     try {
-      // console.log(data);
-      result = await pool.query(
-        `insert into request_storage(title_request,content_request,maintenance_id,petitioner_id) values (?,?,?,?);`,
-        [
-          data.title_request,
-          data.content_request,
-          data.maintenance_id,
-          data.petitioner_id,
-        ]
-      );
+      let result;
+      if (data.maintenance_id) {
+        result = await pool.query(
+          `insert into request_storage(title_request,content_request,maintenance_id,petitioner_id) values (?,?,?,?);`,
+          [
+            data.title_request,
+            data.content_request,
+            data.maintenance_id,
+            data.petitioner_id,
+          ]
+        );
+      } else {
+        result = await pool.query(
+          `insert into request_storage(title_request,content_request, petitioner_id) values (?,?,?);`,
+          [data.title_request, data.content_request, data.petitioner_id]
+        );
+      }
+
       return result;
     } catch (error) {
       console.log("error model registerRequest:", error);
@@ -375,15 +431,18 @@ LEFT JOIN
   },
   updateRequest: async (request_id, data) => {
     try {
+      // console.log(data);
+      !data.maintenance_id ? (data.maintenance_id = null) : data.maintenance_id;
+
       result = await pool.query(
         `update request_storage set
           title_request="${data.title_request}",
           content_request= "${data.content_request}",
-          maintenance_id= "${data.maintenance_id}"
-          where id="${request_id}";`
+          maintenance_id= ${data.maintenance_id}
+          where id="${request_id}" and petitioner_id="${data.petitioner_id}";`
       );
 
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model UpdateRequest:", error);
       return false;
@@ -395,7 +454,8 @@ LEFT JOIN
         "DELETE FROM request_file WHERE file_address= ?",
         [filename]
       );
-      return result;
+      // console.log(result);
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Deletefile in Request:", error);
       return false;
@@ -418,7 +478,7 @@ LEFT JOIN
       result = await pool.query(
         `DELETE FROM request_storage WHERE petitioner_id= "${user_id}" and id="${request_id}"`
       );
-      return result;
+      return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete request in Request storage:", error);
       return false;
@@ -428,7 +488,7 @@ LEFT JOIN
   getUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
-        `SELECT users.id,users.name,affiliated_department,email,roles.name as leveluser,position,phone_number,tel_number FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
+        `SELECT users.id,users.account,users.name,affiliated_department,email,"일반사용자" as leveluser,position,phone_number,tel_number FROM users,roles WHERE users.id=${user_id} and users.role_id= roles.id;`
       );
       return result[0];
     } catch (error) {
@@ -482,6 +542,55 @@ LEFT JOIN
       return result;
     } catch (error) {
       console.log("error model get  status :", error);
+      return false;
+    }
+  },
+  deleteListProblem: async (request_id) => {
+    try {
+      const result = await pool.query(
+        `delete from list_problem where request_id="${request_id}"`
+      );
+      return result.affectedRows > 0 ? result : false;
+    } catch (error) {
+      console.log("error model DeleteListProblem :", error);
+      return false;
+    }
+  },
+  requestToOrther: async (petitioner_id, page) => {
+    // console.log(petitioner_id, page);
+    try {
+      const numberPage = page * 10;
+      const result = await pool.query(
+        `SELECT DISTINCT
+
+          rs.id,
+          rs.title_request,
+          mt.type_name,
+          rs.status_id,
+          users.name AS petitioner,
+          users2.name AS recipient,
+          rs.created_at,
+          rs.completion_date,
+          mth.method_name
+
+      FROM
+          request_storage rs
+      left JOIN
+          maintenance_type mt ON rs.maintenance_id = mt.id
+      JOIN
+          request_status rstt ON rs.status_id = rstt.id
+      JOIN
+          users ON rs.petitioner_id = users.id
+      LEFT JOIN
+          users AS users2 ON rs.recipient_id = users2.id,
+          method mth
+      WHERE
+          rs.petitioner_id = ${petitioner_id} and rs.method_id=mth.id ORDER BY rs.updated_at desc LIMIT 1 OFFSET ${numberPage};`
+      );
+      // console.log(result);
+      return result;
+    } catch (error) {
+      console.log("error model requestToOrther:", error);
       return false;
     }
   },

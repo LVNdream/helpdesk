@@ -7,7 +7,7 @@ class jwtService {
       process.env.JWT_ACCESS_KEY,
 
       {
-        expiresIn: "1d",
+        expiresIn: process.env.ACCESS_TOKEN_LIFE,
       }
     );
   }
@@ -19,7 +19,7 @@ class jwtService {
       process.env.JWT_REFRESHTOKEN_KEY,
 
       {
-        expiresIn: "1d",
+        expiresIn: process.env.REFRESH_TOKEN_LIFE,
       }
     );
   }

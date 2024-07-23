@@ -1,3 +1,4 @@
+const { restart } = require("nodemon");
 const helperModel = require("../models/helperModel");
 const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
@@ -42,18 +43,29 @@ class helperPageService {
           error: 500,
         };
       }
-      const MT_Register = await midService.getMaintenanceType_checked(
+      const inforRequest = await userPageModel.getRequestById(request_id);
+      if (!inforRequest) {
+        return {
+          message: "Error model get request by id",
+          status: false,
+          error: 500,
+        };
+      }
+
+      let MT_Register;
+      let listProblem_RQ = await userPageModel.getAllProblemByRequest_id(
         request_id
       );
-      const listProblem_RQ = await userPageModel.getAllProblemByRequest_id(
-        request_id
-      );
+      // listProblem_RQ
 
       if (status_id == 1 || status_id == 2 || status_id == 3) {
+        MT_Register = await midService.getMaintenanceType_checked(
+          inforRequest.maintenance_id
+        );
         const resultInfor = await userPageModel.getRequestConfirm_Register(
           request_id
         );
-        // console.log(resultInfor.recipient_id, recipient_id);
+        // console.log(resultInfor);
         if (
           (status_id == 2 || status_id == 3) &&
           resultInfor.recipient_id != recipient_id
@@ -89,27 +101,166 @@ class helperPageService {
           }
           return {
             data: {
-              ...resultInfor,
+              infor_petitioner: {
+                user_id: resultInfor.user_id,
+                account: resultInfor.account,
+                name: resultInfor.name,
+                affiliated_department: resultInfor.affiliated_department,
+                phone_number: resultInfor.phone_number,
+                position: resultInfor.position,
+                email: resultInfor.email,
+              },
+              infor_recipient: {
+                user_id: resultInfor.r_id,
+                name: resultInfor.r_name,
+              },
+              id: resultInfor.id,
+              title_request: resultInfor.title_request,
+              content_request: resultInfor.content_request,
+              maintenance_id: resultInfor.maintenance_id,
+              method_name: resultInfor.method_name,
+              solution_name: resultInfor.solution_name,
+              created_at: resultInfor.created_at,
               listProblem_RQ,
               MT_Register,
               status_id: status_id + 1,
+              status_name: resultInfor.status_name,
             },
             status: true,
           };
         }
         return {
           data: {
-            ...resultInfor,
+            infor_petitioner: {
+              user_id: resultInfor.user_id,
+              account: resultInfor.account,
+
+              name: resultInfor.name,
+              affiliated_department: resultInfor.affiliated_department,
+              phone_number: resultInfor.phone_number,
+              position: resultInfor.position,
+              email: resultInfor.email,
+            },
+            infor_recipient: {
+              user_id: resultInfor.r_id,
+              name: resultInfor.r_name,
+            },
+            id: resultInfor.id,
+            title_request: resultInfor.title_request,
+            content_request: resultInfor.content_request,
+            maintenance_id: resultInfor.maintenance_id,
+            method_name: resultInfor.method_name,
+            solution_name: resultInfor.solution_name,
+            created_at: resultInfor.created_at,
             listProblem_RQ,
             MT_Register,
             status_id: status_id,
+            status_name: resultInfor.status_name,
           },
           status: true,
         };
       } else if (status_id == 4 || status_id == 5) {
         const resultInfor = await userPageModel.getRequestCompleted(request_id);
 
-        if (resultInfor.recipient_id != recipient_id) {
+        // lay ra maintenance
+
+        const MT_Register = await midService.getMaintenanceType_checked(
+          inforRequest.maintenance_id
+        );
+
+        const resutlProcessingDetail =
+          await userPageModel.getMaintenanceClassRequest(inforRequest.id);
+
+        const listMT_detail = await Promise.all(
+          MT_Register.map(async (item) => {
+            const resutlMainClass = await userPageModel.getMaintenanceClassId(
+              item.id
+            );
+            if (!resutlMainClass) {
+              return {
+                message: "Serve have error in getMaintenanceClassRequest",
+                status: false,
+                error: 500,
+              };
+            }
+            if (!resutlProcessingDetail) {
+              return {
+                message: "Serve have error in ProcessingDetail",
+                status: false,
+                error: 500,
+              };
+            }
+
+            const maintenanceClass = resutlMainClass.map((itemMC) => {
+              let checked = false;
+              resutlProcessingDetail.forEach((itemPD) => {
+                if (itemMC.label_id == itemPD.label_id) {
+                  checked = true;
+                }
+              });
+              return {
+                mc_id: itemMC.mc_id,
+
+                label_name: itemMC.label_name,
+                group_m: itemMC.group_m,
+                checked,
+              };
+            });
+            if (item.id == 1) {
+              const maintenanceClass_class1 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 1;
+                }
+              );
+              const maintenanceClass_class2 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 2;
+                }
+              );
+              return {
+                ...item,
+                maintenanceClass: [
+                  { name: "H/W", data: maintenanceClass_class1 },
+                  { name: "S/W", data: maintenanceClass_class2 },
+                ],
+              };
+            } else if (item.id == 2) {
+              const maintenanceClass_class1 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 1;
+                }
+              );
+              const maintenanceClass_class2 = maintenanceClass.filter(
+                (itemMC) => {
+                  return itemMC.group_m == 2;
+                }
+              );
+              return {
+                ...item,
+                maintenanceClass: [
+                  { name: "전산부분", data: maintenanceClass_class1 },
+                  {
+                    name: "일반부분",
+                    data: maintenanceClass_class2,
+                  },
+                ],
+              };
+            }
+          })
+        );
+
+        const files = await userPageModel.getAllFileByRequest(inforRequest.id);
+        if (!files) {
+          return {
+            message: "Error get file by request",
+            status: false,
+            error: 500,
+          };
+        }
+
+        //
+
+        if (resultInfor.r_id != recipient_id) {
           return {
             message: "Recipient not valid",
             status: false,
@@ -128,24 +279,29 @@ class helperPageService {
             method_name: resultInfor.method_name,
 
             infor_petitioner: {
-              p_id: resultInfor.petitioner_id,
-              p_name: resultInfor.p_name,
-              p_affiliated_department: resultInfor.p_affiliated_department,
-              p_phone_number: resultInfor.p_phone_number,
-              p_position: resultInfor.p_position,
-              p_email: resultInfor.p_email,
+              user_id: resultInfor.petitioner_id,
+              name: resultInfor.p_name,
+              account: resultInfor.p_account,
+
+              affiliated_department: resultInfor.p_affiliated_department,
+              phone_number: resultInfor.p_phone_number,
+              position: resultInfor.p_position,
+              email: resultInfor.p_email,
             },
             infor_recipient: {
-              r_id: resultInfor.r_id,
-              r_name: resultInfor.r_name,
-              r_affiliated_department: resultInfor.r_affiliated_department,
-              r_phone_number: resultInfor.r_phone_number,
-              r_position: resultInfor.r_position,
-              r_email: resultInfor.r_email,
+              user_id: resultInfor.r_id,
+              name: resultInfor.r_name,
+              account: resultInfor.r_account,
+              affiliated_department: resultInfor.r_affiliated_department,
+              phone_number: resultInfor.r_phone_number,
+              position: resultInfor.r_position,
+              email: resultInfor.r_email,
             },
-            MT_Register,
+            MT_Register: listMT_detail,
             listProblem_RQ,
+            files,
             status_id,
+            status_name: resultInfor.status_name,
           },
           status: true,
         };
@@ -193,6 +349,39 @@ class helperPageService {
       console.log(error);
       return {
         message: "Server error getRequestList By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  // update request
+  // async
+  // updateHelpdeskInfor
+  async updateHelpdeskInfor(data, user_id) {
+    try {
+      const resutl = await helperModel.updateHelpdeskInfor(data, user_id);
+
+      if (!resutl) {
+        return {
+          messsage: "Update Fail!, Error model update",
+          status: false,
+          error: 500,
+        };
+      }
+
+      const resutlInfor = await userPageModel.getUserInfor(user_id);
+
+      return resutlInfor
+        ? { messsage: "Update help desk Success!", status: true, resutlInfor }
+        : {
+            messsage: "Get infor helpdesk fail",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error updateHelpdeskInfor Sevice",
         status: false,
         error: 500,
       };
@@ -267,23 +456,46 @@ class helperPageService {
         };
       }
 
-      const lengthProblems = listProblem.length;
-      for (let i = 0; i < lengthProblems; i++) {
-        const problem = listProblem[i];
-        const resultAdd = await helperModel.addListProblem(request_id, problem);
-        if (!resultAdd) {
-          return {
-            message: "Error add request problem model",
-            status: false,
-            error: 500,
-          };
-        }
+      // const lengthProblems = listProblem.length;
+      // for (let i = 0; i < lengthProblems; i++) {
+      //   const problemData = listProblem[i];
+      //   const resultAdd = await helperModel.addListProblem(
+      //     request_id,
+      //     problemData
+      //   );
+      //   if (!resultAdd) {
+      //     return {
+      //       message: "Error add request problem model",
+      //       status: false,
+      //       error: 500,
+      //     };
+      //   }
+      // }
+
+      const resultAdd = await helperModel.addListProblem(
+        request_id,
+        listProblem
+      );
+      if (!resultAdd) {
+        return {
+          message: "Error add request problem model",
+          status: false,
+          error: 500,
+        };
       }
+
+      let data = {
+        id: parseInt(resultAdd.insertId),
+        problem: listProblem.problem,
+        created_at: Date.now(),
+      };
+
       if (resultRQ.status_id == 2) {
         const resultUpdateStatus = await helperModel.updateStatus_id(
-          resultRQ.request_id,
+          request_id,
           3
         );
+
         if (!resultUpdateStatus) {
           return {
             message: "Error update request status model",
@@ -293,6 +505,8 @@ class helperPageService {
         }
       }
       return {
+        data,
+        request_id,
         message: "Add problem success",
         status: true,
       };
@@ -306,7 +520,13 @@ class helperPageService {
     }
   }
 
-  async updateProblem(request_id, recipient_id, problem_id, problem) {
+  async updateProblem(
+    request_id,
+    recipient_id,
+    problem_id,
+    problem,
+    updated_at
+  ) {
     try {
       const resultRQ = await userPageModel.getRequestById(request_id);
       if (resultRQ.recipient_id != recipient_id) {
@@ -317,7 +537,11 @@ class helperPageService {
         };
       }
 
-      const resultUpdate = await helperModel.updateProblem(problem_id, problem);
+      const resultUpdate = await helperModel.updateProblem(
+        problem_id,
+        problem,
+        updated_at
+      );
       if (!resultUpdate) {
         return {
           message: "Error update request problem model",
@@ -327,6 +551,12 @@ class helperPageService {
       }
 
       return {
+        data: {
+          request_id,
+          problem_id,
+          problem,
+          updated_at,
+        },
         message: "update problem success",
         status: true,
       };
@@ -339,6 +569,137 @@ class helperPageService {
       };
     }
   }
+  // helpdesk request
+
+  async updateRequest(data) {
+    try {
+      // console.log(files, arrayDelete);
+      const request = await userPageModel.getRequestById(data.request_id);
+
+      //
+      if (data.maintenance_id && data.maintenance_id != data.role_id) {
+        data.updated_at = new Date(Date.now());
+      } else {
+        data.updated_at = request.updated_at;
+      }
+      // console.log(data.updated_at);
+      //
+      if (!request) {
+        return {
+          message: "Server error get request By Id",
+          status: false,
+          error: 500,
+        };
+      }
+      if (request.status_id > 3) {
+        return {
+          message: "Status not valid",
+          status: false,
+          error: 500,
+        };
+      }
+
+      if (request.recipient_id != data.recipient_id) {
+        return {
+          message: "Petitioner_id not valid",
+          status: false,
+          error: 500,
+        };
+      }
+
+      let replaceData;
+      if (
+        data.maintenance_id != request.maintenance_id &&
+        data.maintenance_id != data.role_id
+      ) {
+        replaceData = await helperModel.requestToOrther(
+          data.recipient_id,
+          data.role_id,
+          data.page
+        );
+        if (!replaceData) {
+          return {
+            message: "Error get requestToOrther ",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+
+      const resultUpdate = await helperModel.updateRequest(data);
+      if (!resultUpdate) {
+        return {
+          message: "Error updateRequest helpdeskmodel",
+          status: false,
+          error: 500,
+        };
+      }
+
+      let change_maintype = false;
+      if (
+        data.maintenance_id != request.maintenance_id &&
+        data.maintenance_id != data.role_id
+      ) {
+        // delete problem
+        const resetRequest = await helperModel.resetRequest(data);
+        if (!resetRequest) {
+          return {
+            message: "Error updateRequest resetRequest",
+            status: false,
+            error: 500,
+          };
+        }
+
+        if (request.status_id == 3) {
+          const deleteListProblem = await userPageModel.deleteListProblem(
+            data.request_id
+          );
+          if (!deleteListProblem) {
+            return {
+              message: "Error deleteListProblem",
+              status: false,
+              error: 500,
+            };
+          }
+        }
+
+        change_maintype = true;
+      }
+      delete data.page;
+      delete data.recipient_id;
+      //
+      const type_name = await helperModel.type_name_ById(data.maintenance_id);
+
+      if (!type_name) {
+        return {
+          message: "Error model get type_name_ById",
+          status: false,
+          error: 500,
+        };
+      }
+      //
+      return {
+        message: "Update request successfully",
+        status: true,
+
+        data: {
+          ...data,
+          change_maintype,
+          replaceData: replaceData ? replaceData[0] : "",
+          type_name,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error Update Request helpdeskSevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  //
 
   async deleteProblem(request_id, recipient_id, problem_id) {
     try {
@@ -369,6 +730,8 @@ class helperPageService {
           error: 500,
         };
       }
+      let data;
+
       if (listProblem.length == 0) {
         const resutlUpdateStatus = await helperModel.updateStatus_id(
           request_id,
@@ -381,10 +744,17 @@ class helperPageService {
             error: 500,
           };
         }
+        data = {
+          request_id,
+          status_id: 2,
+        };
       }
       return {
+        data,
+
         message: "Delete problem success",
         status: true,
+        problem_id,
       };
     } catch (error) {
       console.log(error);
@@ -425,25 +795,42 @@ class helperPageService {
           error: 500,
         };
       }
-      const listProcessing = data.listProcessing;
+      // add processing detail
+      const resultAddprocess = await helperModel.addProcessingDetail(
+        request_id,
+        data.listProcessing
+      );
+      // const listProcessing = data.listProcessing;
 
-      const listProcessLength = listProcessing.length;
-      // add data
-      for (let i = 0; i < listProcessLength; i++) {
-        const label_id = listProcessing[i];
-        const resultAddprocess = await helperModel.addProcessingDetail(
-          request_id,
-          label_id
-        );
-        if (!resultAddprocess) {
-          return {
-            message: "Error add process detai;",
-            status: false,
-            error: 500,
-          };
-        }
+      // const listProcessLength = listProcessing.length;
+      // // add data
+      // for (let i = 0; i < listProcessLength; i++) {
+      //   const label_id = listProcessing[i];
+      //   const resultAddprocess = await helperModel.addProcessingDetail(
+      //     request_id,
+      //     label_id
+      //   );
+
+      if (!resultAddprocess) {
+        return {
+          message: "Error add process detai;",
+          status: false,
+          error: 500,
+        };
+      }
+      // }
+      //
+
+      const inforUpdate = await userPageModel.getNewRequest(request_id);
+      if (!inforUpdate) {
+        return {
+          message: "Error get getNewRequest model",
+          status: false,
+          error: 500,
+        };
       }
       return {
+        data: inforUpdate,
         message: "Verify Completed success",
         status: true,
       };
@@ -477,10 +864,10 @@ class helperPageService {
       };
     }
   }
-  async getInforComplted(recipient_id, request_id) {
+  async getInforComplted(recipient_id, request_id, role_id) {
     try {
       //  get Infor
-      const infor_recipient = await userPageModel.getUserInfor(recipient_id);
+      const infor_recipient = await helperModel.getHelpdeskInfor(recipient_id);
       if (!infor_recipient) {
         return {
           message: "Error model get infor User",
@@ -488,15 +875,33 @@ class helperPageService {
           error: 500,
         };
       }
+
+      // get ìnor request
+      let inforRequest;
+      if (request_id) {
+        const result = await userPageModel.getRequestById(request_id);
+        if (!result) {
+          return {
+            message: "Error model get infor request",
+            status: false,
+            error: 500,
+          };
+        }
+        inforRequest = result;
+      }
+      //
       //
       // get method
-      const methods = await helperModel.getMethod();
-      if (!methods) {
-        return {
-          message: "Error model get Method",
-          status: false,
-          error: 500,
-        };
+      let methods;
+      if (!request_id) {
+        methods = await helperModel.getMethod();
+        if (!methods) {
+          return {
+            message: "Error model get Method",
+            status: false,
+            error: 500,
+          };
+        }
       }
       //
       // / get soltion
@@ -510,7 +915,7 @@ class helperPageService {
       }
       //
       // get status
-      const status = await helperModel.getStatus();
+      let status = await helperModel.getStatus();
       if (!status) {
         return {
           message: "Error model get status",
@@ -518,8 +923,31 @@ class helperPageService {
           error: 500,
         };
       }
+      if (request_id) {
+        status = status.filter((item) => {
+          return item.id == 4;
+        });
+      } else {
+        status = status.filter((item) => {
+          return item.id == 2 || item.id == 4;
+        });
+      }
       //
-      let main_type = await helperModel.getMaintenanceType();
+      let main_type;
+      if (inforRequest) {
+        main_type = await midService.getMaintenanceType_checked(
+          inforRequest.maintenance_id
+        );
+      } else {
+        if (role_id == 5) {
+          main_type = await midService.getMaintenanceType_checked();
+          main_type = main_type.map((item) => {
+            return { ...item, checked: true };
+          });
+        } else {
+          main_type = await midService.getMaintenanceType_checked(role_id);
+        }
+      }
 
       if (!main_type) {
         return {
@@ -533,23 +961,60 @@ class helperPageService {
           let mainClass = await userPageModel.getMaintenanceClassId(
             mainType.id
           );
-          mainClass = mainClass.map((item) => {
+
+          if (mainType.id == 1) {
+            let classFilterHW = mainClass.filter((item) => {
+              return item.group_m == 1;
+            });
+            classFilterHW = classFilterHW.map((item) => {
+              return { label_id: item.label_id, label_name: item.label_name };
+            });
+            let classFilterSW = mainClass.filter((item) => {
+              return item.group_m == 2;
+            });
+            classFilterSW = classFilterSW.map((item) => {
+              return { label_id: item.label_id, label_name: item.label_name };
+            });
             return {
-              label_id: item.label_id,
-              label_name: item.label_name,
+              ...mainType,
+              group: [
+                { name: "H/W", data: classFilterHW },
+                { name: "S/W", data: classFilterSW },
+              ],
             };
-          });
-          return {
-            ...mainType,
-            mainClass,
-          };
+          }
+          if (mainType.id == 2) {
+            let classFilter1 = mainClass.filter((item) => {
+              return item.group_m == 1;
+            });
+            classFilter1 = classFilter1.map((item) => {
+              return { label_id: item.label_id, label_name: item.label_name };
+            });
+            let classFilter2 = mainClass.filter((item) => {
+              return item.group_m == 2;
+            });
+            classFilter2 = classFilter2.map((item) => {
+              return { label_id: item.label_id, label_name: item.label_name };
+            });
+            return {
+              ...mainType,
+              group: [
+                { name: "전산부분", data: classFilter1 },
+                { name: "일반부분", data: classFilter2 },
+              ],
+            };
+          }
         })
       );
-      const files = await userPageModel.getAllFileByRequest(request_id);
-      // console.log(main_type);
+      let files = [];
+      if (request_id) {
+        files = await userPageModel.getAllFileByRequest(request_id);
+      }
+      // console.log(request_id, files);
+
       return {
         main_type,
-        methods,
+        methods: methods ? methods : false,
         solutions,
         status,
         infor_recipient,
@@ -565,9 +1030,131 @@ class helperPageService {
     }
   }
 
-  async getAllUser() {
+  async deleteRequest(user_id, role_id, request_id, page) {
     try {
-      let users = await helperModel.getAllUser();
+      const status_id = await userPageModel.getIdStatusByRequest(request_id);
+
+      if (!status_id) {
+        return {
+          message:
+            "Server error get status_id by request model or reqeusr_id not exist",
+          status: false,
+          error: 500,
+        };
+      }
+      const resutlRequest = await userPageModel.getRequestById(request_id);
+      // console.log(resutlRequest);
+      if (!resutlRequest) {
+        return {
+          message: "Server error get request by id model",
+          status: false,
+          error: 500,
+        };
+      }
+
+      if (status_id > 3) {
+        return {
+          message: "Status id  in valid",
+          status: false,
+          error: 400,
+        };
+      }
+      if (resutlRequest.recipient_id != user_id) {
+        return {
+          message: "You not own request",
+          status: false,
+          error: 401,
+        };
+      }
+
+      // xoa file
+      let files = await userPageModel.getAllFileByRequest(request_id);
+      files = files.map((file) => {
+        return file.file_address;
+      });
+
+      const filesLength = files.length;
+
+      if (filesLength > 0) {
+        for (let i = 0; i < filesLength; i++) {
+          const file = files[i];
+          // console.log(file);
+          const resutlDB = await userPageModel.deleteFile(file);
+          if (!resutlDB) {
+            return {
+              message: "Server error Delete File Model",
+              status: false,
+              error: 500,
+            };
+          }
+          const resultDeleleSever = await midService.deleteFile(file, "files");
+          if (!resultDeleleSever) {
+            return {
+              message: "Server error Delete one File midService",
+              status: false,
+              error: 500,
+            };
+          }
+        }
+      }
+
+      //  xoa list_problem
+      const listProblem = await userPageModel.getAllProblemByRequest_id(
+        request_id
+      );
+      if (listProblem.length > 0) {
+        const deleteProblem = await userPageModel.deleteListProblem(request_id);
+
+        if (!deleteProblem) {
+          return {
+            message: "Server error Delete list Problem midService",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+      // ///
+
+      let data;
+      data = await helperModel.requestToOrther(user_id, role_id, page);
+      // console.log(data);
+      if (!data) {
+        return {
+          messsage: "Error model requestToOrther",
+          status: false,
+          error: 500,
+        };
+      }
+
+      // xoa request
+      const resutl = await helperModel.deleteRequest(user_id, request_id);
+
+      return resutl
+        ? // return true
+          {
+            messsage: "Deleted Success!",
+            status: true,
+            request_id,
+            data: data[0],
+          }
+        : {
+            messsage: "Delete Fail!, Error model delete",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getAllUser(page) {
+    try {
+      let users = await helperModel.getAllUser(page);
       if (!users) {
         return {
           message: "Error in get users model",
@@ -575,7 +1162,9 @@ class helperPageService {
           error: 500,
         };
       }
-      return users;
+      let userCount = await helperModel.getUserCount();
+
+      return { data: users, userCount: userCount };
     } catch (error) {
       console.log(error);
       return {
@@ -586,18 +1175,72 @@ class helperPageService {
     }
   }
 
-  async addRequestCompleted(recipient_id, data, files) {
+  async getUserById(user_id) {
     try {
-      // console.log(recipient_id, data, files);
+      let user = await userPageModel.getUserInfor(user_id);
+      if (!user) {
+        return {
+          message: "Error in get users infor model",
+          status: false,
+          error: 500,
+        };
+      }
+      delete user.phone_number;
+      delete user.leveluser;
+
+      return user;
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get maintenance type Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async helperSearchUser(option, text, page) {
+    try {
+      const resutl = await helperModel.helperSearchUser(option, text, page);
+
+      return resutl
+        ? {
+            data: resutl.listFilter,
+            userCount: parseInt(resutl.requestCount),
+          }
+        : {
+            message: "Error model helperSearchUser",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error get list User By search Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async addRequestCompleted(infor_user, data, files) {
+    try {
+      // console.log( data);
       const dataRequest = {
         title_request: data.title_request,
         content_request: data.content_request,
+        //
+
         maintenance_id: data.maintenance_id,
+
+        //
         petitioner_id: data.petitioner_id,
-        recipient_id,
+        recipient_id: infor_user.id,
         solution_id: data.solution_id,
         status_id: data.status_id,
         processing_content_problem: data.processing_content_problem,
+        timeRequest: data.timeRequest,
+        method_id: data.method_id,
       };
       // console.log(dataRequest)
       // add request
@@ -609,9 +1252,68 @@ class helperPageService {
           error: 500,
         };
       }
+      const request_id = resultAddRQ.insertId;
+
+      //processing detail
+      // console.log(data)
+      const resultAddprocess = await helperModel.addProcessingDetail(
+        request_id,
+        data.listProcessing
+      );
+      if (!resultAddprocess) {
+        const deleteRequest = await helperModel.helperDeleteRequest(
+          infor_user.id,
+          request_id
+        );
+        if (!deleteRequest) {
+          return {
+            message: "Error deleteRequest;",
+            status: false,
+            error: 500,
+          };
+        }
+        return {
+          message: "Error add process detai11;",
+          status: false,
+          error: 500,
+        };
+      }
+      // const listProcessing = data.listProcessing;
+
+      // const listProcessLength = listProcessing.length;
+      // // add data
+      // if (data.status_id == 4) {
+      //   for (let i = 0; i < listProcessLength; i++) {
+      //     const label_id = listProcessing[i];
+      //     const resultAddprocess = await helperModel.addProcessingDetail(
+      //       request_id,
+      //       label_id
+      //     );
+
+      //     if (!resultAddprocess) {
+      //       // console.log(infor_user.id, request_id);
+      //       const deleteRequest = await helperModel.helperDeleteRequest(
+      //         infor_user.id,
+      //         request_id
+      //       );
+      //       if (!deleteRequest) {
+      //         return {
+      //           message: "Error deleteRequest;",
+      //           status: false,
+      //           error: 500,
+      //         };
+      //       }
+      //       return {
+      //         message: "Error add process detai11;",
+      //         status: false,
+      //         error: 500,
+      //       };
+      //     }
+      //   }
+      // }
+
       // add file
 
-      const request_id = resultAddRQ.insertId;
       const filelLength = files.length;
       for (let i = 0; i < filelLength; i++) {
         const file = files[i];
@@ -620,6 +1322,26 @@ class helperPageService {
           file.filename
         );
         if (!resutl) {
+          const deleteProcessDetail =
+            await helperModel.deleteListProcessByRequest(request_id);
+          if (!deleteProcessDetail) {
+            return {
+              message: "Error deleteProcessDetail;",
+              status: false,
+              error: 500,
+            };
+          }
+          const deleteRequest = await userPageModel.deleteRequest(
+            infor_user.id,
+            request_id
+          );
+          if (!deleteRequest) {
+            return {
+              message: "Error deleteRequest;",
+              status: false,
+              error: 500,
+            };
+          }
           return {
             message: "Server error addRequestFile Model",
             status: false,
@@ -637,26 +1359,10 @@ class helperPageService {
         };
       }
 
-      //processing detail
-      const listProcessing = data.listProcessing;
+      let inforNewRequest = await userPageModel.getNewRequest(request_id);
 
-      const listProcessLength = listProcessing.length;
-      // add data
-      for (let i = 0; i < listProcessLength; i++) {
-        const label_id = listProcessing[i];
-        const resultAddprocess = await helperModel.addProcessingDetail(
-          request_id,
-          label_id
-        );
-        if (!resultAddprocess) {
-          return {
-            message: "Error add process detai;",
-            status: false,
-            error: 500,
-          };
-        }
-      }
       return {
+        data: { ...inforNewRequest },
         message: "Register request completed success",
         status: true,
       };

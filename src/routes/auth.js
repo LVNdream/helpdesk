@@ -6,8 +6,13 @@ router.post("/checkid", authController.checkId);
 
 router.post("/register", authController.register);
 
-router.post("/login",middlewareAuth.verifyNormalUser, authController.login);
+router.post("/login", middlewareAuth.verifyNormalUser, authController.login);
 
+router.post(
+  "/refreshtoken",
+  middlewareAuth.verifyRefreshToken,
+  authController.handleRefreshToken
+);
 router.post(
   "/loginadmin",
   middlewareAuth.verifyLoginAdmin,
@@ -18,6 +23,16 @@ router.post(
   "/verifypassword",
   middlewareAuth.verifyAuthentication,
   authController.verifyPassword
+);
+router.get(
+  "/username",
+  middlewareAuth.verifyAuthentication,
+  authController.getUserName
+);
+router.post(
+  "/update/pw",
+  middlewareAuth.verifyAuthentication,
+  authController.updatePassword
 );
 
 module.exports = router;

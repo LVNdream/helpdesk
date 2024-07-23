@@ -29,198 +29,223 @@ router.get(
   middlewareAuth.verifyToKenAdminAuth,
   adminController.getRequestDetail
 );
-router.post(
+router.get(
   "/getrequestlist/search",
   middlewareAuth.verifyAuthentication,
   adminController.getRequestListSearch
 );
 router.get(
   "/getlistuser",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getAlluser
 );
-router.post(
+router.get(
   "/getlistuser/search",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listUserBySearch
 );
 
 router.get(
   "/getuserinfor/:user_id",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.adminGetUserById
 );
 router.get(
   "/gethelperinfor/:user_id",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.adminGethlperById
+);
+router.get(
+  "/getuserinfor/accept/:user_id",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.adminGetUserByIdAccept
 );
 router.post(
   "/updateuser/status",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateUserStatus
 );
 router.post(
-  "/deleteuser",
-  middlewareAuth.verifyAuthentication,
+  "/updateuser/infor",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.AdminUpdateUserInfor
+);
+router.delete(
+  "/deleteuser/:page/:user_id",
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteUser
 );
 
 router.get(
   "/getlisthelper",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllHelper
 );
-router.post(
+router.get(
   "/getlisthelper/search",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listHelperBySearch
 );
 
 router.get(
   "/getlistcompany/addinfor",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllCompanyToAddInfor
 );
-router.post(
+router.get(
   "/getlistcompany/addinfor/search",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listCompanyBySearchToAddInfor
 );
 router.get(
   "/getlistcompany/watch",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getAllCompanyToWatch
 );
-router.post(
+router.get(
   "/getlistcompany/watch/search",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listCompanyBySearchToWatch
 );
 router.post(
   "/register/helper",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.registerHelper
 );
 router.get(
   "/getmaintenacetype",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getMaintenanceType
 );
 
 router.post(
   "/updatehelper/infor",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateHelperInfor
 );
 router.post(
   "/checkcompanyname/",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.checkCompanyName
 );
 
 router.post(
   "/register/company",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.registerCompany
 );
 
 router.get(
   "/getcompanyinfor/:company_id",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getCompanyInfor
 );
 router.post(
   "/updatecompany/infor",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateCompanyInfor
 );
 
-router.post(
-  "/deletecompany",
-  middlewareAuth.verifyAuthentication,
+router.delete(
+  "/deletecompany/:page/:company_id",
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteCompany
+);
+router.delete(
+  "/deletelabel/:label_id",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.deleteLabel
 );
 
 router.get(
   "/getlistuser/waitaccept",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getAlluserWaitAccept
 );
-router.post(
+router.get(
   "/getlistuser/waitaccept/search",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listUserWaitAcceptBySearch
 );
 
 router.post(
   "/updateuser/status/normal",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateUserStatusNormal
 );
 router.post(
   "/updateuser/status/denied",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateUserStatusDenied
 );
 router.get(
   "/getmaintenance/class",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.adminGetMaintenanceType
 );
 router.post(
   "/update/namelabel",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.updateLabelName
 );
 router.post(
   "/add/namelabel",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.addNameLabel
 );
 
 //
 router.get(
   "/getlistlabel/:maintenance_id",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getListLabel
 );
-router.post(
-  "/getlistlabel/search",
-  middlewareAuth.verifyAuthentication,
+router.get(
+  "/getlistlabel/:maintenance_id/search",
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.listLabelBySearch
 );
-router.post(
-  "/getlistmainclass",
-  middlewareAuth.verifyAuthentication,
+router.get(
+  "/getlistmainclass/:maintenance_id",
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getMainClassById
 );
 
 router.post(
   "/addlabel-in-mainclass",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.addLabelInMainclass
 );
 
 router.get(
   "/getinforreport/",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportCurrent
 );
 router.get(
   "/getinforreport/daily",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportDaily
 );
-router.post(
+router.get(
   "/getinforreport/week",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportWeek
 );
-router.post(
+router.get(
   "/getinforreport/month",
-  middlewareAuth.verifyAuthentication,
+  middlewareAuth.verifyToKenAdminAuth,
   adminController.getInforReportMonth
+);
+router.post(
+  "/update/infor",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.updateAdminInfor
+);
+router.get(
+  "/infor",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.adminGetInfor
 );
 
 module.exports = router;

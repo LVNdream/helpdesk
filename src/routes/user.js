@@ -11,9 +11,13 @@ var storage = multer.diskStorage({
     res(null, "./src/public/temps");
   },
   filename: (req, file, res) => {
+    // console.log(decodeURIComponent(file.originalname));
     res(
       null,
-      Date.now() + Math.floor(Math.random() * 10000) + "-" + file.originalname
+      Date.now() +
+        Math.floor(Math.random() * 10000) +
+        "-" +
+        decodeURIComponent(file.originalname)
     );
   },
 });
@@ -57,8 +61,8 @@ router.post(
   upload.any(),
   userController.updateRegisterRequest
 );
-router.post(
-  "/delete-request",
+router.delete(
+  "/request/:page/:request_id",
   middlewareAuth.verifyAuthentication,
   userController.deleteRequest
 );

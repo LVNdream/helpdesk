@@ -47,10 +47,25 @@ class helperController {
   async acceptRequest(req, res) {
     try {
       const result = await helperService.acceptRequest(
-        req.body.request_id,
+        req.params.request_id,
         req.user.id
       );
       res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  // updateHelpDeskInfor
+
+  async updateHelpdeskInfor(req, res) {
+    try {
+      const resutl = await helperService.updateHelpdeskInfor(
+        req.body,
+        req.user.id
+      );
+      res.status(200).json(resutl);
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");
@@ -76,7 +91,7 @@ class helperController {
       const result = await helperService.addListProblem(
         req.body.request_id,
         req.user.id,
-        req.body.listProblem
+        req.body
       );
       res.status(200).json(result);
     } catch (error) {
@@ -90,7 +105,8 @@ class helperController {
         req.body.request_id,
         req.user.id,
         req.body.problem_id,
-        req.body.problem
+        req.body.problem,
+        req.body.updated_at
       );
       res.status(200).json(result);
     } catch (error) {
@@ -98,6 +114,27 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  async updateRequest(req, res) {
+    
+    try {
+      const result = await helperService.updateRequest({
+        title_request: req.body.title_request,
+        content_request: req.body.content_request,
+        request_id: req.body.request_id,
+        maintenance_id: req.body.maintenance_id,
+
+        recipient_id: req.user.id,
+        role_id: req.user.role_id,
+        page: req.query.page,
+      });
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
   async deleteProblem(req, res) {
     try {
       const result = await helperService.deleteProblem(
@@ -106,6 +143,21 @@ class helperController {
         req.body.problem_id
       );
       res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async deleteRequest(req, res) {
+    try {
+      const result = await helperService.deleteRequest(
+        req.user.id,
+        req.user.role_id,
+        req.params.request_id,
+        req.params.page
+      );
+      return res.status(200).json(result);
     } catch (error) {
       console.log(error);
       res.status(500).json("Server error");
@@ -140,7 +192,8 @@ class helperController {
     try {
       const result = await helperService.getInforComplted(
         req.user.id,
-        req.params.request_id
+        req.params.request_id,
+        req.user.role_id
       );
       res.status(200).json(result);
     } catch (error) {
@@ -151,7 +204,38 @@ class helperController {
 
   async getAllUser(req, res) {
     try {
-      const result = await helperService.getAllUser();
+      let page;
+      Number(req.query.page) ? (page = req.query.page) : (page = 1);
+      const result = await helperService.getAllUser(page);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async getUserById(req, res) {
+    try {
+      const result = await helperService.getUserById(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async helperSearchUser(req, res) {
+    try {
+      let page;
+      if (!req.query.page || !Number(req.query.page)) {
+        page = 1;
+      } else {
+        page = req.query.page;
+      }
+      const result = await helperService.helperSearchUser(
+        req.query.option,
+        req.query.text,
+        page
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -163,7 +247,7 @@ class helperController {
     try {
       // console.log(req.body);
       const result = await helperService.addRequestCompleted(
-        req.user.id,
+        req.user,
         req.body,
         req.files
       );

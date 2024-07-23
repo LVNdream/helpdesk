@@ -111,6 +111,8 @@ class adminPageService {
               created_at: resutlConfirm_Register.created_at,
               infor_petitioner: {
                 user_id: resutlConfirm_Register.user_id,
+                account: resutlConfirm_Register.account,
+
                 name: resutlConfirm_Register.name,
                 affiliated_department:
                   resutlConfirm_Register.affiliated_department,
@@ -249,6 +251,8 @@ class adminPageService {
               infor_petitioner: {
                 user_id: resutlComplete_AddProblem.petitioner_id,
                 name: resutlComplete_AddProblem.p_name,
+                account: resutlComplete_AddProblem.p_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.p_affiliated_department,
                 phone_number: resutlComplete_AddProblem.p_phone_number,
@@ -258,6 +262,8 @@ class adminPageService {
               infor_recipient: {
                 user_id: resutlComplete_AddProblem.r_id,
                 name: resutlComplete_AddProblem.r_name,
+                account: resutlComplete_AddProblem.r_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
                 phone_number: resutlComplete_AddProblem.r_phone_number,
@@ -289,15 +295,42 @@ class adminPageService {
       const userCount = await adminModel.getUserCount(role_id);
 
       let listStatus = await adminModel.adminGetAccountStatus();
-
+      if (!listStatus) {
+        return {
+          message: "Error model  get listStatus",
+          status: false,
+          error: 500,
+        };
+      }
+      // listStatus.push({ id: user.id, status_name: user.status_name });
       const listUserFilterStatus = resutl.map((user) => {
         let listStatusCheck = listStatus.map((item) => {
           let checked = false;
           item.id == user.status_id ? (checked = true) : (checked = false);
           return { ...item, checked };
         });
-        delete user.status_id;
-        delete user.status_name;
+
+        const listStatusLength = listStatusCheck.length;
+        let isExisted = false;
+        for (let i = 0; i < listStatusLength; i++) {
+          const item = listStatusCheck[i];
+          // console.log(item)
+          if (item.checked) {
+            isExisted = true;
+            break;
+          }
+        }
+
+        !isExisted
+          ? listStatusCheck.push({
+              id: user.status_id,
+              status_name: user.status_name,
+              checked: true,
+            })
+          : listStatusCheck;
+
+        // delete user.status_id;
+        // delete user.status_name;
         return {
           ...user,
           listStatusCheck,
@@ -331,15 +364,42 @@ class adminPageService {
       );
 
       let listStatus = await adminModel.adminGetAccountStatus();
-
+      if (!listStatus) {
+        return {
+          message: "Error model  get listStatus",
+          status: false,
+          error: 500,
+        };
+      }
+      // listStatus.push({ id: user.id, status_name: user.status_name });
       const listUserFilterStatus = resutl.listFilter.map((user) => {
         let listStatusCheck = listStatus.map((item) => {
           let checked = false;
           item.id == user.status_id ? (checked = true) : (checked = false);
           return { ...item, checked };
         });
-        delete user.status_id;
-        delete user.status_name;
+
+        const listStatusLength = listStatusCheck.length;
+        let isExisted = false;
+        for (let i = 0; i < listStatusLength; i++) {
+          const item = listStatusCheck[i];
+          // console.log(item)
+          if (item.checked) {
+            isExisted = true;
+            break;
+          }
+        }
+
+        !isExisted
+          ? listStatusCheck.push({
+              id: user.status_id,
+              status_name: user.status_name,
+              checked: true,
+            })
+          : listStatusCheck;
+
+        // delete user.status_id;
+        // delete user.status_name;
         return {
           ...user,
           listStatusCheck,
@@ -368,10 +428,17 @@ class adminPageService {
   //
   async getAllHelper(page) {
     try {
-      const resutl = await adminModel.getAllHelper(page);
-
+      let resutl = await adminModel.getAllHelper(page);
+      // console.log(resutl);
       const userCount = await adminModel.getHelperCount();
 
+      resutl = resutl.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "정상";
+        }
+        return { ...item };
+      });
+      // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
         : {
@@ -396,6 +463,13 @@ class adminPageService {
         text,
         page
       );
+      resutl.listFilter = resutl.listFilter.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "사용가능";
+        }
+        return { ...item };
+      });
+      // loc cac helper ow trang thaiu bth neu muon sua thi vo model thay doi status
       return resutl
         ? {
             data: resutl.listFilter,
@@ -451,7 +525,7 @@ class adminPageService {
       return resutl
         ? {
             data: resutl.listFilter,
-            requestCount: parseInt(resutl.requestCount),
+            companyCount: parseInt(resutl.requestCount),
           }
         : {
             message: "Error model get list company By search",
@@ -472,24 +546,44 @@ class adminPageService {
   async getAdminUserById(user_id) {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
+      // reset password
 
       let listStatus = await adminModel.adminGetAccountStatus();
 
-      listStatus = listStatus.map((item) => {
+      let listStatusCheck = listStatus.map((item) => {
         let checked = false;
-        if (item.id == resutl.status_id) {
-          checked = true;
-        }
-        return {
-          ...item,
-          checked,
-        };
+        item.id == resutl.status_id ? (checked = true) : (checked = false);
+        return { ...item, checked };
       });
+      // console.log(listStatusCheck);
+      listStatusCheck = listStatusCheck.filter((item) => {
+        return item.id == 2 || item.id == 4 || item.checked == true;
+      });
+      // const listStatusLength = listStatusCheck.length;
+      // let isExisted = false;
+      // for (let i = 0; i < listStatusLength; i++) {
+      //   const item = listStatusCheck[i];
+      //   // console.log(item)
+      //   if (item.checked) {
+      //     isExisted = true;
+      //     break;
+      //   }
+      // }
 
+      // !isExisted
+      //   ? listStatusCheck.push({
+      //       id: resutl.status_id,
+      //       status_name: resutl.status_name,
+      //       checked: true,
+      //     })
+      //   : listStatusCheck;
+
+      delete resutl.status_id;
+      delete resutl.status_name;
       return resutl
         ? {
             ...resutl,
-            statusList: listStatus,
+            listStatusCheck,
           }
         : {
             message: "Error model getAllUser By Admin",
@@ -505,35 +599,184 @@ class adminPageService {
       };
     }
   }
-  async updateUserStatus(user_id, status_id) {
+  async adminGetUserByIdAccept(user_id) {
     try {
-      const resutl = await adminModel.updateUserStatus(user_id, status_id);
+      const resutl = await adminModel.adminGetUserInfor(user_id);
 
       return resutl
-        ? {
-            message: "Update status success",
-            status: true,
-          }
+        ? resutl
         : {
-            message: "Error model update User Status By Admin",
+            message: "Error model adminGetUserByIdAccept",
             status: false,
             error: 500,
           };
     } catch (error) {
       console.log(error);
       return {
-        message: "Server error getAllUser By Admin Sevice",
+        message: "Server error adminGetUserByIdAccept Sevice",
         status: false,
         error: 500,
       };
     }
   }
-  async deleteUser(user_id) {
+  async updateUserStatus(user_id, status_id) {
     try {
-      const resutl = await adminModel.deleteUser(user_id);
+      const resutl = await adminModel.updateUserStatus(user_id, status_id);
 
-      return resutl
+      if (!resutl) {
+        return {
+          message: "Error model update User Status By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+
+      let updateInfor = await adminModel.getNewUser(user_id);
+      if (!updateInfor) {
+        return {
+          message: "Error model get new user By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+      if (status_id == 5) {
+        const resutlResetCountLogin = await authModel.updateCountLogin(
+          user.id,
+          0
+        );
+        if (!resutlResetCountLogin) {
+          return {
+            message: "Server error upadteCountLogin Model",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+      return {
+        data: {
+          user_id: updateInfor.id,
+          status_id: updateInfor.status_id,
+          status_name: updateInfor.status_name,
+        },
+        message: "Update status success",
+        status: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error updateUserStatus Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async AdminUpdateUserInfor(data) {
+    try {
+      const inforUser = await adminModel.adminGetUserInfor(data.user_id);
+      const resutl = await adminModel.AdminUpdateUserInfor(data);
+
+      if (data.status_id != inforUser.status_id && data.status_id == 2) {
+        const resetAccount = await adminModel.resetAccount(data.user_id);
+        if (!resetAccount) {
+          return {
+            message: "Error model resetAccount",
+            status: false,
+            error: 500,
+          };
+        }
+      }
+
+      let updateInfor;
+      if (!resutl) {
+        return {
+          message: "Error model AdminUpdateUserInfor",
+          status: false,
+          error: 500,
+        };
+      }
+      updateInfor = await adminModel.getNewUser(data.user_id);
+      // console.log(updateInfor);
+      // let listStatus = await adminModel.adminGetAccountStatus();
+      // if (!listStatus) {
+      //   return {
+      //     message: "Error model  get listStatus",
+      //     status: false,
+      //     error: 500,
+      //   };
+      // }
+      // let listStatusCheck = listStatus.map((item) => {
+      //   let checked = false;
+      //   item.id == updateInfor.status_id ? (checked = true) : (checked = false);
+      //   return { ...item, checked };
+      // });
+      // const listStatusLength = listStatusCheck.length;
+      // let isExisted = false;
+      // for (let i = 0; i < listStatusLength; i++) {
+      //   const item = listStatusCheck[i];
+      //   // console.log(item)
+      //   if (item.checked) {
+      //     isExisted = true;
+      //     break;
+      //   }
+      // }
+
+      // !isExisted
+      //   ? listStatusCheck.push({
+      //       id: updateInfor.status_id,
+      //       status_name: updateInfor.status_name,
+      //       checked: true,
+      //     })
+      //   : listStatusCheck;
+
+      // delete updateInfor.status_id;
+      // delete updateInfor.status_name;
+      updateInfor.status_id == 2
+        ? (updateInfor.status_name = "정상")
+        : updateInfor.status_name;
+
+      return {
+        data: updateInfor,
+        message: " AdminUpdateUserInfor success",
+        status: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error AdminUpdateUserInfor Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async deleteUser(user_id, page) {
+    try {
+      const getUser = await authModel.findInforById(user_id);
+
+      if (!getUser) {
+        return {
+          message: "Not found ID ",
+          status: false,
+          error: "u_404",
+        };
+      }
+      let data;
+      // console.log(getUser);
+      if (
+        getUser.role_id == 1 ||
+        getUser.role_id == 2 ||
+        getUser.role_id == 5
+      ) {
+        data = await adminModel.helpdeskToOrther(page);
+      } else if (getUser.role_id == 4) {
+        data = await adminModel.userToOrther(page);
+      }
+      const resutl = await adminModel.deleteUser(user_id);
+      // console.log(data);
+      return true
         ? {
+            data,
+            deleteId: user_id,
             message: "delete user success",
             status: true,
           }
@@ -585,18 +828,31 @@ class adminPageService {
             error: exist.error,
           };
         } else {
-          const password_hash = bcrypt.hashSync(data.password, 8);
+          let password_hash;
+          if (data.password) {
+            password_hash = bcrypt.hashSync(data.password, 8);
+          }
           const dataRegister = {
             ...data,
             password: password_hash,
             status_id: 2,
-            role_id: data.role_id,
+            role_id: data.role_id.length > 1 ? 5 : data.role_id[0],
           };
           // console.relog(dataRegister);
           const resultRegister = await adminModel.registerHelper(dataRegister);
+          // console.log(resultRegister);
+          let newHelper = {};
+          if (resultRegister) {
+            const newUser_id = resultRegister.insertId;
+            newHelper = await adminModel.getNewHelper(newUser_id);
+          }
 
           return resultRegister
-            ? resultRegister
+            ? {
+                message: "Registered helper Successfully",
+                status: true,
+                data: newHelper,
+              }
             : { message: "Registered fail", status: false, error: 500 };
         }
       } else {
@@ -614,7 +870,7 @@ class adminPageService {
 
   async getAdminHelperById(user_id) {
     try {
-      const resutl = await adminModel.adminGetUserInfor(user_id);
+      const resutl = await adminModel.adminGetHelperInfor(user_id);
 
       let listStatus = await adminModel.adminGetAccountStatus();
 
@@ -624,19 +880,31 @@ class adminPageService {
           checked = true;
         }
         return {
-          ...item,
+          id: item.id,
+          name: item.id == 2 ? "정상" : item.status_name,
           checked,
         };
       });
-      const listRole = await midService.getMaintenanceType_checked(
-        resutl.role_id
-      );
-
+      listStatus = listStatus.filter((item) => {
+        return item.id == 2 || item.checked == true || item.id == 4;
+      });
+      let listRole;
+      if (resutl.role_id == 5) {
+        listRole = await midService.getMaintenanceType_checked();
+        listRole = listRole.map((item) => {
+          return {
+            ...item,
+            checked: true,
+          };
+        });
+      } else {
+        listRole = await midService.getMaintenanceType_checked(resutl.role_id);
+      }
       return resutl
         ? {
             ...resutl,
             statusList: listStatus,
-            listRole,
+            main_type: listRole,
           }
         : {
             message: "Error model getAllUser By Admin",
@@ -655,18 +923,40 @@ class adminPageService {
 
   async updateHelperInfor(user_id, data) {
     try {
+      if (data.role_id.length > 1) {
+        data.role_id = 5;
+      } else {
+        data.role_id = data.role_id[0];
+      }
+      const inforHelper = await adminModel.adminGetHelperInfor(user_id);
       const resutl = await adminModel.updateHelperInfor(user_id, data);
+      if (resutl) {
+        const inforUpdate = await adminModel.getNewHelper(user_id);
 
-      return resutl
-        ? {
-            message: "Update helper infor success",
-            status: true,
+        // reset account
+
+        if (data.status_id != inforHelper.status_id && data.status_id == 2) {
+          const resetAccount = await adminModel.resetAccount(user_id);
+          if (!resetAccount) {
+            return {
+              message: "Error model resetAccount",
+              status: false,
+              error: 500,
+            };
           }
-        : {
-            message: "Error model update User helper infor By Admin",
-            status: false,
-            error: 500,
-          };
+        }
+        return {
+          data: inforUpdate,
+          message: "Update helper infor success",
+          status: true,
+        };
+      } else {
+        return {
+          message: "Error model update User helper infor By Admin",
+          status: false,
+          error: 500,
+        };
+      }
     } catch (error) {
       console.log(error);
       return {
@@ -706,7 +996,6 @@ class adminPageService {
         return {
           ...item,
           amountHelper: parseInt(item.amountHelper),
-          owner: "Admin",
         };
       });
       const companyCount = await adminModel.getCompanyCountToWatch();
@@ -730,6 +1019,11 @@ class adminPageService {
 
   async listCompanyBySearchToWatch(option, text, page) {
     try {
+      // if (!text || !option || !page) {
+      //   console.log("rong", { text, type:typeof option, page });
+      // } else {
+      //   console.log("tontai", { text, type: typeof option, page });
+      // }
       let resutl = await adminModel.listCompanyBySearchTextToWatch(
         option,
         text,
@@ -740,14 +1034,13 @@ class adminPageService {
         return {
           ...item,
           amountHelper: parseInt(item.amountHelper),
-          owner: "Admin",
         };
       });
 
       return resutl
         ? {
             data: resutl.listFilter,
-            requestCount: parseInt(resutl.requestCount),
+            companyCount: parseInt(resutl.requestCount),
           }
         : {
             message: "Error model get list company By search",
@@ -778,10 +1071,21 @@ class adminPageService {
           };
         } else {
           const resultRegister = await adminModel.registerCompany(data);
-
-          return resultRegister
-            ? resultRegister
-            : { message: "Registered fail", status: false, error: 500 };
+          // console.log(resultRegister)
+          if (!resultRegister) {
+            return { message: "Registered fail", status: false, error: 500 };
+          }
+          let newCompany = await adminModel.getNewCompany(
+            resultRegister.insertId
+          );
+          return {
+            data: {
+              ...newCompany,
+              amountHelper: parseInt(newCompany.amountHelper),
+            },
+            message: "Register success",
+            status: true,
+          };
         }
       } else {
         return {
@@ -825,9 +1129,18 @@ class adminPageService {
     try {
       const resultUpdate = await adminModel.updateCompanyInfor(data);
 
-      return resultUpdate
-        ? { message: "Update success", status: true }
-        : { message: "Update fail", status: false, error: 500 };
+      if (!resultUpdate) {
+        return { message: "Update fail", status: false, error: 500 };
+      }
+      let updateInfor = await adminModel.getNewCompany(data.company_id);
+      return {
+        data: {
+          ...updateInfor,
+          amountHelper: parseInt(updateInfor.amountHelper),
+        },
+        message: "Update success",
+        status: true,
+      };
     } catch (error) {
       console.log(error);
       return {
@@ -838,14 +1151,24 @@ class adminPageService {
     }
   }
 
-  async deleteCompany(company_id) {
+  async deleteCompany(company_id, page) {
     try {
+      // console.log(company_id,page)
+      let dataReplace = await adminModel.companyToOrther(page);
+      if (dataReplace) {
+        dataReplace = {
+          ...dataReplace,
+          amountHelper: parseInt(dataReplace.amountHelper),
+        };
+      }
       const resutl = await adminModel.deleteCompany(company_id);
 
       return resutl
         ? {
+            deleteId: company_id,
             message: "delete company success",
             status: true,
+            data: dataReplace,
           }
         : {
             message: "Error model delete company  By Admin",
@@ -862,27 +1185,65 @@ class adminPageService {
     }
   }
 
+  async deleteLabel(label_id) {
+    try {
+      const deleteProcess = await adminModel.deleteLabelProcess(label_id);
+      if (deleteProcess) {
+        return {
+          message: "Error model deleteLabelProcess By Admin",
+          status: false,
+          error: 500,
+        };
+      }
+      const resutl = await adminModel.deleteLabel(label_id);
+
+      return resutl
+        ? {
+            deleteId: label_id,
+            message: "delete label success",
+            status: true,
+          }
+        : {
+            message: "Error model deleteLabel   By Admin",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete delete Label By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async getAllUserWaitAccept(role_id, page) {
     try {
       let resutl = await adminModel.getAllUserWaitAccept(role_id, page);
 
       const userCount = await adminModel.getUserCountWaitAccept(role_id);
-
-      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
-
-      resutl = resutl.map((user) => {
-        let listStatusCheck = listStatus.map((item) => {
-          let checked = false;
-          item.id == user.status_id ? (checked = true) : (checked = false);
-          return { ...item, checked };
-        });
-        delete user.status_id;
-        delete user.status_name;
-        return {
-          ...user,
-          listStatusCheck,
-        };
+      resutl = resutl.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "승인";
+        }
+        return { ...item };
       });
+      // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+
+      // resutl = resutl.map((user) => {
+      //   let listStatusCheck = listStatus.map((item) => {
+      //     let checked = false;
+      //     item.id == user.status_id ? (checked = true) : (checked = false);
+      //     return { ...item, checked };
+      //   });
+      //   delete user.status_id;
+      //   delete user.status_name;
+      //   return {
+      //     ...user,
+      //     listStatusCheck,
+      //   };
+      // });
       return resutl
         ? { data: resutl, userCount: parseInt(userCount) }
         : {
@@ -908,25 +1269,31 @@ class adminPageService {
         text,
         page
       );
-      // console.log(resutl)
-      let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
-
-      const listUserFilterStatus = resutl.listFilter.map((user) => {
-        let listStatusCheck = listStatus.map((item) => {
-          let checked = false;
-          item.id == user.status_id ? (checked = true) : (checked = false);
-          return { ...item, checked };
-        });
-        delete user.status_id;
-        delete user.status_name;
-        return {
-          ...user,
-          listStatusCheck,
-        };
+      resutl.listFilter = resutl.listFilter.map((item) => {
+        if (item.status_id == 2) {
+          item.status_name = "승인";
+        }
+        return { ...item };
       });
+      // console.log(resutl)
+      // let listStatus = await adminModel.adminGetAccountStatusWaitAccept();
+
+      // const listUserFilterStatus = resutl.listFilter.map((user) => {
+      //   let listStatusCheck = listStatus.map((item) => {
+      //     let checked = false;
+      //     item.id == user.status_id ? (checked = true) : (checked = false);
+      //     return { ...item, checked };
+      //   });
+      //   delete user.status_id;
+      //   delete user.status_name;
+      //   return {
+      //     ...user,
+      //     listStatusCheck,
+      //   };
+      // });
       return resutl
         ? {
-            data: listUserFilterStatus,
+            data: resutl.listFilter,
             requestCount: parseInt(resutl.requestCount),
           }
         : {
@@ -1049,7 +1416,12 @@ class adminPageService {
       const resultUpdate = await adminModel.updateLabelName(label_id, name);
 
       return resultUpdate
-        ? { message: "Update success", status: true }
+        ? {
+            label_id,
+            label_name: name,
+            message: "Update label name success",
+            status: true,
+          }
         : { message: "Update fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
@@ -1060,12 +1432,20 @@ class adminPageService {
       };
     }
   }
-  async addNameLabel(name) {
+  async addNameLabel(data) {
     try {
-      const resultRegister = await adminModel.addNameLabel(name);
+      const resultRegister = await adminModel.addNameLabel(data);
 
       return resultRegister
-        ? resultRegister
+        ? {
+            data: {
+              label_id: parseInt(resultRegister.insertId),
+              label_name: data.label_name,
+            },
+
+            message: "Registered name label Successfully",
+            status: true,
+          }
         : { message: "Registered fail", status: false, error: 500 };
     } catch (error) {
       console.log(error);
@@ -1079,17 +1459,27 @@ class adminPageService {
 
   async getListLabel(maintenance_id) {
     try {
-      const resutlLabel = await adminModel.getListLabel(maintenance_id);
+      let resutlLabel = await adminModel.getListLabel(maintenance_id);
 
       let resutlMainClass = await userPageModel.getMaintenanceClassId(
         maintenance_id
       );
+
+      // resutlLabel = resutlLabel.filter((item) => {
+      //   let check = true;
+      //   resutlMainClass.forEach((itemMC) => {
+      //     item.id == itemMC.label_id ? (check = false) : check;
+      //   });
+      //   return check;
+      // });
+
       resutlMainClass = resutlMainClass.map((item) => {
         return {
           mc_id: item.mc_id,
           group_m: item.group_m,
         };
       });
+
       let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
         maintenance_id
       );
@@ -1103,10 +1493,27 @@ class adminPageService {
             return item;
           }));
         return {
-          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          name:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? "H/W"
+                : "S/W"
+              : mc_group.group_m == 1
+              ? "전산부분"
+              : "일반부분",
+          group_m:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? 1
+                : 2
+              : mc_group.group_m == 1
+              ? 1
+              : 2,
           data: mainClassFilter,
         };
       });
+      // console.log(resutlMainClassGroup);
+
       return resutlLabel && resutlMainClass
         ? { listLabel: resutlLabel, mainClass: resutlMainClassGroup }
         : {
@@ -1151,6 +1558,13 @@ class adminPageService {
       let resutlMainClass = await userPageModel.getMaintenanceClassId(
         maintenance_id
       );
+      if (!resutlMainClass) {
+        return {
+          message: "Error model getMaintenanceClassById",
+          status: false,
+          error: 500,
+        };
+      }
       resutlMainClass = resutlMainClass.map((item) => {
         return {
           mc_id: item.mc_id,
@@ -1160,6 +1574,14 @@ class adminPageService {
       let resutlMainClassGroup = await userPageModel.getMainclassGroupById(
         maintenance_id
       );
+
+      if (!resutlMainClassGroup) {
+        return {
+          message: "Error model resutlMainClassGroup",
+          status: false,
+          error: 500,
+        };
+      }
       let mainClassFilter;
       resutlMainClassGroup = resutlMainClassGroup.map((mc_group) => {
         (mainClassFilter = resutlMainClass.filter((item) => {
@@ -1170,14 +1592,26 @@ class adminPageService {
             return item;
           }));
         return {
-          name: mc_group.group_m == 1 ? "H/W" : "SW",
+          name:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? "H/W"
+                : "S/W"
+              : mc_group.group_m == 1
+              ? "전산부분"
+              : "일반부분",
+          group_m:
+            maintenance_id == 1
+              ? mc_group.group_m == 1
+                ? 1
+                : 2
+              : mc_group.group_m == 1
+              ? 1
+              : 2,
           data: mainClassFilter,
         };
       });
 
-      // const classSW = resutlMainClass.filter((item) => {
-      //   return item.group_m == 2;
-      // });
       return resutlMainClass
         ? resutlMainClassGroup
         : {
@@ -1214,9 +1648,24 @@ class adminPageService {
             label_id
           );
 
-          return resultRegister
-            ? resultRegister
-            : { message: "add Label succsess", status: false, error: 500 };
+          if (!resultRegister) {
+            return { message: "add Label fail", status: false, error: 500 };
+          }
+          const newMainClass = await adminModel.getNewMainClass(
+            maintenance_class_id
+          );
+          if (!newMainClass) {
+            return {
+              message: "error getNewMainClass",
+              status: false,
+              error: 500,
+            };
+          }
+          return {
+            data: { newMainClass },
+            message: "Update label in mainClass Successfully",
+            status: true,
+          };
         }
       } else {
         return { message: "Server error find ID", status: false, error: 500 };
@@ -1233,6 +1682,7 @@ class adminPageService {
 
   async getInforReport(data) {
     try {
+      // console.log(123123)
       let accumulationRegisterYear =
         await adminModel.amountAccumulationRegister("year", data.year);
       let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
@@ -1243,6 +1693,19 @@ class adminPageService {
         await adminModel.amountRequestProcessing("year", data.year);
       let amountRequestCompletedPercentYear =
         await adminModel.amountPerRequestCompleted("year", data.year);
+
+      const countPerYear = await adminModel.amountPerAllRequestCompleted(
+        "year",
+        data.year
+      );
+      // console.log(countPerYear);
+      amountRequestCompletedPercentYear = amountRequestCompletedPercentYear.map(
+        (item) => {
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        }
+      );
+
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1253,10 +1716,27 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
+
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "month",
+        data.month
+      );
+
+      // console.log(countPerMonth);
+
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
+      // console.log(123123,amountRequestCompletedPercentYear);
+
+      // console.log(123123123,amountRequestCompletedPercentMonth);
       let mainType = await userPageModel.getMaintenanceType();
       const mainTypeChart = await Promise.all(
         mainType.map(async (itemMT) => {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
+          // console.log(group);
           group = await Promise.all(
             group.map(async (itemG) => {
               const chart = await adminModel.getInforChartByOption(
@@ -1275,7 +1755,20 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
+
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
+
               return {
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -1294,10 +1787,18 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.month,
+            data.week - 1,
+            data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,
@@ -1305,13 +1806,10 @@ class adminPageService {
         })
       );
 
-      const methodCount = await adminModel.getCountAllMethod(
-        "month",
-        data.month
-      );
+      const methodCount = await adminModel.getCountAllMethod("year", data.year);
       const solutionCount = await adminModel.getCountAllSolution(
-        "month",
-        data.month
+        "year",
+        data.year
       );
 
       const solutionOnsite = solutionCount.filter((item) => {
@@ -1321,6 +1819,7 @@ class adminPageService {
       const solutionOrderCompany = solutionCount.filter((item) => {
         return item.type == 2;
       });
+
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
@@ -1349,12 +1848,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentYear,
-            count: amountRequestCompletedPercentYear.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
+            count:
+              parseFloat(
+                countPerYear.countRequest ? countPerYear.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
 
@@ -1383,16 +1880,269 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
+
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
+        // mainTypeChart: [
+        //   {
+        //     id: 1,
+        //     type_name: " PC유지보수",
+        //     group: [
+        //       {
+        //         group_name: "H/W",
+        //         group_m: 1,
+        //         chart: [
+        //           {
+        //             list_label_id: 1,
+        //             name: "CPU",
+        //             count_lastTime: "1004",
+        //             count_thisTime: "48",
+        //           },
+        //           {
+        //             list_label_id: 3,
+        //             name: "plate",
+        //             count_lastTime: "551",
+        //             count_thisTime: "13",
+        //           },
+        //           {
+        //             list_label_id: 5,
+        //             name: "other",
+        //             count_lastTime: "42",
+        //             count_thisTime: "63",
+        //           },
+        //           {
+        //             list_label_id: 8,
+        //             name: "networkelectricity supply",
+        //             count_lastTime: "200",
+        //             count_thisTime: "55",
+        //           },
+        //           {
+        //             list_label_id: 40,
+        //             name: "keyboard",
+        //             count_lastTime: "15",
+        //             count_thisTime: "88",
+        //           },
+        //           {
+        //             list_label_id: 41,
+        //             name: "RAM",
+        //             count_lastTime: "448",
+        //             count_thisTime: "34",
+        //           },
+        //           {
+        //             list_label_id: 42,
+        //             name: "Main",
+        //             count_lastTime: "23",
+        //             count_thisTime: "241",
+        //           },
+        //           {
+        //             list_label_id: 43,
+        //             name: "xe đạp",
+        //             count_lastTime: "32",
+        //             count_thisTime: "23",
+        //           },
+        //         ],
+        //         // maxValue: 1004,
+        //       },
+        //       {
+        //         group_name: "S/W",
+        //         group_m: 2,
+        //         chart: [
+        //           {
+        //             list_label_id: 17,
+        //             name: "backup",
+        //             count_lastTime: "243",
+        //             count_thisTime: "11",
+        //           },
+        //           {
+        //             list_label_id: 18,
+        //             name: "data recovery",
+        //             count_lastTime: "56",
+        //             count_thisTime: "98",
+        //           },
+        //           {
+        //             list_label_id: 19,
+        //             name: "server check",
+        //             count_lastTime: "23",
+        //             count_thisTime: "54",
+        //           },
+        //           {
+        //             list_label_id: 20,
+        //             name: "move position",
+        //             count_lastTime: "454",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 21,
+        //             name: "other",
+        //             count_lastTime: "12",
+        //             count_thisTime: "67",
+        //           },
+        //           {
+        //             list_label_id: 22,
+        //             name: "other 2",
+        //             count_lastTime: "56",
+        //             count_thisTime: "359",
+        //           },
+        //           {
+        //             list_label_id: 23,
+        //             name: "other 3",
+        //             count_lastTime: "22",
+        //             count_thisTime: "81",
+        //           },
+        //           {
+        //             list_label_id: 24,
+        //             name: "other 4",
+        //             count_lastTime: "23",
+        //             count_thisTime: "12",
+        //           },
+        //         ],
+        //         maxValue: 94,
+        //       },
+        //     ],
+        //   },
+        //   {
+        //     id: 2,
+        //     type_name: "일반유지보수",
+        //     group: [
+        //       {
+        //         group_name: "전산부분",
+        //         group_m: 1,
+        //         chart: [
+        //           {
+        //             list_label_id: 9,
+        //             name: "patch",
+        //             count_lastTime: "224",
+        //             count_thisTime: "45",
+        //           },
+        //           {
+        //             list_label_id: 10,
+        //             name: "OS",
+        //             count_lastTime: "345",
+        //             count_thisTime: "84",
+        //           },
+        //           {
+        //             list_label_id: 11,
+        //             name: "Setting s/w",
+        //             count_lastTime: "20",
+        //             count_thisTime: "41",
+        //           },
+        //           {
+        //             list_label_id: 12,
+        //             name: "network",
+        //             count_lastTime: "20",
+        //             count_thisTime: "328",
+        //           },
+        //           {
+        //             list_label_id: 13,
+        //             name: "other",
+        //             count_lastTime: "77",
+        //             count_thisTime: "78",
+        //           },
+        //           {
+        //             list_label_id: 14,
+        //             name: "other 2",
+        //             count_lastTime: "98",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 15,
+        //             name: "other 3",
+        //             count_lastTime: "12",
+        //             count_thisTime: "29",
+        //           },
+        //           {
+        //             list_label_id: 16,
+        //             name: "other 4",
+        //             count_lastTime: "50",
+        //             count_thisTime: "23",
+        //           },
+        //         ],
+        //         maxValue: 98,
+        //       },
+        //       {
+        //         group_name: "일반부분",
+        //         group_m: 2,
+        //         chart: [
+        //           {
+        //             list_label_id: 784,
+        //             name: "printer",
+        //             count_lastTime: "334",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 26,
+        //             name: "cable",
+        //             count_lastTime: "326",
+        //             count_thisTime: "23",
+        //           },
+        //           {
+        //             list_label_id: 27,
+        //             name: "policy settings",
+        //             count_lastTime: "420",
+        //             count_thisTime: "89",
+        //           },
+        //           {
+        //             list_label_id: 28,
+        //             name: "monitor",
+        //             count_lastTime: "66",
+        //             count_thisTime: "22",
+        //           },
+        //           {
+        //             list_label_id: 29,
+        //             name: "education",
+        //             count_lastTime: "544",
+        //             count_thisTime: "12",
+        //           },
+        //           {
+        //             list_label_id: 30,
+        //             name: "other",
+        //             count_lastTime: "10",
+        //             count_thisTime: "43",
+        //           },
+        //           {
+        //             list_label_id: 31,
+        //             name: "other 2",
+        //             count_lastTime: "23",
+        //             count_thisTime: "34",
+        //           },
+        //           {
+        //             list_label_id: 32,
+        //             name: "other 3",
+        //             count_lastTime: "333335",
+        //             count_thisTime: "93",
+        //           },
+        //         ],
+        //         maxValue: 784,
+        //       },
+        //     ],
+        //   },
+        // ],
         mainTypeRequestNotComplete,
+        // mainTypeRequestNotComplete: [
+        //   {
+        //     id: 1,
+        //     type_name: " PC유지보수",
+        //     listRequest: {
+        //       count_last_two_month: "431",
+        //       count_last_month: "76",
+        //       count_this_month: "56",
+        //     },
+        //   },
+        //   {
+        //     id: 2,
+        //     type_name: "일반유지보수",
+        //     listRequest: {
+        //       count_last_two_month: "234",
+        //       count_last_month: "35",
+        //       count_this_month: "90",
+        //     },
+        //   },
+        // ],
         methodCount,
         solutionCount: {
           onsite: { name: "자체처리", data: solutionOnsite },
@@ -1412,6 +2162,7 @@ class adminPageService {
   }
 
   async getInforReportDaily(data) {
+    // console.log(data)
     try {
       const datetime = data.year + "-" + data.month + "-" + data.day;
       // console.log(datetime);
@@ -1426,6 +2177,19 @@ class adminPageService {
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("date", datetime);
 
+      // console.log(amountRequestCompletedPercentMonth);
+
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "date",
+        datetime
+      );
+      // console.log(datetime);
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          // console.log(item.countRequest);
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
       //
       let mainType = await userPageModel.getMaintenanceType();
       const mainTypeChart = await Promise.all(
@@ -1433,11 +2197,14 @@ class adminPageService {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
           group = await Promise.all(
             group.map(async (itemG) => {
-              const chart = await adminModel.getInforChartByOption(
+              const chart = await adminModel.InforChartOneColumn(
                 itemMT.id,
                 itemG.group_m,
-                "month",
-                data
+                "date",
+                {
+                  date: datetime,
+                  year: data.year,
+                }
               );
               let group_name = "";
               if (itemMT.id == 1 && itemG.group_m == 1) {
@@ -1449,7 +2216,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
+
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -1468,10 +2247,18 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.month,
+            data.week - 1,
+            data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,
@@ -1520,12 +2307,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -1549,7 +2334,45 @@ class adminPageService {
   }
   async getInforReportWeek(data) {
     try {
-      let month = new Date(Date.now()).getMonth() + 1;
+      if (!data.week && !data.year) {
+        //////
+
+        function getDateWeek(date) {
+          const currentDate = date ? date : new Date();
+          const januaryFirst = new Date(currentDate.getFullYear(), 0, 1);
+          const daysToNextMonday =
+            januaryFirst.getDay() === 1 ? 0 : (7 - januaryFirst.getDay()) % 7;
+          const nextMonday = new Date(
+            currentDate.getFullYear(),
+            0,
+            januaryFirst.getDate() + daysToNextMonday
+          );
+
+          return currentDate < nextMonday
+            ? 52
+            : currentDate > nextMonday
+            ? Math.ceil((currentDate - nextMonday) / (24 * 3600 * 1000) / 7)
+            : 1;
+        }
+        const currentDate = new Date(Date.now());
+        // const currentDate = new Date("2024-01-07");
+
+        const weekNumber = getDateWeek(currentDate);
+
+        // console.log("Week number of " + " is : " + weekNumber);
+
+        data.week = weekNumber - 2;
+        data.year = currentDate.getFullYear();
+        asdasdasd;
+        // ////.
+      } else {
+        data.week = parseInt(data.week) - 1;
+        data.year = parseInt(data.year);
+      }
+      // console.log(data)
+      let month =
+        new Date(1000 * 60 * 60 * 24 * 7 * data.week + 1).getMonth() + 1;
+      // console.log(month);
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("week", data.week);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1560,6 +2383,16 @@ class adminPageService {
         await adminModel.amountRequestProcessing("week", data.week);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("week", data.week);
+      amountRequestCompletedPercentMonth =
+        amountRequestCompletedPercentMonth.map((item) => {
+          // console.log(item.countRequest);
+          item.countRequest = item.countRequest + "%";
+          return { ...item };
+        });
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "week",
+        data.week
+      );
 
       //
       let mainType = await userPageModel.getMaintenanceType();
@@ -1568,11 +2401,11 @@ class adminPageService {
           let group = await userPageModel.getMainclassGroupById(itemMT.id);
           group = await Promise.all(
             group.map(async (itemG) => {
-              const chart = await adminModel.getInforChartByOption(
+              const chart = await adminModel.InforChartOneColumn(
                 itemMT.id,
                 itemG.group_m,
-                "month",
-                { month, year: data.year }
+                "week",
+                { week: data.week, year: data.year }
               );
               let group_name = "";
               if (itemMT.id == 1 && itemG.group_m == 1) {
@@ -1584,7 +2417,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
+
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -1599,14 +2444,23 @@ class adminPageService {
       );
 
       // ////////////
+      // console.log(data);
       const mainTypeRequestNotComplete = await Promise.all(
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            { month, year: data.year }
+            month,
+            data.week - 1,
+            data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,
@@ -1655,12 +2509,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
         mainTypeChart,
@@ -1684,6 +2536,20 @@ class adminPageService {
   }
   async getInforReportMonthly(data) {
     try {
+      // console.log(data);
+      if (!data.month && !data.year) {
+        const currentTime = new Date(Date.now());
+        data.month = currentTime.getMonth();
+        data.year = currentTime.getFullYear();
+        // console.log(data);
+      } else {
+        data.month = parseInt(data.month);
+        data.year = parseInt(data.year);
+        const lastDay = new Date(data.year, data.month, 0);
+        const week = midService.getWeek(lastDay) - 1;
+        data.week = week;
+      }
+      // console.log(data);
       let accumulationRegisterMonth =
         await adminModel.amountAccumulationRegister("month", data.month);
       let amountRequestCompletedMonth = await adminModel.amountRequestCompleted(
@@ -1694,18 +2560,35 @@ class adminPageService {
         await adminModel.amountRequestProcessing("month", data.month);
       let amountRequestCompletedPercentMonth =
         await adminModel.amountPerRequestCompleted("month", data.month);
+      // console.log(amountRequestCompletedPercentMonth);
+      const countPerMonth = await adminModel.amountPerAllRequestCompleted(
+        "month",
+        data.month
+      );
+
+      amountRequestCompletedPercentMonth.map((item) => {
+        // console.log(item.countRequest);
+        item.countRequest = item.countRequest + "%";
+        return { ...item };
+      });
       //
 
-      let accumulationRegisterYear =
-        await adminModel.amountAccumulationRegister("year", data.year);
-      let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
-        "year",
-        data.year
-      );
-      let amountRequestProcessingYear =
-        await adminModel.amountRequestProcessing("year", data.year);
-      let amountRequestCompletedPercentYear =
-        await adminModel.amountPerRequestCompleted("year", data.year);
+      // let accumulationRegisterYear =
+      //   await adminModel.amountAccumulationRegister("year", data.year);
+      // let amountRequestCompletedYear = await adminModel.amountRequestCompleted(
+      //   "year",
+      //   data.year
+      // );
+      // let amountRequestProcessingYear =
+      //   await adminModel.amountRequestProcessing("year", data.year);
+      // let amountRequestCompletedPercentYear =
+      //   await adminModel.amountPerRequestCompleted("year", data.year);
+      // const countPerYear = amountRequestCompletedPercentMonth.reduce(
+      //   (accumulator, item) => {
+      //     return parseFloat(accumulator) + parseFloat(item.countRequest);
+      //   },
+      //   0
+      // );
 
       //
       let mainType = await userPageModel.getMaintenanceType();
@@ -1730,7 +2613,19 @@ class adminPageService {
               } else if (itemMT.id == 2 && itemG.group_m == 2) {
                 group_name = "일반부분";
               }
+              // let maxValue = 0;
+              // chart.forEach((itemLabel) => {
+              //   // console.log(itemLabel);
+
+              //   parseInt(itemLabel.count_lastTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_lastTime))
+              //     : "";
+              //   parseInt(itemLabel.count_thisTime) > maxValue
+              //     ? (maxValue = parseInt(itemLabel.count_thisTime))
+              //     : "";
+              // });
               return {
+                // maxValue,
                 group_name,
                 group_m: itemG.group_m,
                 chart,
@@ -1749,8 +2644,9 @@ class adminPageService {
         mainType.map(async (itemMT) => {
           let listRequest = await adminModel.getCountRequestNotCompleteOption(
             itemMT.id,
-            "month",
-            data
+            data.month,
+            data.week,
+            data.year
           );
 
           return {
@@ -1779,39 +2675,34 @@ class adminPageService {
       const listNewRequest = await adminModel.getListNewRequest();
 
       return {
-        titleYear: [
-          {
-            title: "누적 등록건수",
-            data: accumulationRegisterYear,
-            count: accumulationRegisterYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "누적 처리완료",
-            data: amountRequestCompletedYear,
-            count: amountRequestCompletedYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "누적 진행중",
-            data: amountRequestProcessingYear,
-            count: amountRequestProcessingYear.reduce((accumulator, item) => {
-              return accumulator + item.countRequest;
-            }, 0),
-          },
-          {
-            title: "처리율",
-            data: amountRequestCompletedPercentYear,
-            count: amountRequestCompletedPercentYear.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
-          },
-        ],
+        // titleYear: [
+        //   {
+        //     title: "누적 등록건수",
+        //     data: accumulationRegisterYear,
+        //     count: accumulationRegisterYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "누적 처리완료",
+        //     data: amountRequestCompletedYear,
+        //     count: amountRequestCompletedYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "누적 진행중",
+        //     data: amountRequestProcessingYear,
+        //     count: amountRequestProcessingYear.reduce((accumulator, item) => {
+        //       return accumulator + item.countRequest;
+        //     }, 0),
+        //   },
+        //   {
+        //     title: "처리율",
+        //     data: amountRequestCompletedPercentYear,
+        //     count: parseFloat(countPerYear).toFixed(2),
+        //   },
+        // ],
         titleMonth: [
           {
             title: "등록건수",
@@ -1837,12 +2728,10 @@ class adminPageService {
           {
             title: "처리율",
             data: amountRequestCompletedPercentMonth,
-            count: amountRequestCompletedPercentMonth.reduce(
-              (accumulator, item) => {
-                return parseFloat(accumulator) + parseFloat(item.countRequest);
-              },
-              0
-            ),
+            count:
+              parseFloat(
+                countPerMonth.countRequest ? countPerMonth.countRequest : 0
+              ).toFixed(2) + "%",
           },
         ],
 
@@ -1864,6 +2753,58 @@ class adminPageService {
       console.log(error);
       return {
         message: "Server error getInforReportMonthly Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async getAdminInfor(user_id) {
+    try {
+      const resutl = await adminModel.getAdminInfor(user_id);
+
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getAdminInfor",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getAdminInfor By Admin Sevice",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+  async updateAdminInfor(user_id, data) {
+    try {
+      const userInfor = await userPageModel.getUserInfor(user_id);
+      if (!userInfor) {
+        return {
+          message: "Id not found",
+          status: false,
+          error: "u_404",
+        };
+      }
+      const resultUpdate = await adminModel.updateAdminInfor(user_id, data);
+      delete data.password;
+      return resultUpdate
+        ? {
+            resutlInfor: { name: data.name },
+            message: "Update Admin infor success",
+            status: true,
+          }
+        : {
+            message: "Error upadte Admin infor model",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Error upadte Admin infor service",
         status: false,
         error: 500,
       };

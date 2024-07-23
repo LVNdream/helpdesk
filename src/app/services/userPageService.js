@@ -1,4 +1,7 @@
 const authModel = require("../models/authModel");
+const adminModel = require("../models/adminModel");
+
+const helperModel = require("../models/helperModel");
 const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
 
@@ -94,12 +97,17 @@ class userPageService {
               created_at: resutlConfirm_Register.created_at,
               infor_petitioner: {
                 user_id: resutlConfirm_Register.user_id,
+                account: resutlConfirm_Register.account,
                 name: resutlConfirm_Register.name,
                 affiliated_department:
                   resutlConfirm_Register.affiliated_department,
                 phone_number: resutlConfirm_Register.phone_number,
                 position: resutlConfirm_Register.position,
                 email: resutlConfirm_Register.email,
+              },
+              infor_recipient: {
+                user_id: resutlConfirm_Register.r_id,
+                name: resutlConfirm_Register.r_name,
               },
 
               MT_Register,
@@ -233,6 +241,8 @@ class userPageService {
               infor_petitioner: {
                 user_id: resutlComplete_AddProblem.petitioner_id,
                 name: resutlComplete_AddProblem.p_name,
+                account: resutlComplete_AddProblem.p_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.p_affiliated_department,
                 phone_number: resutlComplete_AddProblem.p_phone_number,
@@ -242,6 +252,8 @@ class userPageService {
               infor_recipient: {
                 user_id: resutlComplete_AddProblem.r_id,
                 name: resutlComplete_AddProblem.r_name,
+                account: resutlComplete_AddProblem.r_account,
+
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
                 phone_number: resutlComplete_AddProblem.r_phone_number,
@@ -277,7 +289,9 @@ class userPageService {
           error: 500,
         };
       }
-      const inforUser = await authModel.findAccountById(user_id);
+
+      const inforUser = await authModel.findInforById(user_id);
+
       if (!inforUser) {
         return {
           message: "Server error findAccountById Model",
@@ -288,6 +302,7 @@ class userPageService {
 
       return {
         id: inforUser.id,
+        account: inforUser.account,
         name: inforUser.name,
         affiliated_department: inforUser.affiliated_department,
         phone_number: inforUser.phone_number,
@@ -305,14 +320,48 @@ class userPageService {
     }
   }
 
-  async updateUserInfor(data, user_id) {
+  async updateUserInfor(data, user_id, role_id) {
     try {
-      const resutl = await userPageModel.updateUserInfor(data, user_id);
-
-      return resutl
-        ? { messsage: "Update Success!", status: true }
-        : {
+      let resutlInfor;
+      if (role_id == 4) {
+        const resutl = await userPageModel.updateUserInfor(data, user_id);
+        resutlInfor = await userPageModel.getUserInfor(user_id, role_id);
+        if (!resutl) {
+          return {
             messsage: "Update Fail!, Error model update",
+            status: false,
+            error: 500,
+          };
+        }
+      } else if (role_id == 1 || role_id == 2 || role_id == 5) {
+        const resutl = await helperModel.updateHelpdeskInfor(data, user_id);
+
+        if (!resutl) {
+          return {
+            messsage: "Update Fail!, Error model update",
+            status: false,
+            error: 500,
+          };
+        }
+        resutlInfor = await this.getUserInfor(user_id, role_id);
+        // let resutlGetInfor = await helperModel.getHelpdeskInfor(user_id);
+        // let main_type = await helperModel.getMaintenanceType();
+        // main_type = main_type.map((item) => {
+        //   let checked = false;
+        //   item.id == role_id ? (checked = true) : (checked = false);
+        //   delete item.id;
+        //   return {
+        //     ...item,
+        //     checked,
+        //   };
+        // });
+        // resutlInfor = { ...resutlGetInfor, main_type };
+      }
+
+      return resutlInfor
+        ? { messsage: "Update Success!", status: true, resutlInfor }
+        : {
+            messsage: "Get infor fail",
             status: false,
             error: 500,
           };
@@ -386,21 +435,25 @@ class userPageService {
   async updateRequest(request_id, data, files, arrayDelete) {
     try {
       // console.log(files, arrayDelete);
-      const status_id = await userPageModel.getIdStatusByRequest(request_id);
-      if (!status_id) {
+      // const status_id = await userPageModel.getIdStatusByRequest(request_id);
+
+      const request = await userPageModel.getRequestById(request_id);
+
+      if (!request) {
         return {
-          message: "Server error get status ID Model",
+          message: "Server error get getRequestById Model",
           status: false,
           error: 500,
         };
       }
-      if (status_id != 1) {
+      if (request.status_id > 2) {
         return {
           message: "Status not valid",
           status: false,
           error: 500,
         };
       }
+      //  xet thoi gian cap nhat request
 
       const resultUpdate = await userPageModel.updateRequest(request_id, data);
       if (!resultUpdate) {
@@ -410,29 +463,56 @@ class userPageService {
           error: 500,
         };
       }
-      const listDelete = arrayDelete.length;
-      if (listDelete > 0) {
-        for (let i = 0; i < listDelete; i++) {
-          const file = arrayDelete[i];
-          // console.log(file);
-          const resutlDB = await userPageModel.deleteFile(file);
-          if (!resutlDB) {
-            return {
-              message: "Server error Delete File Model",
-              status: false,
-              error: 500,
-            };
-          }
-          const resultDeleleSever = await midService.deleteFile(file, "files");
-          if (!resultDeleleSever) {
-            return {
-              message: "Server error Delete one File midService",
-              status: false,
-              error: 500,
-            };
+      if (!Array.isArray(arrayDelete) && arrayDelete) {
+        const resutlDB = await userPageModel.deleteFile(arrayDelete);
+        if (!resutlDB) {
+          return {
+            message: "Server error Delete File Model",
+            status: false,
+            error: 500,
+          };
+        }
+        const resultDeleleSever = await midService.deleteFile(
+          arrayDelete,
+          "files"
+        );
+        if (!resultDeleleSever) {
+          return {
+            message: "Server error Delete one File midService",
+            status: false,
+            error: 500,
+          };
+        }
+      } else {
+        const listDelete = arrayDelete ? arrayDelete.length : 0;
+        if (listDelete > 0) {
+          for (let i = 0; i < listDelete; i++) {
+            const file = arrayDelete[i];
+            // console.log(file);
+            const resutlDB = await userPageModel.deleteFile(file);
+            if (!resutlDB) {
+              return {
+                message: "Server error Delete File Model",
+                status: false,
+                error: 500,
+              };
+            }
+            const resultDeleleSever = await midService.deleteFile(
+              file,
+              "files"
+            );
+            if (!resultDeleleSever) {
+              return {
+                message: "Server error Delete one File midService",
+                status: false,
+                error: 500,
+              };
+            }
           }
         }
       }
+
+      // console.log(files, arrayDelete);
       const fileLength = files.length;
       if (fileLength > 0) {
         for (let i = 0; i < fileLength; i++) {
@@ -459,10 +539,30 @@ class userPageService {
           };
         }
       }
+
+      const dataUpdate = await userPageModel.getRequestJustRegister(
+        data.petitioner_id,
+        request_id
+      );
+      if (!dataUpdate) {
+        return {
+          message: "get data update fail",
+          status: false,
+          error: 500,
+        };
+      }
+      const newFiles = await userPageModel.getAllFileByRequest(request_id);
+      if (!newFiles) {
+        return {
+          message: "get files update fail",
+          status: false,
+          error: 500,
+        };
+      }
       return {
         message: "Update request successfully",
         status: true,
-        error: 200,
+        data: { ...dataUpdate, files: newFiles },
       };
     } catch (error) {
       console.log(error);
@@ -474,7 +574,7 @@ class userPageService {
     }
   }
 
-  async deleteRequest(user_id, request_id) {
+  async deleteRequest(user_id, request_id, page) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
 
@@ -496,7 +596,7 @@ class userPageService {
         };
       }
 
-      if (status_id > 2) {
+      if (status_id > 3) {
         return {
           message: "Status id  in valid",
           status: false,
@@ -522,7 +622,7 @@ class userPageService {
       if (filesLength > 0) {
         for (let i = 0; i < filesLength; i++) {
           const file = files[i];
-          console.log(file);
+          // console.log(file);
           const resutlDB = await userPageModel.deleteFile(file);
           if (!resutlDB) {
             return {
@@ -542,16 +642,48 @@ class userPageService {
         }
       }
 
-      // xoa request
-      const resutl = await userPageModel.deleteRequest(user_id, request_id);
+      //  xoa list_problem
 
-      return resutl
-        ? { messsage: "Deleted Success!", status: true }
-        : {
-            messsage: "Delete Fail!, Error model delete",
+      const listProblem = await userPageModel.getAllProblemByRequest_id(
+        request_id
+      );
+      if (listProblem.length > 0) {
+        const deleteProblem = await userPageModel.deleteListProblem(request_id);
+
+        if (!deleteProblem) {
+          return {
+            message: "Server error Delete list Problem midService",
             status: false,
             error: 500,
           };
+        }
+      }
+      // lay data
+      let data;
+      data = await userPageModel.requestToOrther(user_id, page);
+      if (!data) {
+        return {
+          messsage: "Error model requestToOrther",
+          status: false,
+          error: 500,
+        };
+      }
+      // xoa request
+      const resutl = await userPageModel.deleteRequest(user_id, request_id);
+      if (resutl) {
+        return {
+          data: data[0],
+          messsage: "Deleted Success!",
+          status: true,
+          request_id,
+        };
+      } else {
+        return {
+          messsage: "Delete Fail!, Error model delete",
+          status: false,
+          error: 500,
+        };
+      }
     } catch (error) {
       console.log(error);
       return {
@@ -561,10 +693,39 @@ class userPageService {
       };
     }
   }
-  async getUserInfor(user_id) {
+  async getUserInfor(user_id, role_id) {
     try {
-      const resutl = await userPageModel.getUserInfor(user_id);
+      let resutl;
+      if (role_id == 4) {
+        resutl = await userPageModel.getUserInfor(user_id);
+      }
+      if (role_id == 1 || role_id == 2 || role_id == 5) {
+        resutl = await helperModel.getHelpdeskInfor(user_id);
+        let main_type = await helperModel.getMaintenanceType();
+        if (role_id == 5) {
+          main_type = main_type.map((item) => {
+            let checked = true;
 
+            delete item.id;
+            return {
+              ...item,
+              checked,
+            };
+          });
+        } else {
+          main_type = main_type.map((item) => {
+            let checked = false;
+            item.id == role_id ? (checked = true) : (checked = false);
+            delete item.id;
+            return {
+              ...item,
+              checked,
+            };
+          });
+        }
+
+        resutl = { ...resutl, main_type };
+      }
       return resutl
         ? resutl
         : { message: "Error model getUserInfor", status: false, error: 500 };

@@ -13,7 +13,10 @@ var storage = multer.diskStorage({
   filename: (req, file, res) => {
     res(
       null,
-      Date.now() + Math.floor(Math.random() * 10000) + "-" + file.originalname
+      Date.now() +
+        Math.floor(Math.random() * 10000) +
+        "-" +
+        decodeURIComponent(file.originalname)
     );
   },
 });
@@ -29,10 +32,23 @@ router.get(
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getRequestListSearch
 );
-router.post(
-  "/acceptrequest",
+router.get(
+  "/acceptrequest/:request_id",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.acceptRequest
+);
+//
+
+router.delete(
+  "/request/:page/:request_id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.deleteRequest
+);
+
+router.post(
+  "/update/userinfor",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.updateHelpdeskInfor
 );
 
 // thay doi trang thai
@@ -51,6 +67,11 @@ router.post(
   "/updateproblem",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.updateProblem
+);
+router.post(
+  "/updaterequest/",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.updateRequest
 );
 router.post(
   "/deleteproblem",
@@ -76,9 +97,24 @@ router.get(
   helperController.getInforComplted
 );
 router.get(
+  "/getinforcompleted/",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getInforComplted
+);
+router.get(
   "/getalluser",
   middlewareAuth.verifyToKenHelperAuth,
   helperController.getAllUser
+);
+router.get(
+  "/user/:id",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.getUserById
+);
+router.get(
+  "/usersearch",
+  middlewareAuth.verifyToKenHelperAuth,
+  helperController.helperSearchUser
 );
 
 router.post(

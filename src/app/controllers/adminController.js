@@ -1,4 +1,5 @@
 const adminService = require("../services/adminService");
+const midService = require("../services/midService");
 
 class adminController {
   async getRequestListAdmin(req, res) {
@@ -28,9 +29,9 @@ class adminController {
       const result = await adminService.getRequestListBySearch(
         req.user.id,
         req.user.role_id,
-        req.body.option,
-        req.body.text,
-        req.body.status_id,
+        req.query.option,
+        req.query.text,
+        req.query.status_id,
         page
       );
       res.status(200).json(result);
@@ -75,8 +76,8 @@ class adminController {
       }
       const result = await adminService.listUserBySearch(
         4,
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -89,6 +90,17 @@ class adminController {
   async adminGetUserById(req, res) {
     try {
       const result = await adminService.getAdminUserById(req.params.user_id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async adminGetUserByIdAccept(req, res) {
+    try {
+      const result = await adminService.adminGetUserByIdAccept(
+        req.params.user_id
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -108,9 +120,22 @@ class adminController {
       res.status(500).json("Server error");
     }
   }
+  async AdminUpdateUserInfor(req, res) {
+    try {
+      const result = await adminService.AdminUpdateUserInfor(req.body);
+      // console.log(result);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
   async deleteUser(req, res) {
     try {
-      const result = await adminService.deleteUser(req.body.user_id);
+      const result = await adminService.deleteUser(
+        req.params.user_id,
+        req.params.page
+      );
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -143,8 +168,8 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listHelperBySearch(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -180,8 +205,8 @@ class adminController {
         page = req.query.page;
       }
       const result = await adminService.listCompanyBySearchToAddInfor(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -218,9 +243,10 @@ class adminController {
       } else {
         page = req.query.page;
       }
+
       const result = await adminService.listCompanyBySearchToWatch(
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -282,7 +308,11 @@ class adminController {
 
   async registerCompany(req, res) {
     try {
-      const result = await adminService.registerCompany(req.body);
+      const dataRegister = {
+        ...req.body,
+        creator_id: req.user.id,
+      };
+      const result = await adminService.registerCompany(dataRegister);
       res.status(200).json(result);
     } catch (error) {
       // console.log(error);
@@ -311,7 +341,20 @@ class adminController {
 
   async deleteCompany(req, res) {
     try {
-      const result = await adminService.deleteCompany(req.body.company_id);
+      const result = await adminService.deleteCompany(
+        req.params.company_id,
+        req.params.page
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+
+  async deleteLabel(req, res) {
+    try {
+      const result = await adminService.deleteLabel(req.params.label_id);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -345,8 +388,8 @@ class adminController {
       }
       const result = await adminService.listUserWaitAcceptBySearch(
         4,
-        req.body.option,
-        req.body.text,
+        req.query.option,
+        req.query.text,
         page
       );
       res.status(200).json(result);
@@ -401,7 +444,7 @@ class adminController {
   }
   async addNameLabel(req, res) {
     try {
-      const result = await adminService.addNameLabel(req.body.label_name);
+      const result = await adminService.addNameLabel(req.body);
       // console.log(result);
       res.status(200).json(result);
     } catch (error) {
@@ -429,9 +472,16 @@ class adminController {
 
   async listLabelBySearch(req, res) {
     try {
+      if (!Number(req.params.maintenance_id)) {
+        return res.json({
+          message: "Params invalid",
+          status: false,
+          error: "f_params",
+        });
+      }
       const result = await adminService.listLabelBySearch(
-        req.body.maintenance_id,
-        req.body.text
+        req.params.maintenance_id,
+        req.query.text
       );
       res.status(200).json(result);
     } catch (error) {
@@ -442,7 +492,7 @@ class adminController {
   async getMainClassById(req, res) {
     try {
       const result = await adminService.getMaintenanceClassById(
-        req.body.maintenance_id
+        req.params.maintenance_id
       );
       res.status(200).json(result);
     } catch (error) {
@@ -467,10 +517,13 @@ class adminController {
   async getInforReportCurrent(req, res) {
     try {
       const currentDateTime = new Date(Date.now());
+      const week = midService.getWeek(currentDateTime);
       const data = {
+        week: week - 1,
         month: currentDateTime.getMonth() + 1,
         year: currentDateTime.getFullYear(),
       };
+      // console.log(data);
 
       const result = await adminService.getInforReport(data);
       res.status(200).json(result);
@@ -482,14 +535,31 @@ class adminController {
 
   async getInforReportDaily(req, res) {
     try {
-      const dateCurrent = new Date(Date.now());
-      const data = {
-        day: dateCurrent.getDate(),
+      let data;
+      if (!req.query.year || !req.query.month || !req.query.day) {
+        const dateCurrent = new Date(Date.now() - 1000 * 3600 * 24);
+        const week = midService.getWeek(dateCurrent);
+        data = {
+          week: week - 1,
+          day: dateCurrent.getDate(),
+          month: dateCurrent.getMonth() + 1,
+          year: dateCurrent.getFullYear(),
+        };
+        // console.log(data);
+      } else {
+        const dateTime = new Date(
+          `${req.query.year}-${req.query.month}-${req.query.day}`
+        );
+        const week = midService.getWeek(dateTime);
 
-        month: dateCurrent.getMonth() + 1,
-        year: dateCurrent.getFullYear(),
-      };
-
+        data = {
+          week: week - 1,
+          day: req.query.day,
+          month: req.query.month,
+          year: req.query.year,
+        };
+      }
+      // console.log(data)
       const result = await adminService.getInforReportDaily(data);
       res.status(200).json(result);
     } catch (error) {
@@ -499,7 +569,8 @@ class adminController {
   }
   async getInforReportWeek(req, res) {
     try {
-      const result = await adminService.getInforReportWeek(req.body);
+      // console.log(req.query);
+      const result = await adminService.getInforReportWeek(req.query);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);
@@ -508,7 +579,25 @@ class adminController {
   }
   async getInforReportMonth(req, res) {
     try {
-      const result = await adminService.getInforReportMonthly(req.body);
+      const result = await adminService.getInforReportMonthly(req.query);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async adminGetInfor(req, res) {
+    try {
+      const result = await adminService.getAdminInfor(req.user.id);
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json("Server error");
+    }
+  }
+  async updateAdminInfor(req, res) {
+    try {
+      const result = await adminService.updateAdminInfor(req.user.id, req.body);
       res.status(200).json(result);
     } catch (error) {
       console.log(error);

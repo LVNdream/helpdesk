@@ -22,7 +22,7 @@ class authService {
             ...data,
             password: password_hash,
             status_id: 1,
-            role_id: 2,
+            role_id: 4,
           };
           const resultRegister = await authModel.register(dataRegister);
 
@@ -57,7 +57,7 @@ class authService {
           return {
             message: "Account is waitting accept from admin",
             status: false,
-            error: "f_status",
+            error: "wait",
           };
         } else if (user.status_id == 3) {
           return {
@@ -109,7 +109,7 @@ class authService {
         };
       }
 
-      if (user.count_login >= 5) {
+      if (user.count_login >= 10) {
         return {
           message: "User policy violation",
           status: false,
@@ -123,10 +123,10 @@ class authService {
 
       if (!validPass) {
         const countLogin = user.count_login + 1;
-        if (countLogin >= 5) {
+        if (countLogin >= 10) {
           const resultUpdateStatus = await adminModel.updateUserStatus(
             user.id,
-            4
+            5
           );
           if (!resultUpdateStatus) {
             return {
@@ -151,6 +151,18 @@ class authService {
           message: "Password not valid",
           status: false,
           error: "f_pw",
+        };
+      }
+
+      // reset password
+
+      // 0 la khong yeu cau cap lai mat khau
+      const result_update = await authModel.updateResetPass(user.id, 0);
+      if (!result_update) {
+        return {
+          message: "Server error updateResetPass",
+          status: false,
+          error: 500,
         };
       }
 
@@ -211,6 +223,33 @@ class authService {
       console.log(error);
       return {
         message: "Server error login service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async handleRefreshToken(user) {
+    try {
+      const dataToken = {
+        id: parseInt(user.id),
+        role_id: parseInt(user.role_id),
+      };
+
+      const accessToken = jwtService.generateAccessToken(dataToken);
+      const refreshToken = jwtService.generateRefreshToken(dataToken);
+
+      return {
+        name: user.name,
+        role_id: user.role_id,
+        accessToken,
+        refreshToken,
+        status: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error handleRefreshToken service",
         status: false,
         error: 500,
       };
@@ -279,6 +318,26 @@ class authService {
     }
   }
 
+  async updatePassword(data) {
+    try {
+      // console.log(data)
+      const resultUpdate = await authModel.updatePassword(
+        data.user_id,
+        data.password
+      );
+      return resultUpdate
+        ? { message: "Update password sucess", status: true }
+        : { message: "Update password fail", status: false };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error updatePassword service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
   async checkId(data) {
     try {
       const exist = await authModel.checkExistId(data.id);
@@ -312,6 +371,20 @@ class authService {
           error: 404,
         };
       } else {
+        // reset password
+        // 1 la yeu cau cap lai mat khau
+        const result_update = await authModel.updateResetPass(
+          resutl.data.id,
+          1
+        );
+        if (!result_update) {
+          return {
+            message: "Server error updateResetPass",
+            status: false,
+            error: 500,
+          };
+        }
+        delete resutl.data.id;
         return { ...resutl.data, status: true };
       }
     } catch (error) {
@@ -327,7 +400,11 @@ class authService {
   // xac thuc pass de update thong tin user
   async verifyPassword(data, password) {
     try {
-      const user = await authModel.findAccountById(data.id);
+      // console.log(data)
+      // console.log(password);
+
+
+      const user = await authModel.findAccountCheckPass(data.id);
       if (!user) {
         return { message: "Error get account", status: false, error: 500 };
       }
@@ -348,6 +425,26 @@ class authService {
       console.log(error);
       return {
         message: "Server error login service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  async getNameUser(id) {
+    try {
+      const resutl = await authModel.getUserName(id);
+      return resutl
+        ? resutl
+        : {
+            message: "Error model getNameUser",
+            status: false,
+            error: 500,
+          };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error getNameUser",
         status: false,
         error: 500,
       };
