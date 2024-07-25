@@ -4,8 +4,8 @@ const express = require("express");
 const router = express.Router();
 const helperController = require("../app/controllers/helperController");
 
+//  function add file to server
 var multer = require("multer");
-
 var storage = multer.diskStorage({
   destination: (req, file, res) => {
     res(null, "./src/public/temps");
@@ -21,6 +21,7 @@ var storage = multer.diskStorage({
   },
 });
 var upload = multer({ storage: storage });
+// there are router to helper controller
 
 router.get(
   "/getrequestlist",

@@ -4,8 +4,8 @@ const express = require("express");
 const router = express.Router();
 const userController = require("../app/controllers/userController");
 
+// function save file to server
 var multer = require("multer");
-
 var storage = multer.diskStorage({
   destination: (req, file, res) => {
     res(null, "./src/public/temps");
@@ -23,6 +23,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({ storage: storage });
 
+// there are router to user controller
 router.get(
   "/getrequestlist",
   middlewareAuth.verifyAuthentication,

@@ -35,6 +35,7 @@ class midService {
       };
     }
   }
+  // delete all file array
   deleteFiles(files, directory) {
     try {
       return new Promise((resolve, reject) => {
@@ -54,6 +55,8 @@ class midService {
       };
     }
   }
+
+  // delete file
   deleteFile(file, directory) {
     try {
       return new Promise((resolve, reject) => {
@@ -72,6 +75,8 @@ class midService {
       };
     }
   }
+
+  // move file to orther directory
   moveFiles(files) {
     try {
       return new Promise((resolve, reject) => {
@@ -95,6 +100,8 @@ class midService {
       };
     }
   }
+
+  // remove files in  directory
   removeAllfile(directory) {
     fs.readdir(directory, (err, files) => {
       if (err) throw err;
@@ -106,6 +113,7 @@ class midService {
     });
   }
 
+  // get week (1->54)
   getWeek(date) {
     const currentDate = date ? date : new Date();
     const januaryFirst = new Date(currentDate.getFullYear(), 0, 1);

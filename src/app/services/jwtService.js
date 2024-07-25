@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 class jwtService {
+  // create and return accesstoken token
   generateAccessToken(data) {
     return jwt.sign(
       data,
@@ -12,6 +13,7 @@ class jwtService {
     );
   }
 
+  // create and return refreshtoken token
   generateRefreshToken(data) {
     return jwt.sign(
       data,

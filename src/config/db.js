@@ -1,4 +1,5 @@
 const mariadb = require("mariadb");
+// function config connect database
 module.exports = {
   pool: mariadb.createPool({
     host: process.env.DB_HOST,
@@ -6,7 +7,6 @@ module.exports = {
     database: process.env.DB_DATABASE_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
-    connectionLimit: 15 ,
+    connectionLimit: 15,
   }),
 };
-

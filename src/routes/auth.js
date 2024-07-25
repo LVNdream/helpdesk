@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const authController = require("../app/controllers/authController");
 const middlewareAuth = require("../app/controllers/middlewareAuth");
+
+// there are router to auth controller
+
 router.post("/checkid", authController.checkId);
 
 router.post("/register", authController.register);

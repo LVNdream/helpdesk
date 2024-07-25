@@ -6,6 +6,7 @@ const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
 
 class userPageService {
+  // get request list
   async getRequestList(data, page) {
     try {
       const resutl = await userPageModel.getRequestList(data.id, page);
@@ -24,6 +25,8 @@ class userPageService {
       };
     }
   }
+
+  // get request list by search
   async getRequestListBySearch(petitioner_id, option, text, status_id, page) {
     try {
       const resutl = await userPageModel.requestListBySearchText(
@@ -54,6 +57,8 @@ class userPageService {
       };
     }
   }
+
+  // get request detail by id
   async getRequestDetail(id) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(id);
@@ -278,6 +283,7 @@ class userPageService {
     }
   }
 
+  // get data to register request
   async getRegisterRequest(user_id) {
     try {
       const main_type = await userPageModel.getMaintenanceType();
@@ -320,6 +326,7 @@ class userPageService {
     }
   }
 
+  // update user infor
   async updateUserInfor(data, user_id, role_id) {
     try {
       let resutlInfor;
@@ -375,6 +382,7 @@ class userPageService {
     }
   }
 
+  // register request
   async userRegisterRequest(data, files) {
     try {
       const resutlAddRequest = await userPageModel.registerRequest(data);
@@ -431,7 +439,7 @@ class userPageService {
     }
   }
 
-  // updateRequest
+  // update Request
   async updateRequest(request_id, data, files, arrayDelete) {
     try {
       // console.log(files, arrayDelete);
@@ -573,7 +581,7 @@ class userPageService {
       };
     }
   }
-
+  //  delete request
   async deleteRequest(user_id, request_id, page) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
@@ -693,6 +701,7 @@ class userPageService {
       };
     }
   }
+  // get user infor
   async getUserInfor(user_id, role_id) {
     try {
       let resutl;
@@ -739,6 +748,7 @@ class userPageService {
     }
   }
 
+  //  get the list account  status
   async getStatus() {
     try {
       const resutl = await userPageModel.getStatus();
