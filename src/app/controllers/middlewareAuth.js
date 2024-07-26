@@ -98,6 +98,7 @@ const middlewareAuth = {
   // verify allow user login with role admin
   verifyLoginAdmin: async (req, res, next) => {
     const user = await authModel.findAccountById(req.body.id);
+ 
     if (!user) {
       return res
         .status(200)

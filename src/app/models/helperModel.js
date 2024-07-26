@@ -447,7 +447,8 @@ WHERE
       const numberPage = (page - 1) * 10;
 
       result = await pool.query(
-        `select id,account,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc limit 10 offset ${numberPage} `
+        `select id,account,name,position,affiliated_department,phone_number,email from users 
+        where role_id=4 and status_id=2 and deleteduser=0 order by created_at desc limit 10 offset ${numberPage} `
       );
       return result;
     } catch (error) {
@@ -464,10 +465,10 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and deleteduser=0 order by created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(
-          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc `
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 and deleteduser=0 order by created_at desc `
         );
       }
 
@@ -491,10 +492,10 @@ WHERE
         }
         resutlSearch = await pool.query(
           `select u.id,u.name,u.account,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
-          where role_id=4 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
+          where role_id=4 and deleteduser=0 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(
-          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id where role_id=4 and ${nameCondition} like "%${text}%" `
+          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id where role_id=4 and deleteduser=0 and ${nameCondition} like "%${text}%" `
         );
       }
 

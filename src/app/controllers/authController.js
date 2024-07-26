@@ -37,6 +37,7 @@ class authController {
   // login admin
   async loginAdmin(req, res) {
     try {
+      // console.log(1231321);
       const result = await authService.loginAdmin(req.body);
       res.status(200).json(result);
     } catch (error) {

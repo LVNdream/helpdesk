@@ -382,7 +382,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,"일반사용자" as leveluser
       FROM
            users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id} and u.deleteduser=0  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -399,7 +399,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and (u.status_id != 1 and u.status_id != 3)
+      WHERE u.role_id=${role_id} and (u.status_id != 1 and u.status_id != 3) and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -421,13 +421,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc`
         );
       }
 
@@ -451,12 +451,12 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -511,7 +511,7 @@ WHERE
     try {
       const result = await pool.query(
         `SELECT u.id,u.name,u.account,u.affiliated_department,u.email,"일반사용자" as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name,u.reset_password
-         FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id;`
+         FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id and u.deleteduser=0;`
       );
       return result[0];
     } catch (error) {
@@ -529,7 +529,7 @@ WHERE
         users
         left join roles  on  users.role_id= roles.id
         left join company  on company.id=users.company_id
-        WHERE  users.id=${user_id};`
+        WHERE  users.id=${user_id} and users.deleteduser=0;`
       );
       return result[0];
     } catch (error) {
@@ -595,7 +595,9 @@ WHERE
   // admin delete user
   deleteUser: async (user_id) => {
     try {
-      result = await pool.query(`DELETE FROM users WHERE id= "${user_id}"`);
+      result = await pool.query(
+        `update  users set deleteduser=1 WHERE id= "${user_id}"`
+      );
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete user :", error);
@@ -615,7 +617,7 @@ WHERE
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
 
-      WHERE   u.status_id!=1 and u.status_id!=3 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE   u.status_id!=1 and u.status_id!=3 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       // console.log(result);
       return result;
@@ -632,7 +634,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id!=1 and u.status_id!=3
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -657,13 +659,13 @@ WHERE
             left join account_status us on u.status_id=us.id
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
-      WHERE  u.status_id!=1 and u.status_id!=3  and (u.role_id=1 or u.role_id=2 or u.role_id=5)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3  and (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5)  and u.status_id=2`
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5)  and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0`
         );
       }
 
@@ -689,14 +691,14 @@ WHERE
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE  u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE u.status_id=us.id and u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
+      WHERE u.status_id=us.id and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
         );
         // console.log(nameCondition);
       }
@@ -1036,7 +1038,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -1053,7 +1055,7 @@ WHERE
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3 or u.status_id = 2)
+      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -1075,13 +1077,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc `
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc `
         );
       }
 
@@ -1106,12 +1108,12 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id, u.name,u.account, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%"`
         );
       }
 

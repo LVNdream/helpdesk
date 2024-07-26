@@ -262,7 +262,9 @@ class authService {
   // check role to login with admin role
   async loginAdmin(data) {
     try {
+      
       const user = await authModel.findAccountById(data.id);
+ 
       if (!user) {
         return { message: "Error get account", status: false, error: 500 };
       }

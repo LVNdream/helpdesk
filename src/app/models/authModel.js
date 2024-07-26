@@ -36,7 +36,7 @@ module.exports = {
   checkExistId: async (id) => {
     try {
       const result = await pool.query(
-        `select * from users where BINARY account="${id}" `
+        `select * from users where BINARY account="${id}" and deleteduser=0`
       );
       if (result[0]) {
         return { message: "ID have existed", status: false };
@@ -53,7 +53,7 @@ module.exports = {
   findAccountById: async (id) => {
     try {
       const result = await pool.query(
-        `select * from users where BINARY account="${id}" `
+        `select * from users where BINARY account="${id}" and deleteduser="0" `
       );
       return result[0] ? result[0] : {};
     } catch (error) {
