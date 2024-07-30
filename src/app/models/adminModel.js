@@ -1567,7 +1567,7 @@ GROUP BY mc.id`
   },
 
   //
-
+  // reset account to nornal status
   resetAccount: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1583,7 +1583,8 @@ GROUP BY mc.id`
       return false;
     }
   },
-  //
+
+  // get User just have created
   getNewUser: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1600,6 +1601,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get Company just have created
   getNewCompany: async (company_id) => {
     try {
       const result = await pool.query(
@@ -1616,6 +1618,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get maintenance after change  maintenance type of request
   getNewMainClass: async (id) => {
     try {
       const result = await pool.query(
@@ -1631,6 +1635,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get helper  after deleted  helper to replace
   helpdeskToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1651,6 +1656,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get user  after deleted  user to replace
   userToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1668,6 +1675,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get denined user  after deleted  denined user to replace
   replaceDeninedUserAfterDelete: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1684,6 +1692,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get company  after deleted  company to replace
   companyToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1702,6 +1712,7 @@ GROUP BY mc.id`
     }
   },
 
+  // deleted label
   deleteLabel: async (label_id) => {
     try {
       result = await pool.query(
@@ -1713,6 +1724,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // deleted label processing
   deleteLabelProcess: async (label_id) => {
     try {
       result = await pool.query(
