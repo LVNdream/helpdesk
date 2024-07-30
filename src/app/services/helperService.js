@@ -4,6 +4,7 @@ const userPageModel = require("../models/userPageModel");
 const midService = require("./midService");
 
 class helperPageService {
+  // get request list
   async getRequestListByHelper(role_id, recipient_id, page) {
     try {
       const resutl = await helperModel.getRequestListByHelper(
@@ -33,6 +34,8 @@ class helperPageService {
       };
     }
   }
+
+  // helper receive request
   async acceptRequest(request_id, recipient_id) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
@@ -316,6 +319,7 @@ class helperPageService {
     }
   }
 
+  // get request list by request
   async getRequestListBySearch(
     recipient_id,
     role_id,
@@ -354,7 +358,8 @@ class helperPageService {
       };
     }
   }
-  // update request
+
+  // update  helper infor
   // async
   // updateHelpdeskInfor
   async updateHelpdeskInfor(data, user_id) {
@@ -388,6 +393,7 @@ class helperPageService {
     }
   }
 
+  // save request status
   async saveStatusProcessing(request_id, recipient_id, listProblem) {
     try {
       const resutlRQ = await userPageModel.getRequestById(request_id);
@@ -445,6 +451,7 @@ class helperPageService {
     }
   }
 
+  // add request problem
   async addListProblem(request_id, recipient_id, listProblem) {
     try {
       const resultRQ = await userPageModel.getRequestById(request_id);
@@ -520,6 +527,7 @@ class helperPageService {
     }
   }
 
+  // update request problem
   async updateProblem(
     request_id,
     recipient_id,
@@ -569,8 +577,8 @@ class helperPageService {
       };
     }
   }
-  // helpdesk request
 
+  // update request
   async updateRequest(data) {
     try {
       // console.log(files, arrayDelete);
@@ -699,8 +707,7 @@ class helperPageService {
     }
   }
 
-  //
-
+  // delete problem
   async deleteProblem(request_id, recipient_id, problem_id) {
     try {
       const resultRQ = await userPageModel.getRequestById(request_id);
@@ -766,6 +773,7 @@ class helperPageService {
     }
   }
 
+  // change  processing status  to  completed status
   async verifyCompleted(request_id, recipient_id, data) {
     try {
       const resultRQ = await userPageModel.getRequestById(request_id);
@@ -844,6 +852,7 @@ class helperPageService {
     }
   }
 
+  //get all file of request by request id
   async getFiles(request_id) {
     try {
       const resutl = await userPageModel.getAllFileByRequest(request_id);
@@ -864,6 +873,8 @@ class helperPageService {
       };
     }
   }
+
+  // get data to verify complete request
   async getInforComplted(recipient_id, request_id, role_id) {
     try {
       //  get Infor
@@ -1030,6 +1041,7 @@ class helperPageService {
     }
   }
 
+  // delete request
   async deleteRequest(user_id, role_id, request_id, page) {
     try {
       const status_id = await userPageModel.getIdStatusByRequest(request_id);
@@ -1152,6 +1164,7 @@ class helperPageService {
     }
   }
 
+  //  get all user
   async getAllUser(page) {
     try {
       let users = await helperModel.getAllUser(page);
@@ -1175,6 +1188,7 @@ class helperPageService {
     }
   }
 
+  //get user by id
   async getUserById(user_id) {
     try {
       let user = await userPageModel.getUserInfor(user_id);
@@ -1223,6 +1237,7 @@ class helperPageService {
     }
   }
 
+  //register completed  request
   async addRequestCompleted(infor_user, data, files) {
     try {
       // console.log( data);

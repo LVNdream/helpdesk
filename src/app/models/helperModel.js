@@ -2,6 +2,7 @@ const { pool } = require("../../config/db");
 const bcrypt = require("bcryptjs");
 
 module.exports = {
+  // get helper request
   getRequestListByHelper: async (role_id, recipient_id, page) => {
     try {
       const startNumber = (page - 1) * 10;
@@ -81,6 +82,7 @@ WHERE
     }
   },
 
+  // get helper request by search
   requestListBySearchText: async (
     recipient_id,
     role_id,
@@ -201,6 +203,7 @@ WHERE
     }
   },
 
+  // change request status
   updateStatus_id: async (request_id, status_id) => {
     try {
       result = await pool.query(
@@ -218,6 +221,7 @@ WHERE
     }
   },
 
+  // update request recipient
   updateRecipient_id: async (request_id, recipient_id) => {
     try {
       result = await pool.query(
@@ -232,8 +236,8 @@ WHERE
       return false;
     }
   },
-  // getInforHelpdesk
 
+  // get helper infor
   getHelpdeskInfor: async (user_id) => {
     try {
       const result = await pool.query(
@@ -245,7 +249,8 @@ WHERE
       return false;
     }
   },
-  // updateInforHelpdesk
+
+  // update helper infor
   updateHelpdeskInfor: async (data, user_id) => {
     try {
       let result;
@@ -278,6 +283,7 @@ WHERE
     }
   },
 
+  // add request problem
   addListProblem: async (request_id, data) => {
     try {
       // console.log(data);
@@ -293,7 +299,8 @@ WHERE
       return false;
     }
   },
-  //upadte problem
+
+  //upadte request problem
   updateProblem: async (problem_id, problem, updated_at) => {
     try {
       const timeUpdate = new Date(parseInt(updated_at));
@@ -312,9 +319,7 @@ WHERE
     }
   },
 
-  //
-
-  // xao mot van de
+  // delete request problem
   deleteProblem: async (problem_id) => {
     try {
       result = await pool.query(
@@ -327,6 +332,7 @@ WHERE
     }
   },
 
+  // delete  the list of request processing detail
   deleteListProcessByRequest: async (request_id) => {
     try {
       result = await pool.query(
@@ -339,6 +345,7 @@ WHERE
     }
   },
 
+  // add equest processing detail
   addProcessingDetail: async (request_id, label_id) => {
     try {
       // console.log(data);
@@ -353,6 +360,7 @@ WHERE
     }
   },
 
+  // delete request
   helperDeleteRequest: async (user_id, request_id) => {
     try {
       result = await pool.query(
@@ -365,6 +373,7 @@ WHERE
     }
   },
 
+  // add data of completed request
   addDataTocompleted: async (request_id, data) => {
     try {
       result = await pool.query(
@@ -382,6 +391,7 @@ WHERE
     }
   },
 
+  // get maintenace type
   getMaintenanceType: async () => {
     try {
       result = await pool.query(`select id,type_name from maintenance_type`);
@@ -392,6 +402,7 @@ WHERE
     }
   },
 
+  // get request method
   getMethod: async () => {
     try {
       result = await pool.query(
@@ -404,6 +415,7 @@ WHERE
     }
   },
 
+  // get request solution
   getSolution: async () => {
     try {
       result = await pool.query(
@@ -416,6 +428,7 @@ WHERE
     }
   },
 
+  // get request status
   getStatus: async () => {
     try {
       result = await pool.query(
@@ -428,12 +441,14 @@ WHERE
     }
   },
 
+  // hepler get user list to register completed request
   getAllUser: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
 
       result = await pool.query(
-        `select id,account,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc limit 10 offset ${numberPage} `
+        `select id,account,name,position,affiliated_department,phone_number,email from users 
+        where role_id=4 and status_id=2 and deleteduser=0 order by created_at desc limit 10 offset ${numberPage} `
       );
       return result;
     } catch (error) {
@@ -442,6 +457,7 @@ WHERE
     }
   },
 
+  // hepler get user list to register completed request by search
   helperSearchUser: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -449,10 +465,10 @@ WHERE
       let resultCount;
       if (!text) {
         resutlSearch = await pool.query(
-          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 order by created_at desc limit 10 offset ${numberPage} `
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and deleteduser=0 order by created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(
-          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 order by created_at desc `
+          `select id,name,position,affiliated_department,phone_number,email from users where role_id=4 and status_id=2 and deleteduser=0 order by created_at desc `
         );
       }
 
@@ -476,10 +492,10 @@ WHERE
         }
         resutlSearch = await pool.query(
           `select u.id,u.name,u.account,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id 
-          where role_id=4 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
+          where role_id=4 and deleteduser=0 and ${nameCondition} like "%${text}%" order by u.created_at desc limit 10 offset ${numberPage} `
         );
         resultCount = await pool.query(
-          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id where role_id=4 and ${nameCondition} like "%${text}%" `
+          `select u.id,u.name,position,u.affiliated_department,u.phone_number,u.email from users u left join account_status u_s on u.status_id=u_s.id where role_id=4 and deleteduser=0 and ${nameCondition} like "%${text}%" `
         );
       }
 
@@ -493,6 +509,7 @@ WHERE
     }
   },
 
+  // hepler get user count to pagination
   getUserCount: async () => {
     try {
       result = await pool.query(
@@ -505,6 +522,7 @@ WHERE
     }
   },
 
+  // register completed request
   addRequestCompelted: async (data) => {
     try {
       // let timeRequest;
@@ -547,6 +565,7 @@ WHERE
     }
   },
 
+  // hepler get request count to pagination
   getHelperRequestCount: async (recipient_id, role_id) => {
     try {
       // const result = await pool.query(
@@ -592,7 +611,7 @@ WHERE
       return false;
     }
   },
-
+  //  delete request
   deleteRequest: async (user_id, request_id) => {
     try {
       result = await pool.query(
@@ -605,6 +624,7 @@ WHERE
     }
   },
 
+  //  get request to replace deleted request
   requestToOrther: async (recipient_id, role_id, page) => {
     try {
       const startNumber = page * 10;
@@ -656,6 +676,7 @@ WHERE
     }
   },
 
+  //  update request
   updateRequest: async (data) => {
     try {
       !data.maintenance_id ? (data.maintenance_id = null) : data.maintenance_id;
@@ -674,6 +695,8 @@ WHERE
       return false;
     }
   },
+
+  // reset data request when change maintenance type
   resetRequest: async (data) => {
     try {
       result = await pool.query(
@@ -688,6 +711,8 @@ WHERE
       return false;
     }
   },
+
+  // get miantenance name
   type_name_ById: async (maintenance_id) => {
     try {
       result = await pool.query(

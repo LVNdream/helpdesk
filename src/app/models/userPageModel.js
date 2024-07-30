@@ -2,6 +2,7 @@ const { pool } = require("../../config/db");
 const bcrypt = require("bcryptjs");
 
 module.exports = {
+  // user get request list that they have registered
   getRequestList: async (petitioner_id, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -38,6 +39,8 @@ module.exports = {
       return false;
     }
   },
+
+  // user get request list that they have registered by search
   requestListBySearchText: async (
     petitioner_id,
     option,
@@ -151,6 +154,7 @@ module.exports = {
       return false;
     }
   },
+  // user get jusst registered request
   getRequestJustRegister: async (petitioner_id, request_id) => {
     try {
       const result = await pool.query(
@@ -187,6 +191,8 @@ WHERE
       return false;
     }
   },
+
+  // get request status by ID request
   getIdStatusByRequest: async (id) => {
     try {
       const result = await pool.query(
@@ -198,6 +204,8 @@ WHERE
       return false;
     }
   },
+
+  // get request  by ID request
   getRequestById: async (id) => {
     try {
       const result = await pool.query(
@@ -209,6 +217,8 @@ WHERE
       return false;
     }
   },
+
+  // get new request
   getNewRequest: async (id) => {
     try {
       const result = await pool.query(
@@ -244,8 +254,8 @@ WHERE
       return false;
     }
   },
-  // status_Register
 
+  //  get maintenance type
   getMaintenanceType: async () => {
     try {
       const result = await pool.query(
@@ -259,6 +269,7 @@ WHERE
     }
   },
 
+  // get requet infor not complete processing
   getRequestConfirm_Register: async (id) => {
     try {
       const result = await pool.query(
@@ -288,7 +299,8 @@ LEFT JOIN
       return false;
     }
   },
-  //
+
+  // get requet infor that complete processing
   getRequestCompleted: async (id) => {
     try {
       const result = await pool.query(
@@ -317,6 +329,7 @@ LEFT JOIN
     }
   },
 
+  // get maintenance class base on maintenace type
   getMaintenanceClassId: async (id) => {
     try {
       const result = await pool.query(
@@ -332,6 +345,7 @@ LEFT JOIN
     }
   },
 
+  //  get the list of completed request processing detail
   getMaintenanceClassRequest: async (id) => {
     try {
       const result = await pool.query(
@@ -343,8 +357,8 @@ LEFT JOIN
       return false;
     }
   },
-  // ///status_complete
-  // update inforUser
+
+  // update ủe infor
   updateUserInfor: async (data, user_id) => {
     try {
       let result;
@@ -378,7 +392,8 @@ LEFT JOIN
       return false;
     }
   },
-  // getAllproblem ByRequest_id
+
+  // get the list of problem request
   getAllProblemByRequest_id: async (request_id) => {
     try {
       result = await pool.query(
@@ -391,6 +406,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // register request
   registerRequest: async (data) => {
     try {
       let result;
@@ -417,6 +434,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // add request file
   addRequestFile: async (request_id, filename) => {
     try {
       result = await pool.query(
@@ -429,6 +448,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  //upadte request
   updateRequest: async (request_id, data) => {
     try {
       // console.log(data);
@@ -448,6 +469,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // delete request file
   deleteFile: async (filename) => {
     try {
       result = await pool.query(
@@ -461,6 +484,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // get all request file by request id
   getAllFileByRequest: async (request_id) => {
     try {
       const result = await pool.query(
@@ -473,6 +498,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // delete request
   deleteRequest: async (user_id, request_id) => {
     try {
       result = await pool.query(
@@ -485,6 +512,7 @@ LEFT JOIN
     }
   },
 
+  // get user infor
   getUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
@@ -496,6 +524,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // get the list of request status
   getStatus: async () => {
     try {
       const result = await pool.query(
@@ -507,6 +537,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  //  get request count  to pagination
   getUserRequestCount: async (petitioner_id) => {
     try {
       const result = await pool.query(
@@ -523,6 +555,7 @@ LEFT JOIN
     }
   },
 
+  // get maintenance class by maintenance type
   getMainclassGroupById: async (maintenance_id) => {
     try {
       const result = await pool.query(
@@ -534,6 +567,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // get group of maintenance type
   getMainTypeGroup: async () => {
     try {
       const result = await pool.query(
@@ -545,6 +580,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // get all problem by request id
   deleteListProblem: async (request_id) => {
     try {
       const result = await pool.query(
@@ -556,6 +593,8 @@ LEFT JOIN
       return false;
     }
   },
+
+  // get request to replace deleted request
   requestToOrther: async (petitioner_id, page) => {
     // console.log(petitioner_id, page);
     try {

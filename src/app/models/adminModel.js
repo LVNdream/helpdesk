@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const helperModel = require("./helperModel");
 
 module.exports = {
+  // admin get list request in database
   getRequestListByAdmin: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -37,6 +38,7 @@ WHERE
     }
   },
 
+  // admin get list request in database by serach
   requestListBySearchText: async (
     user_id,
     role_id,
@@ -319,13 +321,17 @@ WHERE
         resultByRoleById = resutlSearch.filter((data) => {
           // console.log(data)
           return (
-            (data.maintenance_id == 1 || data.maintenance_id == 2 || data.maintenance_id == null) &&
+            (data.maintenance_id == 1 ||
+              data.maintenance_id == 2 ||
+              data.maintenance_id == null) &&
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
         requestToCount = resultNoLimit.filter((data) => {
           return (
-            (data.maintenance_id == 1 || data.maintenance_id == 2 || data.maintenance_id == null) &&
+            (data.maintenance_id == 1 ||
+              data.maintenance_id == 2 ||
+              data.maintenance_id == null) &&
             (data.status_id == 1 || data.recipient_id == user_id)
           );
         });
@@ -352,6 +358,7 @@ WHERE
     }
   },
 
+  // admin get list request count  in database by search
   getAdminRequestCount: async () => {
     try {
       const result = await pool.query(
@@ -367,6 +374,7 @@ WHERE
     }
   },
 
+  // admin get list approved user to manage
   getAllUser: async (role_id, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -374,7 +382,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,"일반사용자" as leveluser
       FROM
            users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id}   ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and  u.role_id=${role_id} and u.deleteduser=0  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -384,13 +392,14 @@ WHERE
     }
   },
 
+  // admin get  approved user count
   getUserCount: async (role_id) => {
     try {
       const result = await pool.query(
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and (u.status_id != 1 and u.status_id != 3)
+      WHERE u.role_id=${role_id} and (u.status_id != 1 and u.status_id != 3) and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -400,6 +409,8 @@ WHERE
       return false;
     }
   },
+
+  // admin get list approved user to manage by search
   listUserBySearchText: async (role_id, option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -410,13 +421,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} ORDER BY u.created_at desc`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc`
         );
       }
 
@@ -440,12 +451,12 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id != 1 and u.status_id != 3) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -458,6 +469,8 @@ WHERE
       return false;
     }
   },
+
+  // admin get list  user account
   adminGetAccountStatus: async () => {
     try {
       // co sua thi mo len, chi lay 2 trang thai
@@ -475,6 +488,8 @@ WHERE
       return false;
     }
   },
+
+  // admin get list just registered user to approve
   adminGetAccountStatusWaitAccept: async () => {
     try {
       const result = await pool.query(
@@ -491,11 +506,12 @@ WHERE
     }
   },
 
+  // admin get ser infor  to update
   adminGetUserInfor: async (user_id) => {
     try {
       const result = await pool.query(
         `SELECT u.id,u.name,u.account,u.affiliated_department,u.email,"일반사용자" as leveluser,r.id as role_id,u.position,u.phone_number,u.tel_number, u.status_id,us.status_name,u.reset_password
-         FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id;`
+         FROM users u left join roles r on u.role_id = r.id left join account_status us on us.id=u.status_id WHERE u.id=${user_id} and u.role_id= r.id and u.deleteduser=0;`
       );
       return result[0];
     } catch (error) {
@@ -504,6 +520,7 @@ WHERE
     }
   },
 
+  // admin get helper infor to update
   adminGetHelperInfor: async (user_id) => {
     try {
       const result = await pool.query(
@@ -512,7 +529,7 @@ WHERE
         users
         left join roles  on  users.role_id= roles.id
         left join company  on company.id=users.company_id
-        WHERE  users.id=${user_id};`
+        WHERE  users.id=${user_id} and users.deleteduser=0;`
       );
       return result[0];
     } catch (error) {
@@ -521,6 +538,7 @@ WHERE
     }
   },
 
+  // admin update user status
   updateUserStatus: async (user_id, status_id) => {
     try {
       result = await pool.query(
@@ -535,6 +553,8 @@ WHERE
       return false;
     }
   },
+
+  // admin update user infor
   AdminUpdateUserInfor: async (data) => {
     try {
       // reset password
@@ -572,9 +592,12 @@ WHERE
     }
   },
 
+  // admin delete user
   deleteUser: async (user_id) => {
     try {
-      result = await pool.query(`DELETE FROM users WHERE id= "${user_id}"`);
+      result = await pool.query(
+        `update  users set deleteduser=1 WHERE id= "${user_id}"`
+      );
       return result.affectedRows > 0 ? result : false;
     } catch (error) {
       console.log("error model Delete user :", error);
@@ -582,6 +605,7 @@ WHERE
     }
   },
 
+  // admin list helper to manage
   getAllHelper: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -593,7 +617,7 @@ WHERE
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
 
-      WHERE   u.status_id!=1 and u.status_id!=3 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE   u.status_id!=1 and u.status_id!=3 and  (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       // console.log(result);
       return result;
@@ -603,13 +627,14 @@ WHERE
     }
   },
 
+  // admin helper count  to manage
   getHelperCount: async () => {
     try {
       const result = await pool.query(
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id!=1 and u.status_id!=3
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -620,6 +645,7 @@ WHERE
     }
   },
 
+  // admin list helper to manage by search
   listHelperBySearchText: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -633,13 +659,13 @@ WHERE
             left join account_status us on u.status_id=us.id
             left join roles r on u.role_id= r.id
             left join company c on u.company_id= c.id
-      WHERE  u.status_id!=1 and u.status_id!=3  and (u.role_id=1 or u.role_id=2 or u.role_id=5)  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3  and (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0  ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT *
       FROM
            users u
-      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5)  and u.status_id=2`
+      WHERE (u.role_id=1 or u.role_id=2 or u.role_id=5)  and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0`
         );
       }
 
@@ -665,14 +691,14 @@ WHERE
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE  u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at FROM users u
            left join account_status us on u.status_id=us.id
            left join  roles r on u.role_id = r.id
            left join company c on u.company_id = c.id
-      WHERE u.status_id=us.id and u.status_id!=1 and u.status_id!=3 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
+      WHERE u.status_id=us.id and u.status_id!=1 and u.status_id!=3 and u.deleteduser=0 and (u.role_id=1 or u.role_id=2 or u.role_id=5) and ${nameCondition} like "%${text}%"`
         );
         // console.log(nameCondition);
       }
@@ -688,6 +714,7 @@ WHERE
     }
   },
 
+  // admin list company to get infor for register helper
   getAllCompanyToAddInfor: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -704,6 +731,7 @@ WHERE
     }
   },
 
+  // admin company count to get infor for register helper
   getCompanyrCountToAddInfor: async () => {
     try {
       const result = await pool.query(
@@ -718,6 +746,7 @@ WHERE
     }
   },
 
+  // admin list company to get infor for register helper by search
   listCompanyBySearchTextToAddInfor: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -771,6 +800,7 @@ WHERE
     }
   },
 
+  //  admin register for helper account
   registerHelper: async (data) => {
     try {
       const result = await pool.query(
@@ -799,6 +829,7 @@ WHERE
     }
   },
 
+  // admin update  helper infor
   updateHelperInfor: async (user_id, data) => {
     try {
       const result = await pool.query(
@@ -821,6 +852,7 @@ WHERE
     }
   },
 
+  // check existence of company name
   checkCompanyName: async (name_company) => {
     try {
       const resultCheck = await pool.query(
@@ -837,6 +869,7 @@ WHERE
     }
   },
 
+  // get list company to manage and update infor
   getAllCompanyToWatch: async (page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -855,6 +888,7 @@ WHERE
     }
   },
 
+  // get  company count  to manage and update infor
   getCompanyCountToWatch: async () => {
     try {
       const result = await pool.query(
@@ -868,6 +902,8 @@ WHERE
       return false;
     }
   },
+
+  // get list company to manage and update infor by search
   listCompanyBySearchTextToWatch: async (option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -919,6 +955,7 @@ WHERE
     }
   },
 
+  // admin register new company
   registerCompany: async (data) => {
     try {
       const result = await pool.query(
@@ -932,9 +969,8 @@ WHERE
         ]
       );
 
-      if (result) {
-        return result;
-      }
+      return result;
+
       //    console.log("resssssssssssssssssss",result);
     } catch (error) {
       console.log("error model comapny register:", error);
@@ -942,6 +978,7 @@ WHERE
     }
   },
 
+  // admin get company by Id
   getCompanyInforById: async (company_id) => {
     try {
       const result = await pool.query(
@@ -959,6 +996,7 @@ WHERE
     }
   },
 
+  // admin update companyn infor
   updateCompanyInfor: async (data) => {
     try {
       const result = await pool.query(
@@ -979,6 +1017,7 @@ WHERE
     }
   },
 
+  // admin delete companny
   deleteCompany: async (company_id) => {
     try {
       result = await pool.query(
@@ -991,6 +1030,7 @@ WHERE
     }
   },
 
+  // get the list of users waitting for approval from admin
   getAllUserWaitAccept: async (role_id, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -998,7 +1038,7 @@ WHERE
         `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
       );
       //   console.log(result);
       return result;
@@ -1008,13 +1048,14 @@ WHERE
     }
   },
 
+  // get the count of users waitting for approval from admin
   getUserCountWaitAccept: async (role_id) => {
     try {
       const result = await pool.query(
         `SELECT count(u.id) as userCount
       FROM
            users u
-      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3 or u.status_id = 2)
+      WHERE u.role_id=${role_id} and (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.deleteduser=0
            `
       );
       //   console.log(result);
@@ -1025,6 +1066,7 @@ WHERE
     }
   },
 
+  // get the list of users waitting for approval from admin by search
   listUserWaitAcceptBySearchText: async (role_id, option, text, page) => {
     try {
       const numberPage = (page - 1) * 10;
@@ -1035,13 +1077,13 @@ WHERE
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
       FROM
            users u left join account_status us on u.status_id=us.id
-      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} ORDER BY u.created_at desc `
+      WHERE (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 ORDER BY u.created_at desc `
         );
       }
 
@@ -1066,12 +1108,12 @@ WHERE
         resutlSearch = await pool.query(
           `SELECT u.id, u.name,u.account, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%" ORDER BY u.created_at desc LIMIT 10 OFFSET ${numberPage}`
         );
         resultCount = await pool.query(
           `SELECT u.id, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at
           FROM users u left join account_status us on u.status_id=us.id
-      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and ${nameCondition} like "%${text}%"`
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and u.role_id=${role_id} and u.deleteduser=0 and ${nameCondition} like "%${text}%"`
         );
       }
 
@@ -1085,6 +1127,7 @@ WHERE
     }
   },
 
+  // update label name
   updateLabelName: async (label_id, name) => {
     try {
       result = await pool.query(
@@ -1100,6 +1143,7 @@ WHERE
     }
   },
 
+  // add label name in dataabe
   addNameLabel: async (data) => {
     try {
       const result = await pool.query(
@@ -1117,6 +1161,7 @@ WHERE
     }
   },
 
+  // get list label in databse by maintenance type
   getListLabel: async (maintenance_id) => {
     try {
       const result = await pool.query(
@@ -1133,6 +1178,8 @@ WHERE
       return false;
     }
   },
+
+  // get list label in databse by maintenance type by Id
   listLabelBySearchText: async (maintenance_id, text) => {
     try {
       let resutlSearch;
@@ -1163,7 +1210,8 @@ WHERE
       return false;
     }
   },
-  // ///////
+
+  // check existence of label name in databese
   checkExistLabelId: async (maintenance_id, label_id) => {
     try {
       const resultCheck = await pool.query(
@@ -1179,6 +1227,8 @@ WHERE
       return false;
     }
   },
+
+  // add label name in databese
   addLabelToMainClass: async (maintenance_class_id, label_id) => {
     try {
       const result = await pool.query(
@@ -1196,6 +1246,7 @@ WHERE
     }
   },
 
+  // get request count  by time
   amountAccumulationRegister: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
@@ -1211,6 +1262,7 @@ WHERE
     }
   },
 
+  // get completed request count  by time
   amountRequestCompleted: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
@@ -1226,6 +1278,8 @@ WHERE
       return false;
     }
   },
+
+  // get processing request count  by time
   amountRequestProcessing: async (nameCondition, datetime) => {
     try {
       let result = await pool.query(
@@ -1240,6 +1294,8 @@ WHERE
       return false;
     }
   },
+
+  // get percent completed request by maintenance type
   amountPerRequestCompleted: async (nameCondition, datetime) => {
     try {
       const main_type = await helperModel.getMaintenanceType();
@@ -1270,6 +1326,8 @@ WHERE
       return false;
     }
   },
+
+  // get percent all completed request by maintenance type
   amountPerAllRequestCompleted: async (nameCondition, dateime) => {
     try {
       // console.log(nameCondition, dateime)
@@ -1289,6 +1347,8 @@ WHERE
       return false;
     }
   },
+
+  // get data to paint chart by month
   getInforChartCurrentMonth: async (maintenance_id, group_m) => {
     try {
       let result = await pool.query(
@@ -1309,7 +1369,8 @@ GROUP BY mc.id`
       return false;
     }
   },
-  // ham nay de lay bieu do theo thang
+
+  // get data to paint chart by time
   getInforChartByOption: async (maintenance_id, group_m, option, data) => {
     try {
       const lastTime = data[option] - 1;
@@ -1334,7 +1395,8 @@ GROUP BY mc.id`
       return false;
     }
   },
-  // ham nay lay bieu do theo ngay va tuan
+
+  // get data to paint chart by week or month
   InforChartOneColumn: async (maintenance_id, group_m, option, data) => {
     try {
       const thisTime = data[option];
@@ -1356,7 +1418,8 @@ GROUP BY mc.id`
       return false;
     }
   },
-  //
+
+  // get not complete request count
   getCountRequestNotCompleteOption: async (
     maintenance_id,
     month,
@@ -1389,6 +1452,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get request count of every method
   getCountAllMethod: async (option, datetime) => {
     try {
       let result = await pool.query(
@@ -1403,6 +1467,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get request count of every solution
   getCountAllSolution: async (option, datetime) => {
     try {
       let result = await pool.query(
@@ -1416,6 +1481,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get five lastest request
   getListNewRequest: async () => {
     try {
       let result = await pool.query(
@@ -1428,6 +1495,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get admin infor
   getAdminInfor: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1443,6 +1512,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // update admin infor
   updateAdminInfor: async (user_id, data) => {
     try {
       let result;
@@ -1474,6 +1545,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get new helper after admin register helper account
   getNewHelper: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1494,7 +1567,7 @@ GROUP BY mc.id`
   },
 
   //
-
+  // reset account to nornal status
   resetAccount: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1510,7 +1583,8 @@ GROUP BY mc.id`
       return false;
     }
   },
-  //
+
+  // get User just have created
   getNewUser: async (user_id) => {
     try {
       const result = await pool.query(
@@ -1527,6 +1601,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get Company just have created
   getNewCompany: async (company_id) => {
     try {
       const result = await pool.query(
@@ -1543,6 +1618,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get maintenance after change  maintenance type of request
   getNewMainClass: async (id) => {
     try {
       const result = await pool.query(
@@ -1558,6 +1635,7 @@ GROUP BY mc.id`
     }
   },
 
+  // get helper  after deleted  helper to replace
   helpdeskToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1578,6 +1656,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get user  after deleted  user to replace
   userToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1594,6 +1674,26 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // get denined user  after deleted  denined user to replace
+  replaceDeninedUserAfterDelete: async (page) => {
+    try {
+      const numberPage = page * 10;
+      const result = await pool.query(
+        `SELECT u.id,u.account, u.name, u.position,u.affiliated_department,u.status_id,us.status_name,u.created_at,u.tel_number,u.phone_number,u.email,"일반사용자" as leveluser
+      FROM
+           users u left join  account_status us on u.status_id=us.id left join roles r on r.id=u.role_id
+      WHERE  (u.status_id = 1 or u.status_id = 3 or u.status_id = 2) and  u.role_id=4   ORDER BY u.created_at desc LIMIT 1 OFFSET ${numberPage}`
+      );
+      //   console.log(result);
+      return result;
+    } catch (error) {
+      console.log("error model userReplaceAfterDelete:", error);
+      return false;
+    }
+  },
+
+  // get company  after deleted  company to replace
   companyToOrther: async (page) => {
     try {
       const numberPage = page * 10;
@@ -1612,6 +1712,7 @@ GROUP BY mc.id`
     }
   },
 
+  // deleted label
   deleteLabel: async (label_id) => {
     try {
       result = await pool.query(
@@ -1623,6 +1724,8 @@ GROUP BY mc.id`
       return false;
     }
   },
+
+  // deleted label processing
   deleteLabelProcess: async (label_id) => {
     try {
       result = await pool.query(

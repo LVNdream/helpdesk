@@ -3,6 +3,7 @@
 const { pool } = require("../config/db");
 
 module.exports = {
+  // test connect database
   register: async function register(data) {
     // Insert Data
     return new Promise((resolve, reject) => {
@@ -22,12 +23,11 @@ module.exports = {
         ],
         function (error, results, fields) {
           if (error) {
-           return  reject(error);
+            return reject(error);
           }
           return resolve(results);
         }
       );
     });
-
   },
 };

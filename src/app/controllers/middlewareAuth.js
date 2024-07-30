@@ -1,6 +1,7 @@
 const authModel = require("../models/authModel");
 const jwt = require("jsonwebtoken");
 const middlewareAuth = {
+  // authentication
   verifyAuthentication: (req, res, next) => {
     try {
       // console.log(req.headers.cookies)
@@ -40,6 +41,8 @@ const middlewareAuth = {
       });
     }
   },
+
+  // refresh token  when access token expired
   verifyRefreshToken: (req, res, next) => {
     try {
       const refreshToken = req.body.refreshToken;
@@ -75,6 +78,8 @@ const middlewareAuth = {
       });
     }
   },
+
+  // verify admin
   verifyToKenAdminAuth: (req, res, next) => {
     middlewareAuth.verifyAuthentication(req, res, () => {
       // console.log(req.user)
@@ -89,8 +94,11 @@ const middlewareAuth = {
       }
     });
   },
+
+  // verify allow user login with role admin
   verifyLoginAdmin: async (req, res, next) => {
     const user = await authModel.findAccountById(req.body.id);
+ 
     if (!user) {
       return res
         .status(200)
@@ -111,6 +119,8 @@ const middlewareAuth = {
       });
     }
   },
+
+  // verify allow user login with role normal user
   verifyNormalUser: async (req, res, next) => {
     const user = await authModel.findAccountById(req.body.id);
     if (!user) {
@@ -138,6 +148,8 @@ const middlewareAuth = {
       });
     }
   },
+
+  // verify allow user login with role helper
   verifyToKenHelperAuth: (req, res, next) => {
     middlewareAuth.verifyAuthentication(req, res, () => {
       // console.log(req.user)

@@ -1,6 +1,7 @@
 const helperService = require("../services/helperService");
 
 class helperController {
+  // helper get list request
   async getRequestList(req, res) {
     try {
       let page;
@@ -20,6 +21,8 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  // helper get list request by search
 
   async getRequestListSearch(req, res) {
     try {
@@ -44,6 +47,7 @@ class helperController {
     }
   }
 
+  // helper press take or watch user request
   async acceptRequest(req, res) {
     try {
       const result = await helperService.acceptRequest(
@@ -57,8 +61,7 @@ class helperController {
     }
   }
 
-  // updateHelpDeskInfor
-
+  // handle update infor
   async updateHelpdeskInfor(req, res) {
     try {
       const resutl = await helperService.updateHelpdeskInfor(
@@ -71,7 +74,7 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
-  // save status processing
+  // save request processing status
   async saveStatusProcessing(req, res) {
     try {
       const result = await helperService.saveStatusProcessing(
@@ -85,7 +88,8 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
-  // update processing
+
+  // add problem for request
   async addProblems(req, res) {
     try {
       const result = await helperService.addListProblem(
@@ -99,6 +103,8 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  // update request problem
   async updateProblem(req, res) {
     try {
       const result = await helperService.updateProblem(
@@ -115,8 +121,8 @@ class helperController {
     }
   }
 
+  // helper edit request
   async updateRequest(req, res) {
-    
     try {
       const result = await helperService.updateRequest({
         title_request: req.body.title_request,
@@ -135,6 +141,7 @@ class helperController {
     }
   }
 
+  // delete reuest problem
   async deleteProblem(req, res) {
     try {
       const result = await helperService.deleteProblem(
@@ -149,6 +156,7 @@ class helperController {
     }
   }
 
+  // helper delete request
   async deleteRequest(req, res) {
     try {
       const result = await helperService.deleteRequest(
@@ -164,6 +172,7 @@ class helperController {
     }
   }
 
+  // helper get file
   async getFiles(req, res) {
     try {
       const result = await helperService.getFiles(req.params.request_id);
@@ -175,6 +184,7 @@ class helperController {
     }
   }
 
+  // hepler mark completed request after handle
   async verifyCompleted(req, res) {
     try {
       const result = await helperService.verifyCompleted(
@@ -188,6 +198,8 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  // get form to mark completed request
   async getInforComplted(req, res) {
     try {
       const result = await helperService.getInforComplted(
@@ -202,6 +214,7 @@ class helperController {
     }
   }
 
+  // helper get all user to get user infor register request
   async getAllUser(req, res) {
     try {
       let page;
@@ -214,6 +227,7 @@ class helperController {
     }
   }
 
+  // get user by id
   async getUserById(req, res) {
     try {
       const result = await helperService.getUserById(req.params.id);
@@ -223,6 +237,8 @@ class helperController {
       res.status(500).json("Server error");
     }
   }
+
+  // hepler get list user by search
   async helperSearchUser(req, res) {
     try {
       let page;
@@ -243,6 +259,7 @@ class helperController {
     }
   }
 
+// helper register complted request
   async addRequestComplete(req, res) {
     try {
       // console.log(req.body);

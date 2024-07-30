@@ -3,6 +3,7 @@ const midService = require("../services/midService");
 const fsp = require("fs").promises;
 
 class userController {
+  // user get list reuqest that user rgistered
   async getRequestList(req, res) {
     try {
       let page;
@@ -21,6 +22,7 @@ class userController {
     }
   }
 
+  // user get list reuqest that user rgistered by search
   async getRequestListSearch(req, res) {
     try {
       let page;
@@ -42,6 +44,8 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  // user get request detail by request id
   async getRequestDetail(req, res) {
     try {
       const result = await userPageService.getRequestDetail(req.params.id);
@@ -51,6 +55,8 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  // user update infor
   async updateUserInfor(req, res) {
     try {
       const resutl = await userPageService.updateUserInfor(
@@ -65,6 +71,7 @@ class userController {
     }
   }
 
+  // user get form to register request
   async getRegisterRequest(req, res) {
     try {
       const result = await userPageService.getRegisterRequest(req.user.id);
@@ -74,6 +81,8 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  // user register request
   async userRegisterRequest(req, res) {
     try {
       const data = {
@@ -95,6 +104,7 @@ class userController {
     }
   }
 
+  // user update request
   async updateRegisterRequest(req, res) {
     try {
       const data = {
@@ -123,6 +133,8 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  // user delete request
   async deleteRequest(req, res) {
     try {
       const result = await userPageService.deleteRequest(
@@ -136,6 +148,8 @@ class userController {
       res.status(500).json("Server error");
     }
   }
+
+  // get user infor
   async getUserInfor(req, res) {
     try {
       const result = await userPageService.getUserInfor(
@@ -150,6 +164,7 @@ class userController {
     }
   }
 
+  // get user status
   async getStatus(req, res) {
     try {
       const result = await userPageService.getStatus();

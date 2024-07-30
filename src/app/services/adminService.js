@@ -6,10 +6,12 @@ const authModel = require("../models/authModel");
 const bcrypt = require("bcryptjs");
 
 class adminPageService {
+  // get request líst
   async getRequestListByAdmin(page) {
     try {
+      // get request list
       const resutl = await adminModel.getRequestListByAdmin(page);
-
+      // get request count to pagination
       const requestCount = await adminModel.getAdminRequestCount();
 
       return resutl
@@ -29,6 +31,7 @@ class adminPageService {
     }
   }
 
+  // get request líst by search
   async getRequestListBySearch(
     user_id,
     role_id,
@@ -38,6 +41,7 @@ class adminPageService {
     page
   ) {
     try {
+      // get request lít by search
       const resutl = await adminModel.requestListBySearchText(
         user_id,
         role_id,
@@ -66,18 +70,19 @@ class adminPageService {
     }
   }
 
+  // get request detail
   async getRequestDetail(id) {
     try {
+      // get status id
       const status_id = await userPageModel.getIdStatusByRequest(id);
 
       if (!status_id) {
         return { message: "Id request not valid", status: false, error: 404 };
       }
-      // tang thai dang ki va dang tien hanh
+      // get request infor by request status
       if (status_id == 1 || status_id == 2 || status_id == 3) {
         const resutlConfirm_Register =
           await userPageModel.getRequestConfirm_Register(id);
-        // console.log(resutlConfirm_Register)
         const MT_Register = await midService.getMaintenanceType_checked(
           resutlConfirm_Register.maintenance_id
         );
@@ -135,7 +140,7 @@ class adminPageService {
       if (status_id == 4 || status_id == 5) {
         const resutlComplete_AddProblem =
           await userPageModel.getRequestCompleted(id);
-        // lay ra cach maintenance
+
         const MT_Register = await midService.getMaintenanceType_checked(
           resutlComplete_AddProblem.maintenance_id
         );
@@ -288,6 +293,7 @@ class adminPageService {
     }
   }
 
+  // get all user to manage
   async getAllUser(role_id, page) {
     try {
       const resutl = await adminModel.getAllUser(role_id, page);
@@ -354,6 +360,7 @@ class adminPageService {
     }
   }
 
+  // get all user to manage by search
   async listUserBySearch(role_id, option, text, page) {
     try {
       const resutl = await adminModel.listUserBySearchText(
@@ -425,7 +432,7 @@ class adminPageService {
     }
   }
 
-  //
+  // get all helper to manage
   async getAllHelper(page) {
     try {
       let resutl = await adminModel.getAllHelper(page);
@@ -456,6 +463,7 @@ class adminPageService {
     }
   }
 
+  // get all helper to manage by search
   async listHelperBySearch(option, text, page) {
     try {
       const resutl = await adminModel.listHelperBySearchText(
@@ -489,9 +497,8 @@ class adminPageService {
       };
     }
   }
-  //
 
-  //
+  // get all company to get company infor for register helper account
   async getAllCompanyToAddInfor(page) {
     try {
       let resutl = await adminModel.getAllCompanyToAddInfor(page);
@@ -515,6 +522,7 @@ class adminPageService {
     }
   }
 
+  // get all company to get company infor for register helper account by search
   async listCompanyBySearchToAddInfor(option, text, page) {
     try {
       const resutl = await adminModel.listCompanyBySearchTextToAddInfor(
@@ -541,8 +549,8 @@ class adminPageService {
       };
     }
   }
-  //
 
+  // admin get user infor
   async getAdminUserById(user_id) {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
@@ -599,6 +607,8 @@ class adminPageService {
       };
     }
   }
+
+  // admin get  user infor  to approve
   async adminGetUserByIdAccept(user_id) {
     try {
       const resutl = await adminModel.adminGetUserInfor(user_id);
@@ -619,6 +629,8 @@ class adminPageService {
       };
     }
   }
+
+  // admin update user staus
   async updateUserStatus(user_id, status_id) {
     try {
       const resutl = await adminModel.updateUserStatus(user_id, status_id);
@@ -670,6 +682,8 @@ class adminPageService {
       };
     }
   }
+
+  // admin update user infor
   async AdminUpdateUserInfor(data) {
     try {
       const inforUser = await adminModel.adminGetUserInfor(data.user_id);
@@ -749,6 +763,7 @@ class adminPageService {
     }
   }
 
+  // admin delete User
   async deleteUser(user_id, page) {
     try {
       const getUser = await authModel.findInforById(user_id);
@@ -773,7 +788,7 @@ class adminPageService {
       }
       const resutl = await adminModel.deleteUser(user_id);
       // console.log(data);
-      return true
+      return resutl
         ? {
             data,
             deleteId: user_id,
@@ -795,6 +810,55 @@ class adminPageService {
     }
   }
 
+  // admin delete denined User
+  async deleteDeninedUser(user_id, page) {
+    try {
+      const user = await authModel.findInforById(user_id);
+      if (!user) {
+        return {
+          message: "Not found ID",
+          status: false,
+          error: "u_404",
+        };
+      }
+
+      // get replace user
+      const replaceUser = await adminModel.replaceDeninedUserAfterDelete(page);
+      if (!replaceUser) {
+        return {
+          message: "Error get repalce user",
+          status: false,
+          error: 500,
+        };
+      }
+
+      // delete user
+
+      const deleteUser = await adminModel.deleteUser(user_id);
+      if (!deleteUser) {
+        return {
+          message: "Error delete user",
+          status: false,
+          error: 500,
+        };
+      }
+      return {
+        data: replaceUser[0],
+        deleteId: user_id,
+        message: "delete user success",
+        status: true,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "Server error delete denined user Service",
+        status: false,
+        error: 500,
+      };
+    }
+  }
+
+  // admin get maintenance type
   async getMaintenanceType() {
     try {
       const resutl = await userPageModel.getMaintenanceType();
@@ -816,6 +880,7 @@ class adminPageService {
     }
   }
 
+  // admin register hepler account
   async registerHelper(data) {
     try {
       const exist = await authModel.checkExistId(data.id);
@@ -825,7 +890,7 @@ class adminPageService {
           return {
             message: exist.message,
             status: exist.status,
-            error: exist.error,
+            error: exist.error || "e_account",
           };
         } else {
           let password_hash;
@@ -868,6 +933,7 @@ class adminPageService {
     }
   }
 
+  // admin get hepler infor by ID
   async getAdminHelperById(user_id) {
     try {
       const resutl = await adminModel.adminGetHelperInfor(user_id);
@@ -921,6 +987,7 @@ class adminPageService {
     }
   }
 
+  // admi update helper infor
   async updateHelperInfor(user_id, data) {
     try {
       if (data.role_id.length > 1) {
@@ -967,6 +1034,7 @@ class adminPageService {
     }
   }
 
+  // admi check existence of company name
   async checkNameCompany(name_company) {
     try {
       const resutl = await adminModel.checkCompanyName(name_company);
@@ -988,7 +1056,7 @@ class adminPageService {
     }
   }
 
-  //
+  // get all company to manage
   async getAllCompanyToWatch(page) {
     try {
       let resutl = await adminModel.getAllCompanyToWatch(page);
@@ -1017,6 +1085,7 @@ class adminPageService {
     }
   }
 
+  // get all company to manage by search
   async listCompanyBySearchToWatch(option, text, page) {
     try {
       // if (!text || !option || !page) {
@@ -1056,8 +1125,8 @@ class adminPageService {
       };
     }
   }
-  //
 
+  // admin register company
   async registerCompany(data) {
     try {
       const exist = await adminModel.checkCompanyName(data.name_company);
@@ -1104,6 +1173,7 @@ class adminPageService {
     }
   }
 
+  // admin get company infor by id
   async getCompanyById(company_id) {
     try {
       const resutl = await adminModel.getCompanyInforById(company_id);
@@ -1125,6 +1195,7 @@ class adminPageService {
     }
   }
 
+  // update in for company
   async updateCompanyInfor(data) {
     try {
       const resultUpdate = await adminModel.updateCompanyInfor(data);
@@ -1151,6 +1222,7 @@ class adminPageService {
     }
   }
 
+  //  admin delete company
   async deleteCompany(company_id, page) {
     try {
       // console.log(company_id,page)
@@ -1185,6 +1257,7 @@ class adminPageService {
     }
   }
 
+  // admin delete label
   async deleteLabel(label_id) {
     try {
       const deleteProcess = await adminModel.deleteLabelProcess(label_id);
@@ -1218,6 +1291,7 @@ class adminPageService {
     }
   }
 
+  // admin get the list just registered user account
   async getAllUserWaitAccept(role_id, page) {
     try {
       let resutl = await adminModel.getAllUserWaitAccept(role_id, page);
@@ -1261,6 +1335,7 @@ class adminPageService {
     }
   }
 
+  // admin get the list just registered user account by search
   async listUserWaitAcceptBySearch(role_id, option, text, page) {
     try {
       let resutl = await adminModel.listUserWaitAcceptBySearchText(
@@ -1311,6 +1386,7 @@ class adminPageService {
     }
   }
 
+  // admin get maintenace class detail by maintenance type
   async adminGetListMaintenanceType() {
     try {
       const listMaintenanceType = await userPageModel.getMaintenanceType();
@@ -1411,6 +1487,7 @@ class adminPageService {
     }
   }
 
+  // update label name
   async updateLabelName(label_id, name) {
     try {
       const resultUpdate = await adminModel.updateLabelName(label_id, name);
@@ -1432,6 +1509,8 @@ class adminPageService {
       };
     }
   }
+
+  // add label name
   async addNameLabel(data) {
     try {
       const resultRegister = await adminModel.addNameLabel(data);
@@ -1457,6 +1536,7 @@ class adminPageService {
     }
   }
 
+  // get all label
   async getListLabel(maintenance_id) {
     try {
       let resutlLabel = await adminModel.getListLabel(maintenance_id);
@@ -1531,6 +1611,7 @@ class adminPageService {
     }
   }
 
+  // get list label by search
   async listLabelBySearch(maintenance_id, text) {
     try {
       const resutl = await adminModel.listLabelBySearchText(
@@ -1553,6 +1634,8 @@ class adminPageService {
       };
     }
   }
+
+  // get maintenance class detail by maintenace type
   async getMaintenanceClassById(maintenance_id) {
     try {
       let resutlMainClass = await userPageModel.getMaintenanceClassId(
@@ -1629,6 +1712,7 @@ class adminPageService {
     }
   }
 
+  // add label in maintenace class
   async addLabelInMainclass(maintenance_id, maintenance_class_id, label_id) {
     try {
       const exist = await adminModel.checkExistLabelId(
@@ -1680,6 +1764,7 @@ class adminPageService {
     }
   }
 
+  // get report for dashboard
   async getInforReport(data) {
     try {
       // console.log(123123)
@@ -2161,6 +2246,7 @@ class adminPageService {
     }
   }
 
+  // get daily report
   async getInforReportDaily(data) {
     // console.log(data)
     try {
@@ -2332,6 +2418,8 @@ class adminPageService {
       };
     }
   }
+
+  // get week report
   async getInforReportWeek(data) {
     try {
       if (!data.week && !data.year) {
@@ -2534,6 +2622,8 @@ class adminPageService {
       };
     }
   }
+
+  // get month report
   async getInforReportMonthly(data) {
     try {
       // console.log(data);
@@ -2758,6 +2848,8 @@ class adminPageService {
       };
     }
   }
+
+  // get admin infor
   async getAdminInfor(user_id) {
     try {
       const resutl = await adminModel.getAdminInfor(user_id);
@@ -2778,6 +2870,7 @@ class adminPageService {
       };
     }
   }
+  //  update admin infor
   async updateAdminInfor(user_id, data) {
     try {
       const userInfor = await userPageModel.getUserInfor(user_id);

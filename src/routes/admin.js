@@ -4,8 +4,8 @@ const express = require("express");
 const router = express.Router();
 const adminController = require("../app/controllers/adminController");
 
+// function add file to server
 var multer = require("multer");
-
 var storage = multer.diskStorage({
   destination: (req, file, res) => {
     res(null, "./src/public/temps");
@@ -18,7 +18,9 @@ var storage = multer.diskStorage({
   },
 });
 var upload = multer({ storage: storage });
+// //////////////////////////////////////////
 
+// there are router to admin controller
 router.get(
   "/getrequestlist",
   middlewareAuth.verifyToKenAdminAuth,
@@ -74,6 +76,12 @@ router.delete(
   "/deleteuser/:page/:user_id",
   middlewareAuth.verifyToKenAdminAuth,
   adminController.deleteUser
+);
+
+router.delete(
+  "/delete-denined-user/:page/:user_id",
+  middlewareAuth.verifyToKenAdminAuth,
+  adminController.deleteDeninedUser
 );
 
 router.get(

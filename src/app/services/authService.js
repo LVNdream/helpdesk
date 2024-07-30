@@ -6,6 +6,7 @@ const jwtService = require("./jwtService");
 const jwt = require("jsonwebtoken");
 
 class authService {
+  // register user
   async registerSevice(data) {
     try {
       const exist = await authModel.checkExistId(data.id);
@@ -43,6 +44,7 @@ class authService {
     }
   }
 
+  // login user
   async login(data) {
     try {
       const user = await authModel.findAccountById(data.id);
@@ -229,6 +231,7 @@ class authService {
     }
   }
 
+  // get accesstoken when it expried
   async handleRefreshToken(user) {
     try {
       const dataToken = {
@@ -256,9 +259,12 @@ class authService {
     }
   }
 
+  // check role to login with admin role
   async loginAdmin(data) {
     try {
+      
       const user = await authModel.findAccountById(data.id);
+ 
       if (!user) {
         return { message: "Error get account", status: false, error: 500 };
       }
@@ -318,6 +324,7 @@ class authService {
     }
   }
 
+  // update password
   async updatePassword(data) {
     try {
       // console.log(data)
@@ -337,7 +344,7 @@ class authService {
       };
     }
   }
-
+  //  check existence of user account
   async checkId(data) {
     try {
       const exist = await authModel.checkExistId(data.id);
@@ -358,6 +365,7 @@ class authService {
     }
   }
 
+  // get user account when user fogot password
   async getBackId(data) {
     try {
       const resutl = await authModel.findId(data);
@@ -397,12 +405,11 @@ class authService {
     }
   }
 
-  // xac thuc pass de update thong tin user
+  // verify password to update user
   async verifyPassword(data, password) {
     try {
       // console.log(data)
       // console.log(password);
-
 
       const user = await authModel.findAccountCheckPass(data.id);
       if (!user) {
@@ -430,7 +437,7 @@ class authService {
       };
     }
   }
-
+  // get user name
   async getNameUser(id) {
     try {
       const resutl = await authModel.getUserName(id);
