@@ -307,7 +307,7 @@ LEFT JOIN
         `SELECT rs.id, rs.title_request,rs.content_request,rstt.status_name as status_name,rs.petitioner_id,u.name AS p_name,u.affiliated_department AS p_affiliated_department,
         u.phone_number AS p_phone_number,mth.method_name,u.position AS p_position,u.email AS p_email,u.account as p_account,rs.created_at, rs.processing_content_problem,
         mt.id AS maintenance_id,s.solution_name,u2.id AS r_id,u2.name AS r_name,u2.account as r_account,u2.affiliated_department AS r_affiliated_department,
-        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email
+        u2.phone_number AS r_phone_number ,u2.position AS r_position ,u2.email AS r_email,u_com.name_company as r_name_company
         FROM  request_storage rs
          JOIN
     method mth ON rs.method_id = mth.id
@@ -316,8 +316,11 @@ LEFT JOIN
     left join maintenance_type mt on rs.maintenance_id=mt.id
     LEFT JOIN
     users u ON rs.petitioner_id =u.id
+    left join users u2 ON rs.recipient_id =u2.id
     left join
-    users AS u2 on u2.id=rs.recipient_id,
+      (select distinct u.id as user_id,c.id,c.name_company
+      from
+         users u left join company c on u.company_id = c.id) AS u_com on u_com.user_id=rs.recipient_id,
      request_status rstt
         WHERE rs.id=${id} AND rs.status_id=rstt.id;`
       );

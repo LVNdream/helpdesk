@@ -261,6 +261,7 @@ class userPageService {
 
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
+                name_company: resutlComplete_AddProblem.r_name_company||1232131,
                 phone_number: resutlComplete_AddProblem.r_phone_number,
                 position: resutlComplete_AddProblem.r_position,
                 email: resutlComplete_AddProblem.r_email,

@@ -271,6 +271,8 @@ class adminPageService {
 
                 affiliated_department:
                   resutlComplete_AddProblem.r_affiliated_department,
+                name_company: resutlComplete_AddProblem.r_name_company,
+
                 phone_number: resutlComplete_AddProblem.r_phone_number,
                 position: resutlComplete_AddProblem.r_position,
                 email: resutlComplete_AddProblem.r_email,
@@ -2738,7 +2740,14 @@ class adminPageService {
             data.week,
             data.year
           );
-
+          listRequest.count_last_last_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month);
+          //
+          listRequest.count_this_month =
+            parseInt(listRequest.count_last_two_month) +
+            parseInt(listRequest.count_last_month) +
+            parseInt(listRequest.count_this_month);
           return {
             ...itemMT,
             listRequest,

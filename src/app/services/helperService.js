@@ -296,6 +296,8 @@ class helperPageService {
               name: resultInfor.r_name,
               account: resultInfor.r_account,
               affiliated_department: resultInfor.r_affiliated_department,
+              name_company: resultInfor.r_name_company,
+
               phone_number: resultInfor.r_phone_number,
               position: resultInfor.r_position,
               email: resultInfor.r_email,
@@ -1246,8 +1248,7 @@ class helperPageService {
         content_request: data.content_request,
         //
 
-        maintenance_id: data.maintenance_id,
-
+        maintenance_id: data.maintenance_id || null,
         //
         petitioner_id: data.petitioner_id,
         recipient_id: infor_user.id,
